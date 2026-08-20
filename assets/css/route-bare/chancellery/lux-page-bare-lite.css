@@ -1161,6 +1161,32 @@ html.lux-light-mode body.lux-route-chancellery #page-chancellery :is(
 
 :is(
   body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-workspace {
+  border-radius: 24px;
+  border-top: 3px solid rgba(var(--lux-accent-rgb), 0.55);
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-status-row:not(.lux-tab-strip) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-status-row.lux-tab-strip {
+  margin-top: 14px;
+}
+
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
   body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery)
 ) :is(
   .orders-admin-audience-tabs.lux-tab-strip--segmented,
@@ -1539,28 +1565,3 @@ html.lux-light-mode body.lux-route-chancellery #page-chancellery :is(
   :is(
     body.lux-route-orders :is(#page-orders, #orders-inbox-root),
     body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
-  ) .orders-inbox-hero {
-    padding: 22px 20px 0;
-  }
-
-  :is(
-    body.lux-route-orders :is(#page-orders, #orders-inbox-root),
-    body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
-  ) .orders-inbox-workspace-body {
-    padding: 18px 20px 20px;
-  }
-
-  :is(
-    body.lux-route-orders :is(#page-orders, #orders-inbox-root),
-    body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
-  ) .orders-inbox-hero-side .lux-hero-signal-list {
-    grid-template-columns: 1fr;
-  }
-
-  :is(
-    body.lux-route-orders :is(#page-orders, #orders-inbox-root),
-    body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
-  ) .orders-metric-grid {
-    grid-template-columns: 1fr;
-  }
-}

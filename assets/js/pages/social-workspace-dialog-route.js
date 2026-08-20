@@ -31,6 +31,7 @@
             renderProjectTaskCreateDialog,
             renderProjectTaskDeleteConfirmDialog,
             renderProjectTaskDetailModal,
+            renderProjectTaskProofModal,
             renderProjectTaskGraphFullscreen,
             renderProjectTaskGraphHistoryDialog,
             renderProjectTaskGraphScheduleHelpDialog,
@@ -44,6 +45,8 @@
 
         const PROJECT_HEALTH_OVERLAY_DIALOGS = new Set([
             'project-task-detail',
+            'project-task-proof',
+            'project-task-proof-preview',
             'project-task-edit',
             'project-task-create',
             'project-task-delete',
@@ -61,6 +64,8 @@
             'project-task-graph-schedule-help',
             'project-column-tasks',
             'project-task-detail',
+            'project-task-proof',
+            'project-task-proof-preview',
             'project-task-delete',
             'project-settings',
             'project-health',
@@ -137,6 +142,23 @@
             return Boolean(getProjectTaskGraphStackAnchorDialog(runtime));
         }
 
+        function renderProjectTaskProofPreviewModal(runtime, dialog) {
+            const src = text(dialog?.src || '');
+            const name = text(dialog?.name || 'Proof image') || 'Proof image';
+            return `<div class="lux-glass-dialog-backdrop lux-glass-dialog-backdrop--stacked-child spt-proof-lightbox-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="${escape(name)}">
+                <div class="spt-proof-lightbox-card" data-action="noop">
+                    <button class="spt-proof-lightbox-close" type="button" data-action="project-task-proof-preview-close" aria-label="Close image preview"><i class="fas fa-times"></i></button>
+                    <div class="spt-proof-lightbox-img-wrap">
+                        <img class="spt-proof-lightbox-img" src="${escape(src)}" alt="${escape(name)}">
+                    </div>
+                    <div class="spt-proof-lightbox-caption">
+                        <span class="spt-proof-lightbox-title">${escape(name)}</span>
+                        <a href="${escape(src)}" target="_blank" rel="noopener noreferrer" class="lux-secondary-btn lux-secondary-btn-xs spt-proof-lightbox-external" title="Open full resolution in new tab"><i class="fas fa-arrow-up-right-from-square"></i> Open original</a>
+                    </div>
+                </div>
+            </div>`;
+        }
+
         function maybeWrapStackedProjectDialog(runtime, kind, childMarkup) {
             if (shouldRenderProjectHealthStack(runtime, kind)) {
                 return renderHealthStackLayers(runtime, childMarkup);
@@ -161,6 +183,15 @@
                 const taskId = text(dialog?.taskId || '');
                 if (!project || !taskId) return '';
                 return renderProjectTaskDetailModal(runtime, project, taskId, { pageSurface });
+            }
+            if (normalizedKind === 'project-task-proof') {
+                const project = resolveActiveSocialProject(runtime, dialog?.projectId);
+                const taskId = text(dialog?.taskId || '');
+                if (!project || !taskId) return '';
+                return renderProjectTaskProofModal(runtime, project, taskId, { pageSurface });
+            }
+            if (normalizedKind === 'project-task-proof-preview') {
+                return renderProjectTaskProofPreviewModal(runtime, dialog);
             }
             if (normalizedKind === 'project-task-delete') {
                 const project = resolveActiveSocialProject(runtime, dialog?.projectId);
@@ -244,6 +275,17 @@
                 return maybeWrapStackedProjectDialog(runtime, kind, renderProjectTaskDetailModal(runtime, project, taskId, {
                     pageSurface: shouldWrapGraphStackChild(runtime, kind) || shouldRenderProjectHealthStack(runtime, kind)
                 }));
+            }
+            if (kind === 'project-task-proof') {
+                const project = resolveActiveSocialProject(runtime, dialog?.projectId);
+                const taskId = text(dialog?.taskId || '');
+                if (!project || !taskId) return '';
+                return maybeWrapStackedProjectDialog(runtime, kind, renderProjectTaskProofModal(runtime, project, taskId, {
+                    pageSurface: shouldWrapGraphStackChild(runtime, kind) || shouldRenderProjectHealthStack(runtime, kind)
+                }));
+            }
+            if (kind === 'project-task-proof-preview') {
+                return maybeWrapStackedProjectDialog(runtime, kind, renderProjectTaskProofPreviewModal(runtime, dialog));
             }
             if (kind === 'project-task-delete') {
                 const project = resolveActiveSocialProject(runtime, dialog?.projectId);

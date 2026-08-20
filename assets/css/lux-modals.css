@@ -296,7 +296,7 @@
   .orders-recipient-filter-editor-actions ) {
   background: var(--lux-panel-modal-foot-tint-light);
 }
-[data-lux-transparency-exempt="1"] .lux-secondary-btn:not(:is(.lux-glass-dialog-actions *, .lux-glass-dialog-form-actions *, .lux-glass-dialog-card--social-glass *, .quiz-questions-head-row *, .sch-preset-manage-add-row *, .sch-preset-manage-item-actions *, .sch-modal-close-muted, .sch-preset-manage-link, .admin-orders-create-head *, .admin-orders-create-foot-actions *, .admin-orders-thread-header-actions *, .orders-recipient-action-row *, .orders-compose-head *, .admin-orders-titles-head *, .admin-orders-titles-foot *, .admin-orders-titles-row-actions *, .admin-orders-titles-add-row *, .orders-recipient-filter-editor-head *, .orders-recipient-filter-editor-body *, .orders-recipient-filter-editor-actions *, #admin-orders-root .orders-admin-command-actions *, #newsx-post-detail-panel *, #newsx-attachment-viewer-panel *)) {
+[data-lux-transparency-exempt="1"] .lux-secondary-btn:not(:is(.lux-glass-dialog-actions *, .lux-glass-dialog-form-actions *, .lux-glass-dialog-card--social-glass *, .quiz-questions-head-row *, .sch-preset-manage-add-row *, .sch-preset-manage-item-actions *, .sch-modal-close-muted, .sch-preset-manage-link, .admin-orders-create-head *, .admin-orders-create-foot-actions *, .admin-orders-thread-header-actions *, .orders-recipient-action-row *, .orders-compose-head *, .admin-orders-titles-head *, .admin-orders-titles-foot *, .admin-orders-titles-row-actions *, .admin-orders-titles-add-row *, .orders-recipient-filter-editor-head *, .orders-recipient-filter-editor-body *, .orders-recipient-filter-editor-actions *, #admin-orders-root .orders-admin-command-actions *, #newsx-post-detail-panel *, #newsx-attachment-viewer-panel *, .social-project-health-page *)) {
   background: transparent;
   border: 1px solid var(--lux-modal-glass-border);
   box-shadow: none;
@@ -304,7 +304,7 @@
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
-[data-lux-transparency-exempt="1"] .lux-primary-btn:not(:is(.lux-glass-dialog-actions *, .lux-glass-dialog-form-actions *, .lux-glass-dialog-card--social-glass *, .quiz-questions-head-row *, .sch-preset-manage-add-row *, .sch-preset-manage-item-actions *, .admin-orders-create-head *, .admin-orders-create-foot-actions *, .admin-orders-thread-header-actions *, .orders-recipient-action-row *, .orders-compose-head *, .admin-orders-titles-head *, .admin-orders-titles-foot *, .admin-orders-titles-row-actions *, .admin-orders-titles-add-row *, .orders-recipient-filter-editor-head *, .orders-recipient-filter-editor-body *, .orders-recipient-filter-editor-actions *, #admin-orders-root .orders-admin-command-actions *, #newsx-post-detail-panel *, #newsx-attachment-viewer-panel *)) {
+[data-lux-transparency-exempt="1"] .lux-primary-btn:not(:is(.lux-glass-dialog-actions *, .lux-glass-dialog-form-actions *, .lux-glass-dialog-card--social-glass *, .quiz-questions-head-row *, .sch-preset-manage-add-row *, .sch-preset-manage-item-actions *, .admin-orders-create-head *, .admin-orders-create-foot-actions *, .admin-orders-thread-header-actions *, .orders-recipient-action-row *, .orders-compose-head *, .admin-orders-titles-head *, .admin-orders-titles-foot *, .admin-orders-titles-row-actions *, .admin-orders-titles-add-row *, .orders-recipient-filter-editor-head *, .orders-recipient-filter-editor-body *, .orders-recipient-filter-editor-actions *, #admin-orders-root .orders-admin-command-actions *, #newsx-post-detail-panel *, #newsx-attachment-viewer-panel *, .social-project-health-page *)) {
   background: var(--lux-panel-cta-accent);
   border: 1px solid rgba(var(--lux-accent-rgb), 0.5);
   color: #fff;
@@ -1519,6 +1519,7 @@ body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(
 #social-neo-overlay-portal [data-lux-transparency-exempt="1"].lux-glass-dialog-card--health-plan-pick.lux-studio-panel,
 #social-neo-overlay-portal [data-lux-transparency-exempt="1"].lux-glass-dialog-card--project-risk.lux-studio-panel,
 #social-neo-overlay-portal [data-lux-transparency-exempt="1"].lux-glass-dialog-card--project-task-detail.lux-studio-panel,
+#social-neo-overlay-portal [data-lux-transparency-exempt="1"].lux-glass-dialog-card--project-task-proof.lux-studio-panel,
 #social-neo-overlay-portal [data-lux-transparency-exempt="1"].lux-glass-dialog-card--project-task-create.lux-studio-panel,
 #social-neo-overlay-portal [data-lux-transparency-exempt="1"].lux-glass-dialog-card--project-task-delete.lux-studio-panel,
 #social-neo-overlay-portal [data-lux-transparency-exempt="1"].lux-glass-dialog-card--project-column-tasks.lux-studio-panel,
@@ -2063,6 +2064,23 @@ body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(
   width: min(720px, calc(100vw - 32px));
   max-width: 720px;
   max-height: min(92vh, 900px);
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--project-task-proof {
+  width: min(880px, calc(100vw - 32px));
+  max-width: 880px;
+  max-height: min(92vh, 900px);
+  position: relative;
+  margin: auto;
+}
+#social-neo-overlay-portal [data-lux-transparency-exempt="1"] .lux-glass-dialog-card--project-task-proof .spt-proof-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  max-height: 70vh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  flex: 1 1 auto;
 }
 #social-neo-overlay-portal [data-lux-transparency-exempt="1"] .lux-glass-dialog-card--project-task-detail .lux-glass-dialog-body--project-task-detail.lux-studio-body {
   display: flex;

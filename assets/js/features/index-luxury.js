@@ -793,6 +793,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             'kiuLuxuryBackgroundGallerySelection',
             'kiu-palette'
         ].forEach((key) => localStorage.removeItem(key));
+        if (typeof window.resetLuxButtonBurstPreference === 'function') window.resetLuxButtonBurstPreference();
         const paletteClasses = LUXURY_PALETTE_KEYS;
         paletteClasses.forEach((palette) => document.body.classList.remove(`palette-${palette}`));
         const scopeKey = getHomeScopeKey();
@@ -822,6 +823,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             'kiuLuxuryMixerState',
             'kiuLuxuryStaticBackgroundFill'
         ].forEach((key) => localStorage.removeItem(key));
+        if (typeof window.resetLuxButtonBurstPreference === 'function') window.resetLuxButtonBurstPreference();
         updateDashboardPreferenceEntry((entry) => {
             entry.visuals = buildAdvancedDefaultVisuals();
             entry.visualsByScope = {};

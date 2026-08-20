@@ -58,6 +58,8 @@
         let pageMembersSearchTimer = 0;
         let eventEditorSearchTimer = 0;
         const deferredModuleRenderQueue = new Set();
+        const deferredModuleRenderAttempts = new Map();
+        const MAX_DEFERRED_MODULE_RENDER_ATTEMPTS = 2;
         let socialChromeRaf = 0;
         let socialLayoutRaf = 0;
         let wheelDebt = 0;
@@ -520,8 +522,16 @@
                 const center = getSocialCenterScroller(host);
                 if (!center || !center.contains(event.target)) return;
                 const shell = host?.querySelector?.('.social-neo-shell');
-                const innerScroller = event.target.closest('.social-neo-messages__thread-scroll, .social-neo-thread-messages, .social-neo-chat-items, .social-neo-chat-list, .sn-alerts-list, .lux-scroll-rail__viewport, .social-neo-event-feature-desc-viewport, .social-project-scroll-list');
-                if (innerScroller && innerScroller !== center && socialInnerScrollerCanAbsorbWheel(innerScroller, event.deltaY)) return;
+                const innerScroller = event.target.closest('.social-neo-messages__thread-scroll, .social-neo-chat-items, .social-neo-chat-list, .sn-alerts-list, .lux-scroll-rail__viewport, .social-neo-event-feature-desc-viewport, .social-project-scroll-list');
+                if (innerScroller && innerScroller !== center) {
+                    if (socialInnerScrollerCanAbsorbWheel(innerScroller, event.deltaY)) return;
+                    if (innerScroller.matches('.social-neo-messages__thread-scroll')
+                        && innerScroller.closest('.social-project-workspace-chat')) {
+                        // Keep workspace-chat history isolated from page scrolling at its bounds.
+                        event.preventDefault();
+                        return;
+                    }
+                }
                 wheelDebt += event.deltaY;
                 wheelPending = { center, shell, host };
                 event.preventDefault();
@@ -612,12 +622,17 @@
             if (host?.__kiuDeferredModuleRenderKey === renderKey) return;
             if (host) host.__kiuDeferredModuleRenderKey = renderKey;
             if (deferredModuleRenderQueue.has(renderReason)) return;
+            if ((deferredModuleRenderAttempts.get(renderReason) || 0) >= MAX_DEFERRED_MODULE_RENDER_ATTEMPTS) return;
             deferredModuleRenderQueue.add(renderReason);
             // Multiple lazy renderer callbacks can resolve in the same microtask
             // (for example, two renders waiting on one panel module). Collapse
             // them into one center remount so a visual transition cannot restart.
             const flush = () => {
                 deferredModuleRenderQueue.delete(renderReason);
+                deferredModuleRenderAttempts.set(
+                    renderReason,
+                    (deferredModuleRenderAttempts.get(renderReason) || 0) + 1
+                );
                 const livePanel = text(state()?.ui?.activePanel || '') || 'feed';
                 if (livePanel !== activePanel) {
                     if (host?.__kiuDeferredModuleRenderKey === renderKey) {

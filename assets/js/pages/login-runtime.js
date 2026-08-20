@@ -13,7 +13,7 @@ function scheduleLoginServiceWorkerUpdate() {
             if (!('serviceWorker' in navigator) || !/^https?:$/i.test(window.location?.protocol || '')) {
                 return Promise.resolve(null);
             }
-            return navigator.serviceWorker.register('/service-worker.js?v=20260820-globalpaint1', { scope: '/' }).catch(() => null);
+            return navigator.serviceWorker.register('/service-worker.js?v=20260822-taskproof33', { scope: '/' }).catch(() => null);
         } catch (error) {
             return Promise.resolve(null);
         }

@@ -25,4 +25,14 @@ describe('luxury-shell-studio-runtime peel', () => {
         expect(html.indexOf('luxury-shell-studio-runtime.js'))
             .toBeLessThan(html.indexOf('luxury-shell-chrome.js'));
     });
+
+    it('places the global button-burst preference under Interface Mode and resets it with visuals', () => {
+        const chrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const luxury = readSource('assets/js/features/index-luxury.js');
+        expect(chrome.indexOf('Interface Mode')).toBeLessThan(chrome.indexOf('Button Click Animation'));
+        expect(chrome.indexOf('Button Click Animation')).toBeLessThan(chrome.indexOf('Panel Transparency'));
+        expect(chrome).toContain('id="lux-button-burst-on"');
+        expect(chrome).toContain('id="lux-button-burst-off"');
+        expect(luxury).toContain('window.resetLuxButtonBurstPreference');
+    });
 });

@@ -521,89 +521,6 @@ function getFallbackNavGroups(role) {
     ];
 }
 
-function collectShellPerimeterPoints(rect, perSide = 6) {
-    const { left, top, width, height } = rect;
-    const points = [];
-    const add = (x, y, nx, ny) => points.push({ x, y, nx, ny });
-    for (let i = 0; i < perSide; i += 1) {
-        const t = (i + 0.5) / perSide;
-        add(left + width * t, top, 0, -1);
-        add(left + width, top + height * t, 1, 0);
-        add(left + width * (1 - t), top + height, 0, 1);
-        add(left, top + height * (1 - t), -1, 0);
-    }
-    return points;
-}
-
-function ensureSocialButtonBurstLayer() {
-    if (typeof document === 'undefined' || !document.body) return null;
-    let layer = document.getElementById('social-button-burst-layer');
-    if (layer) return layer;
-    layer = document.createElement('div');
-    layer.id = 'social-button-burst-layer';
-    layer.setAttribute('aria-hidden', 'true');
-    document.body.appendChild(layer);
-    return layer;
-}
-
-function spawnStudioChipBurstParticles(shell, _event, root, rectOverride) {
-    const now = performance.now();
-    const lastAt = spawnStudioChipBurstParticles._lastBurstAt || 0;
-    if (now - lastAt < 90) return;
-    spawnStudioChipBurstParticles._lastBurstAt = now;
-
-    const existing = root.querySelectorAll(':scope > .lux-chip-burst-particle');
-    if (existing.length > 80) {
-        const excess = existing.length - 60;
-        for (let i = 0; i < excess; i += 1) existing[i]?.remove();
-    }
-
-    const rect = rectOverride || shell.getBoundingClientRect();
-    const points = collectShellPerimeterPoints(rect, 5);
-    const { left, top, width, height } = rect;
-    const corners = [
-        { x: left, y: top, nx: -1, ny: -1 },
-        { x: left + width, y: top, nx: 1, ny: -1 },
-        { x: left + width, y: top + height, nx: 1, ny: 1 },
-        { x: left, y: top + height, nx: -1, ny: 1 }
-    ];
-    const kinds = ['dot', 'spark', 'streak'];
-    const sizes = ['sm', 'md', 'lg'];
-    const jobs = [
-        ...points.map((pt, i) => ({ pt, i, kind: kinds[i % 3], size: sizes[i % 3] })),
-        ...corners.map((pt, i) => ({ pt, i: points.length + i, kind: 'spark', size: 'lg' }))
-    ];
-    const appendBit = (bit, timeoutMs = 1000) => {
-        const remove = () => {
-            if (bit._done) return;
-            bit._done = true;
-            bit.remove();
-        };
-        bit.addEventListener('animationend', remove, { once: true });
-        window.setTimeout(remove, timeoutMs);
-        root.appendChild(bit);
-    };
-    jobs.forEach(({ pt, i, kind, size }) => {
-        const edgeJitter = (Math.random() - 0.5) * 10;
-        const angleJitter = ((Math.random() - 0.5) * 28 * Math.PI) / 180;
-        const baseAngle = Math.atan2(pt.ny, pt.nx) + angleJitter;
-        const dist = 36 + Math.random() * 36;
-        const spawnX = pt.x + (pt.nx === 0 ? edgeJitter : pt.nx * 2);
-        const spawnY = pt.y + (pt.ny === 0 ? edgeJitter : pt.ny * 2);
-        const bit = document.createElement('span');
-        bit.className = `lux-chip-burst-particle lux-chip-burst-particle--${kind} lux-chip-burst-particle--${size}`;
-        bit.style.left = `${spawnX}px`;
-        bit.style.top = `${spawnY}px`;
-        bit.style.setProperty('--burst-tx', `${Math.cos(baseAngle) * dist}px`);
-        bit.style.setProperty('--burst-ty', `${Math.sin(baseAngle) * dist}px`);
-        bit.style.setProperty('--burst-rot', `${(baseAngle * 180) / Math.PI}deg`);
-        bit.style.setProperty('--burst-delay', `${i * 10}ms`);
-        appendBit(bit);
-    });
-}
-
-window.spawnLuxChipBurstParticles = spawnStudioChipBurstParticles;
-
 function launchBackgroundGallery(mediaType) {
     const open = () => {
         if (typeof bindBackgroundGalleryStudioControls === 'function') {
@@ -630,38 +547,7 @@ function launchBackgroundGallery(mediaType) {
 }
 window.launchBackgroundGallery = launchBackgroundGallery;
 
-function ensureStudioChipBurstHandler() {
-    if (ensureStudioChipBurstHandler._bound || typeof document === 'undefined') return;
-    ensureStudioChipBurstHandler._bound = true;
-    const chipSelector = '.lux-mode-btn, .lux-control-btn, .lux-fog-profile-bank-btn, .lux-fog-profile-action-btn, [data-particle-quality], [data-glass-blur-quality], .lux-palette-chip, .lux-apply-btn, .lux-bg-gallery-tab';
-    const socialChipSelector = `button, .lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-control-btn, .lux-mode-btn, .lux-tab-btn, .lux-icon-btn, .lux-picker-btn, [role="button"]`;
-    document.addEventListener('pointerdown', (event) => {
-        if (event.button !== 0) return;
-        const root = event.target.closest('#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal, #public-social-root');
-        if (!root) return;
-        const isSocialRoot = root.matches('#social-neo-overlay-portal, #public-social-root');
-        if (event.target.closest('.lux-bg-gallery-tile, #lux-bg-gallery-upload, #lux-bg-gallery-upload-label, [data-gallery-empty-upload]')) return;
-        const shell = event.target.closest('.lux-bg-mode-item, .lux-fog-profile-item');
-        const target = shell && root.contains(shell)
-            ? shell
-            : event.target.closest(isSocialRoot ? socialChipSelector : chipSelector);
-        if (!target || !root.contains(target) || target.disabled || target.matches('[aria-disabled="true"], .lux-scroll-rail__btn, .social-project-task-graph-link-handle')) return;
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        const burstTarget = target;
-        // Capture geometry before the button's action can rerender the section.
-        // Social particles use a stable body-level layer so loading cannot move
-        // or detach the burst from the button that was clicked.
-        const burstRect = burstTarget.getBoundingClientRect();
-        const burstRoot = isSocialRoot ? ensureSocialButtonBurstLayer() : root;
-        if (!burstRoot) return;
-        window.requestAnimationFrame(() => {
-            spawnStudioChipBurstParticles(burstTarget, event, burstRoot, burstRect);
-        });
-    }, true);
-}
-
 function ensureStudioCss() {
-    ensureStudioChipBurstHandler();
     if (typeof document === 'undefined') return;
     const sheets = [
         { href: 'assets/css/lux-studio.css?v=20260808-galleryfouc1', key: 'data-kiu-studio' },
@@ -743,7 +629,7 @@ function ensureStudio() {
     backdrop.id = 'lux-studio-backdrop';
     backdrop.className = 'lux-studio-backdrop';
     backdrop.setAttribute('data-lux-transparency-exempt', '1');
-    backdrop.innerHTML = `<div class="lux-studio-panel" role="dialog" aria-label="Luxury theme studio" data-lux-transparency-exempt="1"><div class="lux-studio-head"><div class="lux-studio-heading"><div class="lux-studio-title"><i class="fas fa-palette" aria-hidden="true"></i> Color & Motion Studio</div><div class="lux-studio-sub">Tune the portal palette and choose the 3D background mood.</div></div><button class="lux-studio-close" id="lux-studio-close" type="button" aria-label="Close studio"><i class="fas fa-times"></i></button></div><div class="lux-studio-body"><div class="lux-studio-section"><div class="lux-studio-label">Curated Palettes</div><div class="lux-palette-grid" id="lux-palette-grid"></div></div><div class="lux-studio-section"><div class="lux-studio-label">Interface Mode</div><div class="lux-mode-row"><button class="lux-mode-btn" id="lux-mode-dark" type="button"><i class="fas fa-moon"></i> Dark</button><button class="lux-mode-btn" id="lux-mode-light" type="button"><i class="fas fa-sun"></i> Light</button></div></div><div class="lux-studio-section"><div class="lux-studio-label">Panel Transparency</div><div class="lux-transparency-control"><div class="lux-transparency-header"><span class="lux-transparency-label"><i class="fas fa-layer-group"></i> Opacity Level</span><span class="lux-transparency-value" id="lux-transparency-value">13%</span></div><input type="range" class="lux-range" id="lux-transparency-slider" min="0" max="100" value="13"><div class="lux-transparency-meta"><span><i class="fas fa-eye"></i> Full Transparent (0%)</span><span><i class="fas fa-eye-slash"></i> Solid (100%)</span></div></div></div><div class="lux-studio-section"><div class="lux-studio-label">Glass Blur</div><div class="lux-control-grid" id="lux-glass-blur-quality-grid"></div></div><div class="lux-studio-section"><div class="lux-studio-label">Panel Color Glow</div><div class="lux-transparency-control"><div class="lux-transparency-header"><span class="lux-transparency-label"><i class="fas fa-sun"></i> Glow Density</span><span class="lux-transparency-value" id="lux-glow-strength-value">50%</span></div><input type="range" class="lux-range" id="lux-glow-strength-slider" min="0" max="100" value="50"><div class="lux-transparency-meta"><span><i class="fas fa-moon"></i> None (0%)</span><span><i class="fas fa-bolt"></i> Max (100%)</span></div></div></div><div class="lux-studio-section lux-bg-mode-section"><div class="lux-studio-label">3D Background</div><div class="lux-bg-mode-grid" id="lux-bg-mode-grid"></div></div><div class="lux-studio-section"><div class="lux-studio-label">Background Animation</div><div class="lux-mode-row"><button class="lux-mode-btn" id="lux-bg-animation-on" type="button"><i class="fas fa-play"></i> On</button><button class="lux-mode-btn" id="lux-bg-animation-off" type="button"><i class="fas fa-pause"></i> Off</button></div></div><div class="lux-studio-section lux-static-bg-section" id="lux-static-bg-section" hidden><div class="lux-studio-label">Static Background</div><div class="lux-mode-row"><button class="lux-mode-btn" id="lux-static-bg-colored" type="button" data-static-bg-fill="colored"><i class="fas fa-palette"></i> Colored</button><button class="lux-mode-btn" id="lux-static-bg-dark" type="button" data-static-bg-fill="dark"><i class="fas fa-moon"></i> Full Dark</button><button class="lux-mode-btn" id="lux-static-bg-white" type="button" data-static-bg-fill="white"><i class="fas fa-sun"></i> White</button></div></div><div class="lux-studio-section lux-bg-gallery-section" id="lux-bg-gallery-section" hidden><div class="lux-studio-label">Background Gallery</div><div class="lux-mode-row"><button class="lux-mode-btn" id="lux-bg-gallery-open-images" type="button"><i class="fas fa-image"></i> Images</button><button class="lux-mode-btn" id="lux-bg-gallery-open-videos" type="button"><i class="fas fa-video"></i> Videos</button></div><button class="lux-control-btn" id="lux-bg-gallery-clear" type="button"><strong>Clear gallery</strong><span>Return to colored static fill.</span></button></div><div class="lux-studio-section"><div class="lux-studio-label">Default & Reset</div><div class="lux-reset-grid"><button class="lux-control-btn" id="lux-reset-visuals" type="button"><strong>Reset visual settings</strong><span>Theme, palette, particles, and opacity.</span></button><button class="lux-control-btn" id="lux-reset-current-layout" type="button"><strong>Reset current role layout</strong><span>Restore the active dashboard to its KIU default.</span></button><button class="lux-control-btn" id="lux-reset-all-layouts" type="button"><strong>Reset all role layouts</strong><span>Clear every saved dashboard arrangement for this user.</span></button><button class="lux-control-btn" id="lux-reset-home-defaults" type="button"><strong>Reset home to KIU defaults</strong><span>Reset both layouts and visual settings without touching portal data.</span></button></div></div><div class="lux-studio-section"><div class="lux-studio-label">Custom Accent Mix</div><div class="lux-mix-label">Color A <div id="lux-swatch-a" class="lux-mix-swatch"></div></div><div class="lux-range-row"><div class="lux-range-text">Hue</div><input type="range" class="lux-range" id="lux-hA" min="0" max="360" value="30"><div class="lux-range-value" id="lux-hA-value">30 deg</div></div><div class="lux-range-row"><div class="lux-range-text">Saturation</div><input type="range" class="lux-range" id="lux-sA" min="0" max="100" value="72"><div class="lux-range-value" id="lux-sA-value">72%</div></div><div class="lux-range-row"><div class="lux-range-text">Lightness</div><input type="range" class="lux-range" id="lux-lA" min="20" max="80" value="48"><div class="lux-range-value" id="lux-lA-value">48%</div></div><div class="lux-mix-label">Color B <div id="lux-swatch-b" class="lux-mix-swatch"></div></div><div class="lux-range-row"><div class="lux-range-text">Hue</div><input type="range" class="lux-range" id="lux-hB" min="0" max="360" value="45"><div class="lux-range-value" id="lux-hB-value">45 deg</div></div><div class="lux-range-row"><div class="lux-range-text">Saturation</div><input type="range" class="lux-range" id="lux-sB" min="0" max="100" value="80"><div class="lux-range-value" id="lux-sB-value">80%</div></div><div class="lux-range-row"><div class="lux-range-text">Lightness</div><input type="range" class="lux-range" id="lux-lB" min="20" max="80" value="58"><div class="lux-range-value" id="lux-lB-value">58%</div></div><div class="lux-range-row"><div class="lux-range-text">Mix</div><input type="range" class="lux-range" id="lux-mix-ratio" min="0" max="100" value="50"><div class="lux-range-value" id="lux-mix-value">50%</div></div><div class="lux-mix-preview" id="lux-mix-preview"><div class="lux-mix-preview-label" id="lux-mix-preview-label">hsl(37, 76%, 53%)</div></div><button class="lux-apply-btn" id="lux-apply-mix" type="button">Apply Custom Mix</button></div></div></div>`;
+    backdrop.innerHTML = `<div class="lux-studio-panel" role="dialog" aria-label="Luxury theme studio" data-lux-transparency-exempt="1"><div class="lux-studio-head"><div class="lux-studio-heading"><div class="lux-studio-title"><i class="fas fa-palette" aria-hidden="true"></i> Color & Motion Studio</div><div class="lux-studio-sub">Tune the portal palette and choose the 3D background mood.</div></div><button class="lux-studio-close" id="lux-studio-close" type="button" aria-label="Close studio"><i class="fas fa-times"></i></button></div><div class="lux-studio-body"><div class="lux-studio-section"><div class="lux-studio-label">Curated Palettes</div><div class="lux-palette-grid" id="lux-palette-grid"></div></div><div class="lux-studio-section"><div class="lux-studio-label">Interface Mode</div><div class="lux-mode-row"><button class="lux-mode-btn" id="lux-mode-dark" type="button"><i class="fas fa-moon"></i> Dark</button><button class="lux-mode-btn" id="lux-mode-light" type="button"><i class="fas fa-sun"></i> Light</button></div></div><div class="lux-studio-section" data-lux-click-burst="off"><div class="lux-studio-label">Button Click Animation</div><div class="lux-mode-row" role="group" aria-label="Button click animation"><button class="lux-mode-btn" id="lux-button-burst-on" type="button" aria-pressed="true"><i class="fas fa-magic"></i> On</button><button class="lux-mode-btn" id="lux-button-burst-off" type="button" aria-pressed="false"><i class="fas fa-ban"></i> Off</button></div><div class="lux-studio-sub">Applies to buttons and popup controls across the portal.</div></div><div class="lux-studio-section"><div class="lux-studio-label">Panel Transparency</div><div class="lux-transparency-control"><div class="lux-transparency-header"><span class="lux-transparency-label"><i class="fas fa-layer-group"></i> Opacity Level</span><span class="lux-transparency-value" id="lux-transparency-value">13%</span></div><input type="range" class="lux-range" id="lux-transparency-slider" min="0" max="100" value="13"><div class="lux-transparency-meta"><span><i class="fas fa-eye"></i> Full Transparent (0%)</span><span><i class="fas fa-eye-slash"></i> Solid (100%)</span></div></div></div><div class="lux-studio-section"><div class="lux-studio-label">Glass Blur</div><div class="lux-control-grid" id="lux-glass-blur-quality-grid"></div></div><div class="lux-studio-section"><div class="lux-studio-label">Panel Color Glow</div><div class="lux-transparency-control"><div class="lux-transparency-header"><span class="lux-transparency-label"><i class="fas fa-sun"></i> Glow Density</span><span class="lux-transparency-value" id="lux-glow-strength-value">50%</span></div><input type="range" class="lux-range" id="lux-glow-strength-slider" min="0" max="100" value="50"><div class="lux-transparency-meta"><span><i class="fas fa-moon"></i> None (0%)</span><span><i class="fas fa-bolt"></i> Max (100%)</span></div></div></div><div class="lux-studio-section lux-bg-mode-section"><div class="lux-studio-label">3D Background</div><div class="lux-bg-mode-grid" id="lux-bg-mode-grid"></div></div><div class="lux-studio-section"><div class="lux-studio-label">Background Animation</div><div class="lux-mode-row"><button class="lux-mode-btn" id="lux-bg-animation-on" type="button"><i class="fas fa-play"></i> On</button><button class="lux-mode-btn" id="lux-bg-animation-off" type="button"><i class="fas fa-pause"></i> Off</button></div></div><div class="lux-studio-section lux-static-bg-section" id="lux-static-bg-section" hidden><div class="lux-studio-label">Static Background</div><div class="lux-mode-row"><button class="lux-mode-btn" id="lux-static-bg-colored" type="button" data-static-bg-fill="colored"><i class="fas fa-palette"></i> Colored</button><button class="lux-mode-btn" id="lux-static-bg-dark" type="button" data-static-bg-fill="dark"><i class="fas fa-moon"></i> Full Dark</button><button class="lux-mode-btn" id="lux-static-bg-white" type="button" data-static-bg-fill="white"><i class="fas fa-sun"></i> White</button></div></div><div class="lux-studio-section lux-bg-gallery-section" id="lux-bg-gallery-section" hidden><div class="lux-studio-label">Background Gallery</div><div class="lux-mode-row"><button class="lux-mode-btn" id="lux-bg-gallery-open-images" type="button"><i class="fas fa-image"></i> Images</button><button class="lux-mode-btn" id="lux-bg-gallery-open-videos" type="button"><i class="fas fa-video"></i> Videos</button></div><button class="lux-control-btn" id="lux-bg-gallery-clear" type="button"><strong>Clear gallery</strong><span>Return to colored static fill.</span></button></div><div class="lux-studio-section"><div class="lux-studio-label">Default & Reset</div><div class="lux-reset-grid"><button class="lux-control-btn" id="lux-reset-visuals" type="button"><strong>Reset visual settings</strong><span>Theme, palette, particles, and opacity.</span></button><button class="lux-control-btn" id="lux-reset-current-layout" type="button"><strong>Reset current role layout</strong><span>Restore the active dashboard to its KIU default.</span></button><button class="lux-control-btn" id="lux-reset-all-layouts" type="button"><strong>Reset all role layouts</strong><span>Clear every saved dashboard arrangement for this user.</span></button><button class="lux-control-btn" id="lux-reset-home-defaults" type="button"><strong>Reset home to KIU defaults</strong><span>Reset both layouts and visual settings without touching portal data.</span></button></div></div><div class="lux-studio-section"><div class="lux-studio-label">Custom Accent Mix</div><div class="lux-mix-label">Color A <div id="lux-swatch-a" class="lux-mix-swatch"></div></div><div class="lux-range-row"><div class="lux-range-text">Hue</div><input type="range" class="lux-range" id="lux-hA" min="0" max="360" value="30"><div class="lux-range-value" id="lux-hA-value">30 deg</div></div><div class="lux-range-row"><div class="lux-range-text">Saturation</div><input type="range" class="lux-range" id="lux-sA" min="0" max="100" value="72"><div class="lux-range-value" id="lux-sA-value">72%</div></div><div class="lux-range-row"><div class="lux-range-text">Lightness</div><input type="range" class="lux-range" id="lux-lA" min="20" max="80" value="48"><div class="lux-range-value" id="lux-lA-value">48%</div></div><div class="lux-mix-label">Color B <div id="lux-swatch-b" class="lux-mix-swatch"></div></div><div class="lux-range-row"><div class="lux-range-text">Hue</div><input type="range" class="lux-range" id="lux-hB" min="0" max="360" value="45"><div class="lux-range-value" id="lux-hB-value">45 deg</div></div><div class="lux-range-row"><div class="lux-range-text">Saturation</div><input type="range" class="lux-range" id="lux-sB" min="0" max="100" value="80"><div class="lux-range-value" id="lux-sB-value">80%</div></div><div class="lux-range-row"><div class="lux-range-text">Lightness</div><input type="range" class="lux-range" id="lux-lB" min="20" max="80" value="58"><div class="lux-range-value" id="lux-lB-value">58%</div></div><div class="lux-range-row"><div class="lux-range-text">Mix</div><input type="range" class="lux-range" id="lux-mix-ratio" min="0" max="100" value="50"><div class="lux-range-value" id="lux-mix-value">50%</div></div><div class="lux-mix-preview" id="lux-mix-preview"><div class="lux-mix-preview-label" id="lux-mix-preview-label">hsl(37, 76%, 53%)</div></div><button class="lux-apply-btn" id="lux-apply-mix" type="button">Apply Custom Mix</button></div></div></div>`;
     document.body.appendChild(backdrop);
     ensureBgModeParamsPopup();
     if (typeof writeStudioMixerInputs === 'function' && typeof getStudioMixerState === 'function') {
@@ -769,6 +655,20 @@ function ensureStudio() {
         applyThemeMode('light', true);
         if (typeof syncStudioUi === 'function') syncStudioUi();
     });
+    document.getElementById('lux-button-burst-on')?.addEventListener('click', () => {
+        if (typeof window.setLuxButtonBurstEnabled === 'function') window.setLuxButtonBurstEnabled(true);
+        if (typeof syncStudioUi === 'function') syncStudioUi();
+    });
+    document.getElementById('lux-button-burst-off')?.addEventListener('click', () => {
+        if (typeof window.setLuxButtonBurstEnabled === 'function') window.setLuxButtonBurstEnabled(false);
+        if (typeof syncStudioUi === 'function') syncStudioUi();
+    });
+    if (!window.__kiuLuxButtonBurstStudioSyncBound) {
+        window.__kiuLuxButtonBurstStudioSyncBound = true;
+        window.addEventListener('lux-button-burst-preference-change', () => {
+            if (typeof syncStudioUi === 'function') syncStudioUi();
+        });
+    }
     document.getElementById('lux-bg-animation-on')?.addEventListener('click', () => {
         if (typeof setBackgroundAnimationsEnabled === 'function') setBackgroundAnimationsEnabled(true, true);
     });
@@ -1453,6 +1353,15 @@ function syncStudioUi() {
     });
     document.getElementById('lux-mode-dark')?.classList.toggle('is-active', getThemeMode() === 'dark');
     document.getElementById('lux-mode-light')?.classList.toggle('is-active', getThemeMode() === 'light');
+    const buttonBurstEnabled = typeof window.getLuxButtonBurstEnabled === 'function'
+        ? window.getLuxButtonBurstEnabled()
+        : true;
+    const buttonBurstOn = document.getElementById('lux-button-burst-on');
+    const buttonBurstOff = document.getElementById('lux-button-burst-off');
+    buttonBurstOn?.classList.toggle('is-active', buttonBurstEnabled);
+    buttonBurstOff?.classList.toggle('is-active', !buttonBurstEnabled);
+    buttonBurstOn?.setAttribute('aria-pressed', String(buttonBurstEnabled));
+    buttonBurstOff?.setAttribute('aria-pressed', String(!buttonBurstEnabled));
     document.getElementById('lux-bg-animation-on')?.classList.toggle('is-active', typeof areBackgroundAnimationsEnabled === 'function' ? areBackgroundAnimationsEnabled() : true);
     document.getElementById('lux-bg-animation-off')?.classList.toggle('is-active', typeof areBackgroundAnimationsEnabled === 'function' ? !areBackgroundAnimationsEnabled() : false);
     const staticBgSection = document.getElementById('lux-static-bg-section');

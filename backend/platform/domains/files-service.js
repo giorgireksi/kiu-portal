@@ -51,7 +51,8 @@ const SAFE_STORED_FILE_MIME_TYPES = new Set([
 ]);
 
 function sanitizeStoredFileMimeType(value = '') {
-    const normalized = String(value || '').trim().toLowerCase();
+    let normalized = String(value || '').trim().toLowerCase();
+    if (normalized === 'image/jpg') normalized = 'image/jpeg';
     if (SAFE_STORED_FILE_MIME_TYPES.has(normalized)) return normalized;
     return 'application/octet-stream';
 }
@@ -105,7 +106,15 @@ function createFileFromUploadSync(payload = {}) {
         return null;
     }
     const ownerUserId = String(payload.ownerUserId || payload.uploadedBy || '').trim();
-    const mimeType = sanitizeStoredFileMimeType(payload.type || parsed.mimeType || 'application/octet-stream');
+    const requestedMimeType = sanitizeStoredFileMimeType(payload.type || '');
+    const parsedMimeType = sanitizeStoredFileMimeType(parsed.mimeType || '');
+    // Some WebViews omit File.type even when the data URL identifies a valid
+    // image. Preserve the actual safe image MIME instead of recording it as
+    // application/octet-stream, which would make task proof validation reject
+    // an otherwise valid upload.
+    const mimeType = requestedMimeType === 'application/octet-stream' && parsedMimeType.startsWith('image/')
+        ? parsedMimeType
+        : requestedMimeType || parsedMimeType || 'application/octet-stream';
     const previewDataUrl = mimeType.startsWith('image/') && parsed.buffer.length <= 200 * 1024
         ? `data:${mimeType};base64,${parsed.buffer.toString('base64')}`
         : '';

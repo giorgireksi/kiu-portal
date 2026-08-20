@@ -93,8 +93,6 @@
                 <div class="social-neo-lost-found-hero-head">
                     <div class="social-neo-lost-found-hero-copy">
                         <span class="social-neo-section-kicker">Campus recovery board</span>
-                        <h2>Report, match, and return lost items with less friction</h2>
-                        <p>Post missing items, help others recover them, and mark returns when they are found.</p>
                     </div>
                     <div class="social-neo-lost-found-hero-actions">
                         ${(window.renderSocialBrowseFacultyHeroControl || (window.KiuSocialChromeModel || {}).renderSocialBrowseFacultyHeroControl)?.(runtime) || ''}

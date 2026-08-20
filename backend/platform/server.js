@@ -2800,8 +2800,19 @@ app.use((error, request, response, next) => {
     sendError(response, 500, 'Internal server error.');
 });
 
+function ensureUploadStorageReady() {
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+    const probePath = path.join(UPLOADS_DIR, `.kiu-upload-probe-${process.pid}-${Date.now()}`);
+    try {
+        fs.writeFileSync(probePath, 'ok', { flag: 'wx' });
+    } finally {
+        try { fs.unlinkSync(probePath); } catch (error) {}
+    }
+}
+
 async function startServer() {
     if (!store) {
+        ensureUploadStorageReady();
         store = await PlatformStore.create({
             statePath: process.env.KIU_LOCAL_PLATFORM_STATE_PATH || LOCAL_STATE_PATH,
             uploadsDir: UPLOADS_DIR,

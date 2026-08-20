@@ -23,7 +23,7 @@
     const WORKSPACE_FALLBACK = [
         'project-create', 'project-task-create', 'project-task-edit', 'project-task-graph',
         'project-task-graph-history', 'project-task-graph-schedule-help', 'project-column-tasks',
-        'project-task-detail', 'project-task-delete', 'project-settings', 'project-health',
+        'project-task-detail', 'project-task-proof', 'project-task-delete', 'project-settings', 'project-health',
         'project-health-plan-pick', 'project-risk', 'portfolio-create', 'portfolio-editor', 'portfolio-viewer', 'project-leave'
     ];
 

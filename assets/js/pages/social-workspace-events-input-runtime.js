@@ -12,6 +12,7 @@
             PROJECT_TASK_GRAPH_MIN_ZOOM,
             accountById,
             activeDialog,
+            addPortalSocialProjectTaskProof,
             addManyToProjectWeekPlan,
             addProjectTaskDependency,
             applyProjectTaskGraphResetView,
@@ -339,6 +340,38 @@
                 runtime.ui.projectDiscoverRole = text(target.value || 'all') || 'all';
                 renderSocialPageNow('portfolio-discover-role');
                 return;
+            }
+            if (target.name === 'projectTaskProofFiles') {
+                const projectId = text(target.getAttribute('data-project-id') || runtime.ui?.activeProjectId || '');
+                const taskId = text(target.getAttribute('data-task-id') || '');
+                const files = Array.from(target.files || []);
+                target.value = '';
+                if (!projectId || !taskId || !files.length || typeof addPortalSocialProjectTaskProof !== 'function') return;
+                return withBusy(async () => {
+                    const status = target.closest('.spt-proof-section')?.querySelector('[data-proof-status]');
+                    if (status) {
+                        status.classList.remove('is-error');
+                        status.textContent = 'Uploading proof images…';
+                    }
+                    try {
+                        const uploadedTask = await addPortalSocialProjectTaskProof(projectId, taskId, files, { silent: true });
+                        if (uploadedTask) {
+                            if (typeof refreshProjectTaskGraphDialog === 'function') {
+                                refreshProjectTaskGraphDialog(['selection']);
+                            }
+                            renderDialogOnlyNow();
+                        } else if (status) {
+                            status.classList.add('is-error');
+                            status.textContent = 'No compatible images were added. Use PNG, JPG, WEBP, or GIF files up to 10 MB.';
+                        }
+                    } catch (error) {
+                        if (status) {
+                            status.classList.add('is-error');
+                            status.textContent = error?.message || 'Proof images could not be uploaded.';
+                        }
+                        if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash(error?.message || 'Proof images could not be uploaded.', 'danger');
+                    }
+                });
             }
             if (target.name === 'projectMediaFile') {
                 runtime.ui.projectMediaFile = target.files?.[0] || null;

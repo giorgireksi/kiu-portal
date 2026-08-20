@@ -142,7 +142,7 @@
         ];
         const laneCopy = isOfficialLane
             ? { kicker: 'Official feedback', title: 'University services, policy, and academic experience', text: 'Take official campus surveys published by staff and track published results.' }
-            : { kicker: 'Campus feedback', title: 'Share your voice on courses, services, and campus life', text: 'Take open surveys, track what you have answered, and publish polls for your community.' };
+            : { kicker: 'Campus feedback', title: '', text: '' };
         const createLabel = isOfficialLane ? 'Publish official survey' : 'Create survey';
         const createIcon = isOfficialLane ? 'fa-landmark' : 'fa-plus';
         const bodyHtml = text(options.bodyHtml || '');
@@ -152,8 +152,8 @@
                 <div class="social-neo-surveys-hero-head">
                     <div class="social-neo-surveys-hero-copy">
                         <span class="social-neo-section-kicker">${escape(laneCopy.kicker)}</span>
-                        <h2>${escape(laneCopy.title)}</h2>
-                        <p>${escape(laneCopy.text)}</p>
+                        ${laneCopy.title ? `<h2>${escape(laneCopy.title)}</h2>` : ''}
+                        ${laneCopy.text ? `<p>${escape(laneCopy.text)}</p>` : ''}
                     </div>
                     <div class="social-neo-surveys-hero-actions">
                         ${(window.renderSocialBrowseFacultyHeroControl || (window.KiuSocialChromeModel || {}).renderSocialBrowseFacultyHeroControl)?.(runtime) || ''}
@@ -200,7 +200,7 @@
                 <div class="social-neo-surveys-hero-toolbar home-hover-chip">
                     <label for="${escape(searchId)}">
                         <span class="social-neo-label">Search</span>
-                        <input class="social-neo-input lux-control" id="${escape(searchId)}" type="search" name="surveysSearch" placeholder="Search title, organizer, or audience" value="${escape(searchValue)}">
+                        <input class="social-neo-input lux-control" id="${escape(searchId)}" type="search" name="surveysSearch" placeholder="Search title, organizer, or audience" value="${escape(searchValue)}" style="border-radius: 14px !important;">
                     </label>
                 </div>
                 ${merged ? `

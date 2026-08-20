@@ -1,5 +1,20 @@
 /* Thin route diff: library. Core in shared-lux-core.css */
 /* Included source lines: 22101-22499. */
+  background: var(--lux-panel-surface-soft);
+  color: var(--lux-text);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 700;
+}
+:is(#portal-news-root, #newsx-attachment-viewer-panel, #newsx-post-detail-panel) .newsx-reply-body { flex: 1; min-width: 0; }
+:is(#portal-news-root, #newsx-attachment-viewer-panel, #newsx-post-detail-panel) .newsx-reply-tab-panel { display: grid; gap: 12px; }
+:is(#portal-news-root, #newsx-attachment-viewer-panel, #newsx-post-detail-panel) .newsx-reply-empty,
+:is(#portal-news-root, #newsx-attachment-viewer-panel, #newsx-post-detail-panel) .newsx-private-fold-muted {
+  margin: 0;
+  font-size: 13px;
+  color: var(--lux-text-muted);
+}
+
 
 #page-library {
   color: var(--lux-text);
@@ -243,18 +258,29 @@ body.lux-route-admin-library #page-library .lux-home-grid.is-admin,
 body.lux-entry-admin-library #page-library .lux-home-grid.is-admin {
   display: grid;
   gap: 24px;
-  width: min(1360px, calc(100vw - 32px));
-  max-width: 100%;
-  margin-inline: auto;
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+  padding: 0 0 24px;
   box-sizing: border-box;
   isolation: isolate;
 }
 body.lux-route-admin-library #page-library .admin-library-shell,
 body.lux-entry-admin-library #page-library .admin-library-shell {
   display: grid;
+  grid-template-rows: auto minmax(320px, 1fr);
   gap: 24px;
   width: 100%;
+  min-height: calc(100dvh - 40px);
   box-sizing: border-box;
+}
+body.lux-route-admin-library #page-library .admin-library-catalog-card,
+body.lux-entry-admin-library #page-library .admin-library-catalog-card {
+  min-height: 0;
+}
+body.lux-route-admin-library #page-library .admin-library-scroll-wrap,
+body.lux-entry-admin-library #page-library .admin-library-scroll-wrap {
+  min-height: 0;
 }
 body.lux-route-admin-library #page-library .alib-workspace,
 body.lux-entry-admin-library #page-library .alib-workspace {
@@ -373,29 +399,3 @@ body.lux-route-library #page-library .library-catalog-filters-panel .lux-card-me
     justify-content: stretch;
   }
   body.lux-route-admin-library #page-library .alib-panel-actions .lux-primary-btn {
-    width: 100%;
-  }
-  #page-library .admin-library-catalog-card .admin-library-tabs {
-    align-items: stretch;
-    flex-direction: column;
-  }
-  #page-library :is(.admin-library-status-pill, .library-status-pill) {
-    justify-content: center;
-    margin-left: 0;
-    width: 100%;
-  }
-  #page-library .admin-library-catalog-pagination {
-    margin-left: 0;
-    width: 100%;
-  }
-}
-
-@media (max-width: 520px) {
-  body.lux-route-admin-library #page-library .alib-workspace,
-  body.lux-entry-admin-library #page-library .alib-workspace {
-    grid-template-columns: 1fr;
-  }
-  body.lux-route-admin-library #page-library .alib-panel {
-    min-height: 0;
-  }
-}

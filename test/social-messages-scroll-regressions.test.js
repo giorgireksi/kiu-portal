@@ -11,6 +11,31 @@ describe('social-messages-scroll-regressions.test (bare-shell era)', () => {
         expect(existsSync(join(process.cwd(), 'assets/css/social-rebuild.css'))).toBe(false);
     });
 
+    it('uses one scoped thread viewport with an accessible visual rail', () => {
+        const css = readSource('assets/css/lux-page-bare-lite.css');
+        const messages = readSource('assets/js/pages/social-messages.js');
+
+        expect(messages).toContain('data-social-thread-shell');
+        expect(messages).toContain('data-social-thread-scrollbar');
+        expect(messages).toContain('role="scrollbar"');
+        expect(messages).toContain("rail.addEventListener('wheel'");
+        expect(messages).toContain("scroller.addEventListener('wheel'");
+        expect(css).toMatch(/social-project-workspace-chat\s*\{[\s\S]*?height:\s*min\(74vh, calc\(100dvh - 190px\)\)/);
+        expect(css).toMatch(/social-project-workspace-chat \.social-neo-messages__thread-scroll\s*\{[\s\S]*?flex:\s*1 1 0% !important[\s\S]*?overflow-y:\s*auto !important/);
+        expect(css).toMatch(/social-project-workspace-chat \.social-neo-messages__composer\s*\{[\s\S]*?margin-top:\s*0 !important/);
+        expect(css).toContain('social-neo-messages__custom-scrollbar');
+        expect(css).toContain('social-neo-messages__custom-scrollbar[aria-disabled="true"]');
+        expect(css).toContain('social-neo-messages__thread-shell > .social-neo-messages__custom-scrollbar');
+        expect(css).toContain('position: absolute !important');
+
+        const scrollbarRuntime = readSource('assets/js/shared/lux-custom-scrollbar.js');
+        expect(scrollbarRuntime).not.toContain("'.social-neo-messages__thread-scroll'");
+
+        const shellRuntime = readSource('assets/js/pages/social-page-shell-runtime.js');
+        expect(shellRuntime).toContain('.social-neo-messages__thread-scroll, .social-neo-chat-items');
+        expect(shellRuntime).not.toContain('.social-neo-messages__thread-scroll, .social-neo-thread-messages');
+    });
+
     it('keeps inbox and thread scroll inside the messages panel on desktop', () => {
         const css = readSource('assets/css/lux-page-bare-lite.css');
         const shell = readSource('assets/js/pages/social-page-shell-runtime.js');

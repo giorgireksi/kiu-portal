@@ -33,7 +33,7 @@ describe('login route regressions', () => {
         expect(html).not.toContain('assets/js/app/state.js');
         expect(html).not.toContain('assets/js/shared/faculty.js');
         expect(html).toContain('assets/css/login-route.css');
-        expect(html).toContain('assets/js/pages/login-runtime.js?v=20260819-fastboot3');
+        expect(html).toContain('assets/js/pages/login-runtime.js?v=20260819-fastboot3-swcache1');
         expect(html).toContain('class="login-page lux-full-paint palette-obsidian-amber"');
         expect(html).not.toContain('onclick=');
         expect(html).toContain('data-login-tab="login"');
@@ -53,7 +53,7 @@ describe('login route regressions', () => {
         expect(runtimeSource).toContain('let loginRequestInFlight = false;');
         expect(runtimeSource).toContain('function scheduleLoginServiceWorkerUpdate() {');
         expect(runtimeSource).toContain("window.requestIdleCallback(() => resolve(register()), { timeout: 3000 });");
-        expect(runtimeSource).toContain("navigator.serviceWorker.register('/service-worker.js?v=20260820-globalpaint1'");
+        expect(runtimeSource).toContain("navigator.serviceWorker.register('/service-worker.js?v=20260822-taskproof33'");
         expect(runtimeSource).toContain('void LOGIN_SERVICE_WORKER_UPDATE;');
         expect(runtimeSource).not.toContain('await Promise.race([\n        LOGIN_SERVICE_WORKER_UPDATE');
         expect(runtimeSource).toContain('for (let attempt = 0; attempt < 2; attempt += 1) {');

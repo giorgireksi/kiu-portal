@@ -1432,6 +1432,18 @@ if (typeof window.openLuxGlassDialogOverlay !== 'function') {
         overlay.setAttribute('aria-hidden', 'false');
         if (scrollLock) luxPortalModalLockScroll();
         window.openLuxGlassDialogOverlay(overlay);
+        // Full custom scrollbar: init rails for modal scrollports
+        try {
+            window.setTimeout(() => {
+                if (typeof window.initLuxCustomScrollbar === 'function') {
+                    const scrollers = overlay.querySelectorAll('.modal-body, .lux-glass-dialog-body, .modal-content:not(:has(> .modal-body)), [data-lux-custom-scrollbar-auto]');
+                    scrollers.forEach((el) => {
+                        try { window.initLuxCustomScrollbar(el); } catch (_) {}
+                    });
+                    if (typeof window.syncLuxCustomScrollbar === 'function') window.syncLuxCustomScrollbar(overlay);
+                }
+            }, 32);
+        } catch (_) {}
         if (focusSelector) {
             window.setTimeout(() => {
                 const focusTarget = overlay.querySelector(focusSelector);

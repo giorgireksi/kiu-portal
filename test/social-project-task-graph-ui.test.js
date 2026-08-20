@@ -56,6 +56,16 @@ describe('social-project-task-graph-ui', () => {
         expect(bare).toContain('.social-project-task-graph-stage--immersive.is-interacting');
         expect(bare).toContain('box-shadow: none !important;');
         expect(bare).toContain(':has(.social-project-task-graph-stage--immersive.is-interacting)');
+        expect(readSource('assets/css/lux-controls.css')).toContain('.lux-toolbar-btn');
+        expect(bare).toContain('.social-project-task-graph-page-actions .lux-toolbar-btn');
+        expect(bare).toContain('.social-project-task-graph-inspector .lux-toolbar-btn');
+        expect(bare).toContain('Keep magnetic ports visible beyond the card/foreignObject paint box.');
+        expect(bare).toContain('.social-project-task-graph-card-fo-inner');
+        expect(bare).toContain('overflow: visible !important;');
+        expect(bare).toContain('.social-project-task-graph-page-actions .social-project-task-graph-reset-view-btn');
+        expect(bare).toContain('padding-inline: 18px;');
+        expect(bare).not.toContain('.lux-glass-dialog-card--project-task-graph-fullscreen .social-project-task-graph-add-btn');
+        expect(bare).not.toContain('.social-project-task-graph-footer-actions .social-project-task-graph-add-btn');
     });
 
     it('bare-lite includes overview dashboard zone hooks', () => {
@@ -83,7 +93,8 @@ describe('social-project-task-graph-ui', () => {
     it('graph-render emits immersive task map markup', () => {
         const render = readSource('assets/js/pages/social-workspace-graph-render.js');
         expect(render).toContain('social-project-task-graph-immersive');
-        expect(render).toContain('social-page-surface-head social-project-task-graph-page-head lux-soft-chrome home-hover-chip');
+        expect(render).toContain('social-page-surface-head social-project-task-graph-page-head lux-soft-chrome">');
+        expect(render).not.toContain('social-page-surface-head social-project-task-graph-page-head lux-soft-chrome home-hover-chip');
         expect(render).toContain('social-page-surface-actions social-project-task-graph-immersive-actions social-project-task-graph-page-actions');
         expect(render).toContain('social-page-toolbar-group');
         expect(render).toContain('lux-control social-project-task-graph-group-select');
@@ -117,15 +128,24 @@ describe('social-project-task-graph-ui', () => {
         expect(render).not.toContain('lux-glass-dialog-card--project-task-graph-fullscreen');
         expect(render).not.toContain('lux-glass-dialog-backdrop--project-task-graph');
         expect(render).toContain('social-project-task-graph-essential-controls');
-        expect(render).toContain('lux-ghost-btn social-project-task-graph-back-btn');
-        expect(render).toContain('lux-primary-btn social-project-task-graph-add-btn');
-        expect(render).toContain('lux-primary-btn social-project-task-graph-save-btn');
-        expect(render).toContain('lux-secondary-btn social-project-task-graph-history-btn');
-        expect(render).toContain('lux-secondary-btn social-project-task-graph-critical-toggle');
+        expect(render).toContain('lux-ghost-btn lux-toolbar-btn social-project-task-graph-back-btn');
+        expect(render).toContain('lux-primary-btn lux-toolbar-btn social-project-task-graph-add-btn');
+        expect(render).toContain('lux-primary-btn lux-toolbar-btn social-project-task-graph-save-btn');
+        expect(render).toContain('lux-secondary-btn lux-toolbar-btn social-project-task-graph-history-btn');
+        expect(render).toContain('lux-secondary-btn lux-toolbar-btn social-project-task-graph-critical-toggle');
+        expect(render).toContain('lux-toolbar-btn lux-glass-dialog-close-btn');
+        expect(render).toContain('lux-secondary-btn lux-toolbar-btn social-project-task-graph-schedule-help-btn');
+        expect(render).toContain('lux-toolbar-btn" type="button" data-action="project-task-graph-link-from-selected"');
+        expect(render).toContain('lux-toolbar-btn social-project-task-graph-inspector-text-link');
+        expect(render).toContain('<circle class="social-project-task-graph-svg-port is-side-e is-out"');
+        expect(render).toContain('<circle class="social-project-task-graph-svg-port is-side-n is-in"');
+        expect(render).not.toContain('<button type="button" class="social-project-task-graph-svg-port');
+        expect(render).not.toContain('lux-picker-btn lux-universal-picker-btn lux-picker-btn--compact social-project-task-graph-critical-toggle');
         expect(render).not.toContain('data-action="project-task-graph-more-toggle"');
         expect(render).not.toContain('social-project-task-graph-more-btn');
         expect(render).toContain('social-project-task-graph-tool-strip social-project-task-graph-more-panel');
-        expect(render).toContain('social-project-task-graph-my-switch');
+        expect(render).toContain('lux-secondary-btn lux-toolbar-btn social-project-task-graph-my-switch');
+        expect(render).toContain('role="switch"');
         expect(render).not.toContain('social-project-task-graph-footer-tools');
         expect(render).not.toContain('social-project-task-graph-footer-actions');
         expect(render).toContain('aria-label="Task map tools" aria-hidden="false"');
@@ -173,10 +193,19 @@ describe('social-project-task-graph-ui', () => {
         expect(toolbarStart).toBeGreaterThan(-1);
         const toolbar = bare.slice(toolbarStart);
         expect(toolbar).toContain('.social-project-task-graph-page-actions');
-        expect(toolbar).toContain('var(--lux-panel-control)');
+        expect(bare).toContain('var(--lux-panel-control)');
+        expect(bare).toContain('var(--lux-btn-label, var(--lux-text))');
         expect(toolbar).toContain('outline: 2px solid var(--lux-accent);');
         expect(toolbar).toMatch(/@media \(max-width: 1024px\)[\s\S]*min-height: 44px/);
         expect(bare).not.toContain('Task-map toolbar: flat panel controls');
+        const switchSelector = 'body.lux-route-social #social-neo-overlay-portal :is(.social-project-task-graph-immersive-footer, .social-project-task-graph-page-actions) .social-project-task-graph-my-switch {';
+        const switchStart = bare.indexOf(switchSelector);
+        const switchEnd = bare.indexOf(' .social-project-task-graph-my-switch > span:first-child {', switchStart);
+        const switchBlock = bare.slice(switchStart, switchEnd);
+        expect(switchStart).toBeGreaterThan(-1);
+        expect(switchBlock).not.toContain('background:');
+        expect(switchBlock).not.toContain('border:');
+        expect(switchBlock).not.toContain('box-shadow:');
         expect(bare).not.toContain('.social-project-task-graph-page-actions :is(\n    button.lux-primary-btn,');
     });
 

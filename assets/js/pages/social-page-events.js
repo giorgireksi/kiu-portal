@@ -653,6 +653,94 @@
             if (file) applyPhotographyUploadFile(file);
         }
 
+        function resolveTaskProofDropzone(event) {
+            return event.target?.closest?.('[data-proof-drop]') || null;
+        }
+
+        function handleTaskProofUploadDragEnter(event) {
+            const dropzone = resolveTaskProofDropzone(event);
+            if (!dropzone) return;
+            event.preventDefault();
+            dropzone.classList.add('is-dragover');
+        }
+
+        function handleTaskProofUploadDragOver(event) {
+            const dropzone = resolveTaskProofDropzone(event);
+            if (!dropzone) return;
+            event.preventDefault();
+            dropzone.classList.add('is-dragover');
+        }
+
+        function handleTaskProofUploadDragLeave(event) {
+            const dropzone = resolveTaskProofDropzone(event);
+            if (!dropzone) return;
+            const related = event.relatedTarget;
+            if (related && dropzone.contains(related)) return;
+            dropzone.classList.remove('is-dragover');
+        }
+
+        function handleTaskProofUploadDrop(event) {
+            const dropzone = resolveTaskProofDropzone(event);
+            if (!dropzone) return;
+            event.preventDefault();
+            dropzone.classList.remove('is-dragover');
+            const input = dropzone.querySelector('input[name="projectTaskProofFiles"]');
+            const files = event.dataTransfer?.files || null;
+            if (!input || !files?.length) return;
+            const addProof = typeof window.addPortalSocialProjectTaskProof === 'function'
+                ? window.addPortalSocialProjectTaskProof
+                : null;
+            const status = dropzone.closest('.spt-proof-section')?.querySelector('[data-proof-status]');
+            if (status) {
+                status.classList.remove('is-error');
+                status.textContent = 'Uploading proof images…';
+            }
+            if (addProof) {
+                Promise.resolve(addProof(
+                    input.getAttribute('data-project-id'),
+                    input.getAttribute('data-task-id'),
+                    Array.from(files),
+                    { silent: true }
+                )).then((uploadedTask) => {
+                    if (!uploadedTask) {
+                        if (status) {
+                            status.classList.add('is-error');
+                            status.textContent = 'No compatible images were added. Use PNG, JPG, WEBP, or GIF files up to 10 MB.';
+                        }
+                        return;
+                    }
+                    const refreshGraph = window.__kiuSocialWorkspaceHooks?.refreshProjectTaskGraphDialog
+                        || window.refreshProjectTaskGraphDialog;
+                    if (typeof refreshGraph === 'function') {
+                        try { refreshGraph(['selection']); } catch (error) {}
+                    }
+                    const rerender = window.__kiuSocialWorkspaceHooks?.renderDialogOnlyNow
+                        || window.renderSocialPageNow;
+                    if (typeof rerender === 'function') rerender('task-proof-upload');
+                }).catch((uploadError) => {
+                    if (status) {
+                        status.classList.add('is-error');
+                        status.textContent = uploadError?.message || 'Proof images could not be uploaded.';
+                    }
+                    if (typeof window.setPortalSocialFlash === 'function') window.setPortalSocialFlash(uploadError?.message || 'Proof images could not be uploaded.', 'danger');
+                });
+                return;
+            }
+            // Last-resort support for older cached runtimes: let the native input
+            // change handler process the drop if its FileList setter is writable.
+            try {
+                input.files = files;
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            } catch (error) {}
+        }
+
+        function bindTaskProofUploadEvents(node, signal) {
+            node.addEventListener('dragenter', handleTaskProofUploadDragEnter, { signal });
+            node.addEventListener('dragover', handleTaskProofUploadDragOver, { signal });
+            node.addEventListener('dragleave', handleTaskProofUploadDragLeave, { signal });
+            node.addEventListener('drop', handleTaskProofUploadDrop, { signal });
+        }
+
         function bindPhotographyUploadPortalEvents(portal, signal) {
             portal.addEventListener('dragenter', handlePhotographyUploadDragEnter, { signal });
             portal.addEventListener('dragover', handlePhotographyUploadDragOver, { signal });
@@ -671,7 +759,12 @@
             handlePhotographyUploadDragOver,
             handlePhotographyUploadDragLeave,
             handlePhotographyUploadDrop,
-            bindPhotographyUploadPortalEvents
+            bindPhotographyUploadPortalEvents,
+            handleTaskProofUploadDragEnter,
+            handleTaskProofUploadDragOver,
+            handleTaskProofUploadDragLeave,
+            handleTaskProofUploadDrop,
+            bindTaskProofUploadEvents
         };
     }
 

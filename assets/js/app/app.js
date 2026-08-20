@@ -835,13 +835,13 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         });
     }
 
-    const SOCIAL_RUNTIME_VERSION = '20260820-socialintent1';
+    const SOCIAL_RUNTIME_VERSION = '20260822-taskproof33';
     const SOCIAL_RUNTIME_SCRIPT_GROUPS = [
         [
-            'assets/js/shared/social-lite-project-runtime.js?v=20260719-socproj1',
+            'assets/js/shared/social-lite-project-runtime.js?v=20260822-taskproof33',
             'assets/js/shared/social-lite-content-runtime.js?v=20260807-activityquiet1',
             'assets/js/shared/social-lite-invite-runtime.js?v=20260720-w18',
-            'assets/js/shared/social-runtime-lite.js?v=20260808-mobileroute1'
+            'assets/js/shared/social-runtime-lite.js?v=20260822-taskproof33'
         ],
         [
             'assets/js/pages/social-mobile.js?v=20260624-event-edit2',
@@ -858,7 +858,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
             'assets/js/pages/social-form-model-bridge.js?v=20260720-w23form1'
         ],
         [
-            'assets/js/pages/social-workspace-week-plan-model.js?v=20260719-wswplan1'
+            'assets/js/pages/social-workspace-week-plan-model.js?v=20260822-taskproof33'
         ],
         [
             { src: 'assets/js/pages/social-workspace-risk-model.js?v=20260720-w20risk1', module: true },
@@ -1671,7 +1671,7 @@ enforceSingleRuntimeEntrypoint();
 (function registerPortalServiceWorker() {
     const PORTAL_CACHE_RESET_KEY = 'KIU_PORTAL_CACHE_RESET_VERSION';
     const PORTAL_CACHE_RESET_VERSION = '20260808-overallperf1';
-    const PORTAL_SERVICE_WORKER_VERSION = '20260820-globalpaint1';
+    const PORTAL_SERVICE_WORKER_VERSION = '20260822-taskproof33';
 
     async function clearPortalSiteCaches(force = false) {
         try {

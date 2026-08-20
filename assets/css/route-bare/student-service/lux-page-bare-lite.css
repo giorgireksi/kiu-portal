@@ -1212,107 +1212,6 @@ body.lux-route-student-service .student-service-qa-owner-resolution-btn.is-owner
     }
 }
 
-
-body.lux-route-student-service #student-service-modal-root .student-service-qa-thread-modal button {
-    position: relative;
-}
-body.lux-route-student-service #student-service-modal-root > .lux-chip-burst-particle {
-    position: fixed;
-    width: var(--burst-size, 5px);
-    height: var(--burst-size, 5px);
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--lux-accent) 85%, #fff 15%);
-    pointer-events: none;
-    z-index: 2100;
-    opacity: 0;
-    transform: translate(-50%, -50%);
-    animation: lux-chip-particle-out 0.72s var(--lux-studio-chip-ease-out, cubic-bezier(0.16, 1, 0.3, 1)) var(--burst-delay, 0ms) forwards;
-}
-body.lux-route-student-service #student-service-modal-root > .lux-chip-burst-particle--sm {
-    --burst-size: 3px;
-}
-body.lux-route-student-service #student-service-modal-root > .lux-chip-burst-particle--md {
-    --burst-size: 5px;
-}
-body.lux-route-student-service #student-service-modal-root > .lux-chip-burst-particle--lg {
-    --burst-size: 7px;
-}
-body.lux-route-student-service #student-service-modal-root > .lux-chip-burst-particle--spark {
-    border-radius: 2px;
-    background: color-mix(in srgb, var(--lux-accent) 70%, #fff 30%);
-    box-shadow: 0 0 6px color-mix(in srgb, var(--lux-accent) 55%, transparent);
-    animation-name: lux-chip-particle-spark;
-}
-body.lux-route-student-service #student-service-modal-root > .lux-chip-burst-particle--streak {
-    width: 2px;
-    height: 10px;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--lux-accent) 75%, #fff 25%);
-    box-shadow: 0 0 5px color-mix(in srgb, var(--lux-accent) 45%, transparent);
-    animation-name: lux-chip-particle-streak;
-}
-@keyframes lux-chip-particle-out {
-    0% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(0.45);
-    }
-    16% {
-        opacity: 0.95;
-        transform: translate(
-                calc(-50% + var(--burst-tx, 0px) * 0.18),
-                calc(-50% + var(--burst-ty, 0px) * 0.18)
-            )
-            scale(1.05);
-    }
-    100% {
-        opacity: 0;
-        transform: translate(calc(-50% + var(--burst-tx, 0px)), calc(-50% + var(--burst-ty, 0px))) scale(0.4);
-    }
-}
-@keyframes lux-chip-particle-spark {
-    0% {
-        opacity: 0;
-        transform: translate(-50%, -50%) rotate(45deg) scale(0.35);
-    }
-    16% {
-        opacity: 1;
-        transform: translate(
-                calc(-50% + var(--burst-tx, 0px) * 0.2),
-                calc(-50% + var(--burst-ty, 0px) * 0.2)
-            )
-            rotate(45deg) scale(1.1);
-    }
-    100% {
-        opacity: 0;
-        transform: translate(calc(-50% + var(--burst-tx, 0px)), calc(-50% + var(--burst-ty, 0px)))
-            rotate(45deg) scale(0.35);
-    }
-}
-@keyframes lux-chip-particle-streak {
-    0% {
-        opacity: 0;
-        transform: translate(-50%, -50%) rotate(var(--burst-rot, 0deg)) scaleY(0.4);
-    }
-    18% {
-        opacity: 0.95;
-        transform: translate(
-                calc(-50% + var(--burst-tx, 0px) * 0.2),
-                calc(-50% + var(--burst-ty, 0px) * 0.2)
-            )
-            rotate(var(--burst-rot, 0deg)) scaleY(1.15);
-    }
-    100% {
-        opacity: 0;
-        transform: translate(calc(-50% + var(--burst-tx, 0px)), calc(-50% + var(--burst-ty, 0px)))
-            rotate(var(--burst-rot, 0deg)) scaleY(0.5);
-    }
-}
-@media (prefers-reduced-motion: reduce) {
-    body.lux-route-student-service #student-service-modal-root > .lux-chip-burst-particle {
-        animation: none !important;
-    }
-}
-
 body.lux-route-student-service #student-service-modal-root .student-service-qa-detail-body {
     color: var(--lux-text);
     white-space: pre-wrap;
@@ -1657,3 +1556,103 @@ body.lux-route-student-service #student-service-modal-root .student-service-inbo
         align-items: flex-start;
     }
 }
+
+
+
+body.lux-route-staff #staff-content.staff-command-root,
+body.lux-route-students-admin #students-content.students-admin-root
+{
+    width: min(100%, 1580px);
+    margin: 0 auto;
+    padding: 0 18px 84px;
+}
+
+@media (min-width: 901px) {
+body.lux-route-staff #app-content,
+body.lux-route-students-admin #app-content
+{
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+body.lux-route-staff #staff-content .staff-hub-table-wrap,
+body.lux-route-students-admin #students-content .students-hub-table-wrap
+{
+        scroll-padding-left: 24px;
+    }
+
+body.lux-route-staff #staff-content [data-staff-action="select"],
+body.lux-route-students-admin #students-content [data-staff-action="select"]
+{
+        scroll-margin-left: 24px;
+    }}
+
+
+body.lux-route-staff .staff-shell-loading-state,
+body.lux-route-students-admin .staff-shell-loading-state
+{
+    text-align: center;
+    padding: 68px 20px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff .staff-shell-loading-icon,
+body.lux-route-students-admin .staff-shell-loading-icon
+{
+    font-size: 32px;
+    margin-bottom: 16px;
+    display: block;
+}
+
+body.lux-route-staff .staff-shell-modal,
+body.lux-route-students-admin .staff-shell-modal
+{
+    display: none;
+}
+
+body.lux-route-staff .staff-shell-modal-wide,
+body.lux-route-students-admin .staff-shell-modal-wide
+{
+    max-width: 600px;
+}
+
+
+body.lux-route-staff #staff-content .staff-hub-shell,
+body.lux-route-students-admin #students-content .students-hub-shell
+{
+    display: grid;
+    gap: 22px;
+}
+
+
+body.lux-route-staff #staff-content .staff-hub-shell :is(.home-hover-chip, .lux-soft-chrome)
+{
+    content-visibility: visible !important;
+    contain-intrinsic-size: auto !important;
+}
+
+
+body.lux-route-students-admin #students-content .students-hub-shell :is(.home-hover-chip, .lux-soft-chrome)
+{
+    content-visibility: visible !important;
+    contain-intrinsic-size: auto !important;
+}
+
+
+body.lux-route-staff #staff-content .staff-hub-hero,
+body.lux-route-students-admin #students-content .students-hub-hero
+{
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    min-height: auto;
+    padding: 22px 24px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-hero::before,
+body.lux-route-staff #staff-content .staff-hub-profile::before,
+body.lux-route-students-admin #students-content .students-hub-profile::before
+{
+    content: "";
+    position: absolute;
+    inset: auto -8% -28% auto;

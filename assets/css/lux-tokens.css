@@ -89,6 +89,129 @@
   --lux-scrollbar-thumb: rgba(var(--lux-accent-rgb), calc(0.24 + var(--lux-glass-alpha, 0.06)));
   --lux-scrollbar-thumb-hover: rgba(var(--lux-accent-rgb), calc(0.42 + var(--lux-panel-glow, 0.22) * 0.35));
 }
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--lux-scrollbar-thumb) var(--lux-scrollbar-track);
+  scrollbar-gutter: stable;
+}
+html::-webkit-scrollbar {
+  width: var(--lux-scrollbar-size);
+  height: var(--lux-scrollbar-size);
+}
+html::-webkit-scrollbar-track {
+  background: var(--lux-scrollbar-track);
+}
+html::-webkit-scrollbar-thumb {
+  background: var(--lux-scrollbar-thumb);
+  border-radius: 999px;
+}
+html::-webkit-scrollbar-thumb:hover {
+  background: var(--lux-scrollbar-thumb-hover);
+}
+/* ── Custom scrollbar: hide native, paint themed rail (Full Custom) ── */
+[data-lux-custom-scrollbar-target],
+[data-lux-custom-scrollbar-target="window"] {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+[data-lux-custom-scrollbar-target]::-webkit-scrollbar,
+html[data-lux-custom-scrollbar-target="window"]::-webkit-scrollbar,
+html[data-lux-custom-scrollbar-target="window"]::-webkit-scrollbar-track,
+html[data-lux-custom-scrollbar-target="window"]::-webkit-scrollbar-thumb {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+}
+html[data-lux-custom-scrollbar-target="window"] {
+  scrollbar-width: none !important;
+  scrollbar-color: transparent transparent !important;
+}
+[data-lux-custom-scrollbar-shell] {
+  position: relative;
+}
+.lux-custom-scrollbar {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  right: 2px;
+  width: var(--lux-scrollbar-size);
+  min-height: 32px;
+  display: block;
+  opacity: 1;
+  border: 1px solid rgba(var(--lux-accent-rgb), 0.35);
+  border-radius: 999px;
+  background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.9);
+  touch-action: none;
+  user-select: none;
+  pointer-events: auto;
+}
+.lux-custom-scrollbar[aria-disabled="true"] {
+  opacity: .35;
+  pointer-events: none;
+}
+.lux-custom-scrollbar__thumb {
+  position: absolute;
+  inset: 1px 1px auto;
+  min-height: 32px;
+  border-radius: 999px;
+  background: var(--lux-scrollbar-thumb);
+  box-shadow: 0 0 8px rgba(var(--lux-accent-rgb), 0.35);
+}
+.lux-custom-scrollbar__thumb:hover,
+.lux-custom-scrollbar:hover .lux-custom-scrollbar__thumb {
+  background: var(--lux-scrollbar-thumb-hover);
+}
+.lux-custom-scrollbar:focus-visible {
+  outline: 2px solid var(--lux-scrollbar-thumb);
+  outline-offset: 2px;
+}
+.lux-custom-scrollbar--horizontal {
+  top: auto !important;
+  bottom: 2px;
+  right: 0;
+  left: 0;
+  width: auto !important;
+  height: var(--lux-scrollbar-size) !important;
+  min-height: 0;
+  min-width: 32px;
+}
+.lux-custom-scrollbar--horizontal .lux-custom-scrollbar__thumb {
+  inset: 1px auto 1px 1px;
+  min-height: 0;
+  min-width: 32px;
+  height: auto !important;
+}
+.lux-custom-scrollbar--window {
+  position: fixed !important;
+  top: 0 !important;
+  right: 2px !important;
+  bottom: 0 !important;
+  left: auto !important;
+  width: var(--lux-scrollbar-size) !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  z-index: 999 !important;
+  pointer-events: auto;
+}
+body[data-lux-portal-modal-scroll-lock] .lux-custom-scrollbar--window:not(.lux-custom-scrollbar--page),
+body.social-neo-scroll-lock .lux-custom-scrollbar--window:not(.lux-custom-scrollbar--page) {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+#social-neo-center-region,
+.social-neo-center,
+.modal-body,
+.lux-glass-dialog-body,
+.lux-picker-panel-scrollport,
+.lux-picker-options,
+.lux-droplist-scroll {
+  scrollbar-gutter: stable;
+}
+.modal-content,
+.lux-glass-dialog-card {
+  position: relative;
+  min-height: 0;
+}
 body {
   color: var(--lux-text);
   min-height: 100vh;

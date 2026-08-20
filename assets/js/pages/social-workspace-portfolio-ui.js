@@ -99,14 +99,6 @@
                             ${PORTFOLIO_DISCOVER_ROLE_TARGETS.map(([value, label]) => `<option value="${escape(value)}" ${discoverRole === value ? 'selected' : ''}>${escape(label)}</option>`).join('')}
                         </select>
                     </div>
-                    <div class="social-portfolio-tag-row lux-soft-chrome home-hover-chip">
-                        <button class="${!discoverTag ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="portfolio-filter-tag" data-tag="">All tags</button>
-                        ${tagOptions.map((tag) => `
-                            <button class="${discoverTag === text(tag).toLowerCase() ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="portfolio-filter-tag" data-tag="${escape(text(tag).toLowerCase())}">
-                                #${escape(text(tag).replace(/^#/, ''))}
-                            </button>
-                        `).join('')}
-                    </div>
                 </div>
             ` : '';
             return `

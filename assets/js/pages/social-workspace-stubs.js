@@ -46,7 +46,7 @@ install([
         'refreshProjectTaskGraphDialog', 'selectProjectTaskGraphNode', 'addProjectTaskDependency', 'removeProjectTaskDependency', 'addProjectGraphDependency', 'patchLocalProjectTaskDepends',
         'removeProjectGraphDependency', 'renderProjectTaskGraphQuickCreatePopover', 'renderProjectTaskGraphDetailRailPlaceholder', 'renderProjectTaskGraphDetailRailContent', 'renderProjectTaskGraphGroupInspector', 'renderProjectTaskGraphInspector',
         'renderProjectTaskGraphTools', 'isProjectTaskGraphPanButton', 'openProjectTaskGraphContextMenu', 'renderTaskDependencyGraphPreview', 'renderProjectTaskGraphLegend', 'renderProjectTaskGraphStatusMini',
-        'renderProjectTaskGraphFullscreen', 'isProjectTaskGraphDialogOpen', 'renderProjectCreateInviteSection', 'renderProjectTaskCard', 'renderProjectTaskDetailModal', 'renderProjectColumnTasksModal',
+        'renderProjectTaskGraphFullscreen', 'isProjectTaskGraphDialogOpen', 'renderProjectCreateInviteSection', 'renderProjectTaskCard', 'renderProjectTaskDetailModal', 'renderProjectTaskProofModal', 'renderProjectColumnTasksModal',
         'renderProjectTaskCreateDialog', 'renderProjectHealthDialog', 'renderProjectHealthPlanCardHtml', 'renderProjectHealthPlanPickBodyHtml', 'renderProjectHealthPlanPickDialog', 'renderProjectRiskDialog',
         'renderProjectSettingsDialog', 'renderProjectCreateDialog', 'renderPortfolioCreateDialog', 'portfolioStatus', 'portfolioVisibilityMode', 'portfolioAudienceLabel',
         'portfolioMakeId', 'portfolioFieldValue', 'renderMyPortfolioPanel', 'renderPortfolioEditorDialog', 'renderPortfolioViewerDialog', 'renderPortfolioCustomBuilderOverlay', 'renderPortfolioProfileBlock'

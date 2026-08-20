@@ -97,6 +97,7 @@
         const handleGlobalKeydown = __pageEvents?.handleGlobalKeydown || (() => {});
         const handleSocialFileImageError = __pageEvents?.handleSocialFileImageError || (() => {});
         const bindPhotographyUploadPortalEvents = __pageEvents?.bindPhotographyUploadPortalEvents || (() => {});
+        const bindTaskProofUploadEvents = __pageEvents?.bindTaskProofUploadEvents || (() => {});
 
         /** Common panel tab switch: set ui key, setPanel, invalidate. Caller keeps render reason literals for source-locks. */
 
@@ -161,6 +162,7 @@
             portal.addEventListener('input', handleInput, { signal: portalSignal });
             portal.addEventListener('change', handleChange, { signal: portalSignal });
             bindPhotographyUploadPortalEvents(portal, portalSignal);
+            bindTaskProofUploadEvents(portal, portalSignal);
             portal.dataset.kiuOverlayEventsBound = '1';
         }
         function bindEvents() {
@@ -188,6 +190,7 @@
             host.addEventListener('input', handleInput, { signal });
             host.addEventListener('change', handleChange, { signal });
             host.addEventListener('error', handleSocialFileImageError, { signal, capture: true });
+            bindTaskProofUploadEvents(host, signal);
             if (!globalKeydownBound) {
                 document.addEventListener('keydown', handleGlobalKeydown);
                 globalKeydownBound = true;

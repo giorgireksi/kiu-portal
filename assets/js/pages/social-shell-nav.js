@@ -437,6 +437,25 @@
                 }
                 return { handled: true };
             }
+            if (action === 'project-task-proof-preview-close') {
+                const dialog = activeDialog();
+                const parent = state().ui?.previousDialog;
+                if (dialog?.type === 'project-task-proof-preview' && parent?.type === 'project-task-proof') {
+                    restorePreviousDialog();
+                } else if (dialog?.type === 'project-task-proof-preview'
+                    && text(dialog?.projectId)
+                    && text(dialog?.taskId)) {
+                    // Recover the gallery even when a legacy/detail thumbnail
+                    // opened the preview without stacking the gallery first.
+                    openDialog('project-task-proof', {
+                        projectId: text(dialog.projectId),
+                        taskId: text(dialog.taskId)
+                    });
+                } else {
+                    closeDialog();
+                }
+                return { handled: true };
+            }
             if (action === 'dialog-close') {
                 if (shouldRestoreStackedDialog(activeDialog()?.type || '')) {
                     restorePreviousDialog();

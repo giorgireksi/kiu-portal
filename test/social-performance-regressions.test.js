@@ -10,8 +10,8 @@ describe('social performance safeguards', () => {
     it('reuses the shared modal stylesheet instead of injecting a duplicate version', () => {
         const html = readSource('social.html');
         const page = readSource('assets/js/pages/social-page.js');
-        expect(html).toContain('data-kiu-social-dialog-styles="assets/css/lux-modals.css?v=20260816-socialmodals1"');
-        expect(page).toContain("const SOCIAL_DIALOG_STYLES_URL = 'assets/css/lux-modals.css?v=20260816-socialmodals1';");
+        expect(html).toContain('data-kiu-social-dialog-styles="assets/css/lux-modals.css?v=20260821-toolbarfooter2"');
+        expect(page).toContain("const SOCIAL_DIALOG_STYLES_URL = 'assets/css/lux-modals.css?v=20260821-toolbarfooter2';");
         expect(page).toContain("link.getAttribute('href') === SOCIAL_DIALOG_STYLES_URL");
         expect(page).not.toContain('lux-modals.css?v=20260808-loadperf1');
     });
@@ -19,9 +19,9 @@ describe('social performance safeguards', () => {
     it('cache-busts the optimized route runtimes', () => {
         const html = readSource('social.html');
         const page = readSource('assets/js/pages/social-page.js');
-        expect(html).toContain('social-page.js?v=20260820-socialmodels4');
+        expect(html).toMatch(/social-page\.js\?v=20260822-/);
         expect(html).toContain('route-boot-skeleton--social');
-        expect(html).toContain('social-page-interactions-runtime.js?v=20260820-switchnoflicker2');
+        expect(html).toMatch(/social-page-interactions-runtime\.js\?v=20260822-/);
         expect(html).not.toContain('lux-fouc-ht.css?v=20260818-showhidefix1');
         expect(html).toContain('luxury-shell-motion-runtime.js?v=20260820-shellinput1');
         expect(page).toContain('social-community.js?v=20260816-socialperf1');
@@ -36,9 +36,12 @@ describe('social performance safeguards', () => {
     it('coalesces duplicate deferred module remounts before rendering', () => {
         const html = readSource('social.html');
         const shell = readSource('assets/js/pages/social-page-shell-runtime.js');
-        expect(html).toContain('social-page-shell-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-dedupe5');
+        expect(html).toMatch(/social-page-shell-runtime\.js\?v=20260822-/);
         expect(shell).toContain('const deferredModuleRenderQueue = new Set();');
+        expect(shell).toContain('const deferredModuleRenderAttempts = new Map();');
+        expect(shell).toContain('MAX_DEFERRED_MODULE_RENDER_ATTEMPTS = 2');
         expect(shell).toContain('if (deferredModuleRenderQueue.has(renderReason)) return;');
+        expect(shell).toContain('deferredModuleRenderAttempts.get(renderReason)');
         expect(shell).toContain('queueMicrotask(flush)');
         expect(shell).toContain('__kiuDeferredModuleRenderKey');
         expect(shell).toContain('delete liveHost.__kiuDeferredModuleRenderKey');
@@ -113,7 +116,7 @@ describe('social performance safeguards', () => {
         expect(page).toContain('__kiuRetrySocialModule');
         expect(page).toContain("return ['workspace', 'projects'];");
         expect(readSource('assets/js/pages/social-fingerprint-model.js')).toContain('module-failure');
-        expect(worker).toContain("CACHE_NAME = 'kiu-portal-shell-v20260820-globalpaint1'");
+        expect(worker).toMatch(/CACHE_NAME = 'kiu-portal-shell-v20260822-/);
         expect(worker).toContain('await isUsableStaticAssetResponse(networkResponse, request)');
     });
 

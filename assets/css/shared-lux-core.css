@@ -1,4 +1,4 @@
-/* shared-lux-core — generated from 8 sources — hash fb1f0885 — edit SOURCES, run tools/build-shared-lux-core.mjs */
+/* shared-lux-core — generated from 8 sources — hash 16c18c02 — edit SOURCES, run tools/build-shared-lux-core.mjs */
 /* source: assets/css/lux-tokens.css */
 
 
@@ -90,6 +90,129 @@
   --lux-scrollbar-track: transparent;
   --lux-scrollbar-thumb: rgba(var(--lux-accent-rgb), calc(0.24 + var(--lux-glass-alpha, 0.06)));
   --lux-scrollbar-thumb-hover: rgba(var(--lux-accent-rgb), calc(0.42 + var(--lux-panel-glow, 0.22) * 0.35));
+}
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--lux-scrollbar-thumb) var(--lux-scrollbar-track);
+  scrollbar-gutter: stable;
+}
+html::-webkit-scrollbar {
+  width: var(--lux-scrollbar-size);
+  height: var(--lux-scrollbar-size);
+}
+html::-webkit-scrollbar-track {
+  background: var(--lux-scrollbar-track);
+}
+html::-webkit-scrollbar-thumb {
+  background: var(--lux-scrollbar-thumb);
+  border-radius: 999px;
+}
+html::-webkit-scrollbar-thumb:hover {
+  background: var(--lux-scrollbar-thumb-hover);
+}
+
+[data-lux-custom-scrollbar-target],
+[data-lux-custom-scrollbar-target="window"] {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+[data-lux-custom-scrollbar-target]::-webkit-scrollbar,
+html[data-lux-custom-scrollbar-target="window"]::-webkit-scrollbar,
+html[data-lux-custom-scrollbar-target="window"]::-webkit-scrollbar-track,
+html[data-lux-custom-scrollbar-target="window"]::-webkit-scrollbar-thumb {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+}
+html[data-lux-custom-scrollbar-target="window"] {
+  scrollbar-width: none !important;
+  scrollbar-color: transparent transparent !important;
+}
+[data-lux-custom-scrollbar-shell] {
+  position: relative;
+}
+.lux-custom-scrollbar {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  right: 2px;
+  width: var(--lux-scrollbar-size);
+  min-height: 32px;
+  display: block;
+  opacity: 1;
+  border: 1px solid rgba(var(--lux-accent-rgb), 0.35);
+  border-radius: 999px;
+  background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.9);
+  touch-action: none;
+  user-select: none;
+  pointer-events: auto;
+}
+.lux-custom-scrollbar[aria-disabled="true"] {
+  opacity: .35;
+  pointer-events: none;
+}
+.lux-custom-scrollbar__thumb {
+  position: absolute;
+  inset: 1px 1px auto;
+  min-height: 32px;
+  border-radius: 999px;
+  background: var(--lux-scrollbar-thumb);
+  box-shadow: 0 0 8px rgba(var(--lux-accent-rgb), 0.35);
+}
+.lux-custom-scrollbar__thumb:hover,
+.lux-custom-scrollbar:hover .lux-custom-scrollbar__thumb {
+  background: var(--lux-scrollbar-thumb-hover);
+}
+.lux-custom-scrollbar:focus-visible {
+  outline: 2px solid var(--lux-scrollbar-thumb);
+  outline-offset: 2px;
+}
+.lux-custom-scrollbar--horizontal {
+  top: auto !important;
+  bottom: 2px;
+  right: 0;
+  left: 0;
+  width: auto !important;
+  height: var(--lux-scrollbar-size) !important;
+  min-height: 0;
+  min-width: 32px;
+}
+.lux-custom-scrollbar--horizontal .lux-custom-scrollbar__thumb {
+  inset: 1px auto 1px 1px;
+  min-height: 0;
+  min-width: 32px;
+  height: auto !important;
+}
+.lux-custom-scrollbar--window {
+  position: fixed !important;
+  top: 0 !important;
+  right: 2px !important;
+  bottom: 0 !important;
+  left: auto !important;
+  width: var(--lux-scrollbar-size) !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  z-index: 999 !important;
+  pointer-events: auto;
+}
+body[data-lux-portal-modal-scroll-lock] .lux-custom-scrollbar--window:not(.lux-custom-scrollbar--page),
+body.social-neo-scroll-lock .lux-custom-scrollbar--window:not(.lux-custom-scrollbar--page) {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+#social-neo-center-region,
+.social-neo-center,
+.modal-body,
+.lux-glass-dialog-body,
+.lux-picker-panel-scrollport,
+.lux-picker-options,
+.lux-droplist-scroll {
+  scrollbar-gutter: stable;
+}
+.modal-content,
+.lux-glass-dialog-card {
+  position: relative;
+  min-height: 0;
 }
 body {
   color: var(--lux-text);
@@ -6789,6 +6912,144 @@ label.lux-select-card.lux-secondary-btn {
   justify-content: flex-start;
   text-align: left;
   gap: 10px;
+}
+
+
+.lux-toolbar-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--lux-primary-btn-min-height, 46px);
+  padding: 0 18px;
+  border-radius: var(--lux-btn-pill-radius, 0 22px 0 22px);
+  border-width: var(--lux-btn-frame-width, 3.5px);
+  border-style: solid;
+  border-color: var(--lux-btn-border-solid, var(--lux-accent));
+  background: var(--lux-btn-well);
+  background-origin: padding-box;
+  background-clip: padding-box;
+  color: var(--lux-btn-label, #f7fbff);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+  transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
+  isolation: isolate;
+  contain: paint;
+  box-shadow: var(--lux-btn-frame-shadow);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.lux-toolbar-btn::before,
+.lux-toolbar-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.lux-toolbar-btn::before {
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 28%, transparent 48%);
+}
+.lux-toolbar-btn::after {
+  z-index: 2;
+  background: var(--lux-btn-sheen);
+  transform: translateX(-130%) skewX(-14deg);
+  opacity: 0;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
+}
+.lux-toolbar-btn:is(:hover, :focus-visible) {
+  transform: translateY(-2px);
+  border-color: var(--lux-btn-border-solid, var(--lux-accent));
+  background: var(--lux-btn-well-hover, var(--lux-btn-well));
+  box-shadow: var(--lux-btn-frame-shadow-hover);
+  outline: none;
+}
+.lux-toolbar-btn:is(:hover, :focus-visible)::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 28%, transparent 48%);
+}
+.lux-toolbar-btn:is(:hover, :focus-visible)::after,
+.lux-toolbar-btn:is(.is-active, [aria-pressed="true"], [aria-selected="true"])::after {
+  will-change: transform;
+  transform: translateX(130%) skewX(-14deg);
+  opacity: 1;
+}
+.lux-toolbar-btn:is(.is-active, [aria-pressed="true"], [aria-selected="true"]) {
+  background: var(--lux-btn-well-hover, var(--lux-btn-well));
+  box-shadow: var(--lux-btn-frame-shadow-hover);
+}
+.lux-toolbar-btn:active {
+  transform: translateY(0) scale(0.985);
+}
+.lux-toolbar-btn:active::after {
+  opacity: 0;
+  transition: none;
+  will-change: auto;
+}
+.lux-toolbar-btn:disabled,
+.lux-toolbar-btn[aria-disabled="true"] {
+  opacity: 0.72;
+  cursor: not-allowed;
+  transform: none;
+}
+:is(html.lux-light-mode, body.lux-light-mode) .lux-toolbar-btn {
+  text-shadow: none;
+}
+:is(html.lux-light-mode, body.lux-light-mode) .lux-toolbar-btn::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.18) 30%, transparent 52%);
+}
+:is(html.lux-light-mode, body.lux-light-mode) .lux-toolbar-btn:is(:hover, :focus-visible, .is-active, [aria-pressed="true"], [aria-selected="true"])::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.28) 30%, transparent 52%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lux-toolbar-btn,
+  .lux-toolbar-btn::after {
+    transition: none;
+  }
+  .lux-toolbar-btn::after {
+    display: none;
+  }
+  .lux-toolbar-btn:is(:hover, :focus-visible, :active) {
+    transform: none;
+  }
+}
+
+
+body.lux-full-paint.lux-unified-shell .lux-toolbar-btn {
+  border-radius: var(--lux-btn-pill-radius, 0 22px 0 22px);
+  border-width: var(--lux-btn-frame-width, 3.5px);
+  border-style: solid;
+  border-color: var(--lux-btn-border-solid, var(--lux-accent));
+  background: var(--lux-btn-well);
+  background-origin: padding-box;
+  background-clip: padding-box;
+  color: var(--lux-btn-label, #f7fbff);
+  box-shadow: var(--lux-btn-frame-shadow);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+}
+body.lux-full-paint.lux-unified-shell .lux-toolbar-btn::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 28%, transparent 48%);
+}
+body.lux-full-paint.lux-unified-shell .lux-toolbar-btn::after {
+  background: var(--lux-btn-sheen);
+}
+body.lux-full-paint.lux-unified-shell .lux-toolbar-btn:is(:hover, :focus-visible)::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 28%, transparent 48%);
+}
+html.lux-light-mode body.lux-full-paint.lux-unified-shell .lux-toolbar-btn::before,
+body.lux-light-mode.lux-full-paint.lux-unified-shell .lux-toolbar-btn::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.18) 30%, transparent 52%);
+}
+html.lux-light-mode body.lux-full-paint.lux-unified-shell .lux-toolbar-btn:is(:hover, :focus-visible, .is-active, [aria-pressed="true"], [aria-selected="true"])::before,
+body.lux-light-mode.lux-full-paint.lux-unified-shell .lux-toolbar-btn:is(:hover, :focus-visible, .is-active, [aria-pressed="true"], [aria-selected="true"])::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.28) 30%, transparent 52%);
 }
 
 /* source: assets/css/lux-focus-panel.css */

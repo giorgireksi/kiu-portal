@@ -39,6 +39,7 @@
             displayName,
             ensureProjectTaskGraphPositionsLoaded,
             escape,
+            fileUrl,
             filterProjectTaskGraphVisibleTasks,
             formatProjectScheduleDate,
             formatProjectScheduleFloat,
@@ -205,10 +206,10 @@
                     ? '<div class="social-project-task-graph-group-empty">Linked by order only — drag tasks in to add members</div>'
                     : '');
             const linkHandles = showPorts ? `
-                                <button type="button" class="social-project-task-graph-link-handle is-group-port is-side-w is-in" data-action="noop" data-graph-link-port="w" title="Wire port (west · in)" aria-label="West in port"></button>
-                                <button type="button" class="social-project-task-graph-link-handle is-group-port is-side-e is-out" data-action="noop" data-graph-link-port="e" title="Wire port (east · out)" aria-label="East out port"></button>
-                                <button type="button" class="social-project-task-graph-link-handle is-group-port is-side-n is-in" data-action="noop" data-graph-link-port="n" title="Wire port (north · in)" aria-label="North in port"></button>
-                                <button type="button" class="social-project-task-graph-link-handle is-group-port is-side-s is-out" data-action="noop" data-graph-link-port="s" title="Wire port (south · out)" aria-label="South out port"></button>
+                        <circle class="social-project-task-graph-svg-port is-group-port is-side-w is-in" cx="0" cy="${h / 2}" r="9" data-action="noop" data-graph-link-port="w" role="button" tabindex="0" focusable="true" aria-label="West in port"><title>Wire port (west · in)</title></circle>
+                        <circle class="social-project-task-graph-svg-port is-group-port is-side-e is-out" cx="${w}" cy="${h / 2}" r="9" data-action="noop" data-graph-link-port="e" role="button" tabindex="0" focusable="true" aria-label="East out port"><title>Wire port (east · out)</title></circle>
+                        <circle class="social-project-task-graph-svg-port is-group-port is-side-n is-in" cx="${w / 2}" cy="0" r="9" data-action="noop" data-graph-link-port="n" role="button" tabindex="0" focusable="true" aria-label="North in port"><title>Wire port (north · in)</title></circle>
+                        <circle class="social-project-task-graph-svg-port is-group-port is-side-s is-out" cx="${w / 2}" cy="${h}" r="9" data-action="noop" data-graph-link-port="s" role="button" tabindex="0" focusable="true" aria-label="South out port"><title>Wire port (south · out)</title></circle>
             ` : '';
             const attentionAttrs = [
                 roll.blocked > 0 ? 'data-has-blocked="1"' : '',
@@ -246,7 +247,6 @@
                     <foreignObject class="social-project-task-graph-card-fo" x="${-foPad}" y="${-foPad}" width="${w + foPad * 2}" height="${h + foPad * 2}">
                         <div xmlns="http://www.w3.org/1999/xhtml" class="social-project-task-graph-card-fo-inner" style="width:${w + foPad * 2}px;height:${h + foPad * 2}px;padding:${foPad}px;box-sizing:border-box;">
                             <div class="social-project-task-graph-group lux-soft-chrome home-hover-chip" data-graph-card-inner="1" style="width:${w}px;height:${h}px;" data-lux-transparency-exempt="1" data-pct="${pct}" ${attentionAttrs}>
-                                ${linkHandles}
                                 <div class="social-project-task-graph-group-head">
                                     <i class="fas fa-layer-group" aria-hidden="true"></i>
                                     <span class="social-project-task-graph-group-name" title="${escape(text(group?.name || 'Group'))}">${escape(text(group?.name || 'Group'))}</span>
@@ -269,6 +269,7 @@
                             </div>
                         </div>
                     </foreignObject>
+                    ${linkHandles}
                 </g>`;
         }
 
@@ -399,10 +400,10 @@
                 ? `<span class="social-neo-pill home-hover-chip social-project-task-graph-card-due${isOverdue ? ' is-overdue' : ''}${!dueAt && derivedFinishLabel ? ' is-derived' : ''}" title="${dueAt ? (isOverdue ? 'Overdue' : 'Due date') : 'Derived from project start + schedule'}"><i class="fas fa-flag-checkered" aria-hidden="true"></i>${escape(dueLabel)}</span>`
                 : `<span class="social-neo-pill home-hover-chip social-project-task-graph-card-due is-empty" title="No due date"><i class="fas fa-flag-checkered" aria-hidden="true"></i>—</span>`;
             const linkHandles = showPorts ? `
-                            <button type="button" class="social-project-task-graph-link-handle is-side-w is-in" data-action="noop" data-graph-link-port="w" title="Wire port (west · in)" aria-label="West in port"></button>
-                            <button type="button" class="social-project-task-graph-link-handle is-side-e is-out" data-action="noop" data-graph-link-port="e" title="Wire port (east · out)" aria-label="East out port"></button>
-                            <button type="button" class="social-project-task-graph-link-handle is-side-n is-in" data-action="noop" data-graph-link-port="n" title="Wire port (north · in)" aria-label="North in port"></button>
-                            <button type="button" class="social-project-task-graph-link-handle is-side-s is-out" data-action="noop" data-graph-link-port="s" title="Wire port (south · out)" aria-label="South out port"></button>
+                    <circle class="social-project-task-graph-svg-port is-side-w is-in" cx="0" cy="${h / 2}" r="9" data-action="noop" data-graph-link-port="w" role="button" tabindex="0" focusable="true" aria-label="West in port"><title>Wire port (west · in)</title></circle>
+                    <circle class="social-project-task-graph-svg-port is-side-e is-out" cx="${w}" cy="${h / 2}" r="9" data-action="noop" data-graph-link-port="e" role="button" tabindex="0" focusable="true" aria-label="East out port"><title>Wire port (east · out)</title></circle>
+                    <circle class="social-project-task-graph-svg-port is-side-n is-in" cx="${w / 2}" cy="0" r="9" data-action="noop" data-graph-link-port="n" role="button" tabindex="0" focusable="true" aria-label="North in port"><title>Wire port (north · in)</title></circle>
+                    <circle class="social-project-task-graph-svg-port is-side-s is-out" cx="${w / 2}" cy="${h}" r="9" data-action="noop" data-graph-link-port="s" role="button" tabindex="0" focusable="true" aria-label="South out port"><title>Wire port (south · out)</title></circle>
             ` : '';
             return `
                 <g class="social-project-task-graph-node-g${isInProgress ? ' is-active' : ''}${isDone ? ' is-done' : ''}${isBlocked ? ' is-blocked' : ''}${isOverdue ? ' is-overdue' : ''}${selectedId === taskId ? ' is-selected' : ''}${linkFromId === taskId ? ' is-link-source' : ''}${highlightOverdue && isOverdue ? ' is-highlight-overdue' : ''}${highlightBlocked && isBlocked ? ' is-highlight-blocked' : ''}${options.schedule?.isCritical && showCriticalPaint && !isDone ? ' is-critical' : ''}${isMilestone ? ' is-milestone' : ''}"
@@ -419,7 +420,6 @@
                     <foreignObject class="social-project-task-graph-card-fo" x="${-foPad}" y="${-foPad}" width="${w + foPad * 2}" height="${h + foPad * 2}">
                         <div xmlns="http://www.w3.org/1999/xhtml" class="social-project-task-graph-card-fo-inner" style="width:${w + foPad * 2}px;height:${h + foPad * 2}px;padding:${foPad}px;box-sizing:border-box;">
                             <div class="social-project-task-graph-card lux-soft-chrome home-hover-chip${isOverdue ? ' is-overdue' : ''}${isInProgress ? ' is-active' : ''}${compact ? ' is-compact' : ''}${isMilestone ? ' is-milestone' : ''} graph-card-headline" data-graph-card-inner="1" style="width:${w}px;min-height:${h}px;height:${h}px;box-sizing:border-box;" data-status="${escape(statusId)}" data-lux-transparency-exempt="1" title="${escape(text(task?.title || 'Task'))}"${cardActionAttrs}>
-                                ${linkHandles}
                                 <div class="social-project-task-graph-card-stripe${isMilestone ? ' is-milestone' : ''}" data-status="${escape(statusId)}"></div>
                                 <div class="social-project-task-graph-card-body">
                                     <div class="social-project-task-graph-card-headline social-project-task-graph-card-title-row">
@@ -447,6 +447,7 @@
                             </div>
                         </div>
                     </foreignObject>
+                    ${linkHandles}
                 </g>
             `;
         }
@@ -788,7 +789,7 @@
                     <g class="social-project-task-graph-nodes">${groupNodes}${graphNodes}</g>
             `;
             return `
-                <svg class="social-project-task-graph-svg${compact ? ' is-compact' : ''}${options.preview ? ' is-preview' : ''}${text(layout?.layoutKind || '') === 'status' || options.statusLayout ? ' is-status-layout' : ''}" viewBox="${escape(viewBox)}" width="${escape(String(svgWidth))}" height="${escape(String(svgHeight))}" preserveAspectRatio="${escape(preserveAspectRatio)}" data-project-task-graph-svg="1" data-layout-kind="${escape(text(layout?.layoutKind || (options.statusLayout ? 'status' : 'force')))}" overflow="${overflowAttr}">
+                <svg class="social-project-task-graph-svg${compact ? ' is-compact' : ''}${options.preview ? ' is-preview' : ''}${text(layout?.layoutKind || '') === 'status' || options.statusLayout ? ' is-status-layout' : ''}" viewBox="${escape(viewBox)}" width="${escape(String(svgWidth))}" height="${escape(String(svgHeight))}" preserveAspectRatio="${escape(preserveAspectRatio)}" data-project-task-graph-svg="1" data-graph-render-version="20260821-graphports1" data-layout-kind="${escape(text(layout?.layoutKind || (options.statusLayout ? 'status' : 'force')))}" overflow="${overflowAttr}">
                     <defs>
                         ${statusMarkers}
                         <marker id="socialProjectTaskGraphArrow-flow${markerSuffix}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
@@ -1217,12 +1218,12 @@
             `;
             const actions = canContribute ? `
                     <div class="social-project-task-graph-inspector-actions">
-                        <button class="lux-secondary-btn social-project-task-graph-inspector-delete" type="button" data-action="project-task-graph-group-delete" data-project-id="${escape(projectId)}" data-group-id="${escape(groupId)}" title="Delete package" aria-label="Delete package"><i class="fas fa-trash"></i></button>
-                        <button class="lux-primary-btn" type="button" data-action="project-task-graph-group-save" data-project-id="${escape(projectId)}" data-group-id="${escape(groupId)}"><i class="fas fa-check"></i> Save</button>
+                        <button class="lux-secondary-btn lux-toolbar-btn social-project-task-graph-inspector-delete" type="button" data-action="project-task-graph-group-delete" data-project-id="${escape(projectId)}" data-group-id="${escape(groupId)}" title="Delete package" aria-label="Delete package"><i class="fas fa-trash"></i></button>
+                        <button class="lux-primary-btn lux-toolbar-btn" type="button" data-action="project-task-graph-group-save" data-project-id="${escape(projectId)}" data-group-id="${escape(groupId)}"><i class="fas fa-check"></i> Save</button>
                     </div>
             ` : `
                     <div class="social-project-task-graph-inspector-actions">
-                        <button class="lux-secondary-btn" type="button" data-action="project-task-graph-clear-selection">Close</button>
+                        <button class="lux-secondary-btn lux-toolbar-btn" type="button" data-action="project-task-graph-clear-selection">Close</button>
                     </div>
             `;
             return `
@@ -1234,7 +1235,7 @@
                                 <span title="${escape(text(group?.name || 'Package'))}">${escape(text(group?.name || 'Package'))}</span>
                             </strong>
                         </div>
-                        <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="project-task-graph-clear-selection" title="Close" aria-label="Close inspector"><i class="fas fa-times"></i></button>
+                        <button class="lux-ghost-btn lux-toolbar-btn lux-glass-dialog-close-btn" type="button" data-action="project-task-graph-clear-selection" title="Close" aria-label="Close inspector"><i class="fas fa-times"></i></button>
                     </div>
                     <div class="social-project-task-graph-inspector-scroll">
                         ${renderProjectTaskGraphRailOverview(project, runtime, Array.isArray(project?.tasks) ? project.tasks : [])}
@@ -1269,6 +1270,43 @@
             `;
         }
 
+        function renderProjectTaskGraphProofSection(project, task, canEdit) {
+            const projectId = text(project?.id || '');
+            const taskId = text(task?.id || '');
+            const items = Array.isArray(task?.proofItems) ? task.proofItems.filter((item) => item && typeof item === 'object') : [];
+            const fileSource = (item) => {
+                try {
+                    return typeof fileUrl === 'function' ? text(fileUrl(item) || '') : '';
+                } catch (error) {
+                    return '';
+                }
+            };
+            const stripHtml = items.length
+                ? `<div class="spt-proof-strip" data-action="project-task-proof-open" data-project-id="${escape(projectId)}" data-task-id="${escape(taskId)}" role="button" tabindex="0" title="Click to view all proof in popup gallery">
+                    ${items.slice(0, 4).map((item) => {
+                        const src = fileSource(item);
+                        return `<div class="spt-proof-strip-thumb">${src ? `<img src="${escape(src)}" alt="${escape(item.name || 'Proof')}" loading="lazy">` : '<i class="fas fa-image" aria-hidden="true"></i>'}</div>`;
+                    }).join('')}
+                    ${items.length > 4 ? `<div class="spt-proof-strip-more">+${items.length - 4}</div>` : ''}
+                </div>`
+                : '';
+
+            return `<section class="spt-detail-section lux-studio-section spt-proof-inspector-widget" aria-label="Proof and evidence">
+                <div class="spt-proof-inspector-head">
+                    <div>
+                        <h3 class="spt-detail-section-title">Proof &amp; evidence</h3>
+                        <p class="spt-detail-section-hint">${items.length ? `${items.length} attached image${items.length === 1 ? '' : 's'}` : 'No proof images attached yet.'}</p>
+                    </div>
+                    ${items.length ? `<span class="spt-proof-inspector-badge">${items.length}/12</span>` : ''}
+                </div>
+                ${stripHtml}
+                <button class="lux-secondary-btn spt-proof-inspector-open-btn" type="button" data-action="project-task-proof-open" data-project-id="${escape(projectId)}" data-task-id="${escape(taskId)}">
+                    <i class="fas ${items.length ? 'fa-expand' : 'fa-cloud-arrow-up'}" aria-hidden="true"></i>
+                    <span>${items.length ? 'Open Proof Gallery & Manage' : 'Add Proof & Images'}</span>
+                </button>
+            </section>`;
+        }
+
         function renderProjectTaskGraphInspector(project, runtime, tasks = []) {
             const selectedId = text(runtime.ui?.projectTaskGraphSelectedId || '');
             if (!selectedId) return '';
@@ -1301,7 +1339,7 @@
                         <div class="social-project-task-graph-inspector-schedule-block lux-card lux-soft-chrome">
                             <div class="social-project-task-graph-inspector-schedule-head lux-card-head">
                                 <strong class="lux-card-title">Schedule</strong>
-                                <button type="button" class="lux-secondary-btn social-project-task-graph-schedule-help-btn" data-action="project-task-graph-schedule-help" data-project-id="${escape(text(project.id))}" title="What do these schedule terms mean?" aria-label="Schedule terms help">
+                                <button type="button" class="lux-secondary-btn lux-toolbar-btn social-project-task-graph-schedule-help-btn" data-action="project-task-graph-schedule-help" data-project-id="${escape(text(project.id))}" title="What do these schedule terms mean?" aria-label="Schedule terms help">
                                     <i class="fas fa-circle-question" aria-hidden="true"></i>
                                 </button>
                             </div>
@@ -1349,7 +1387,7 @@
                                 <span title="${escape(text(task?.title || 'Task'))}">${escape(text(task?.title || 'Task'))}</span>
                             </strong>
                         </div>
-                        <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="project-task-graph-clear-selection" title="Close" aria-label="Close inspector"><i class="fas fa-times"></i></button>
+                        <button class="lux-ghost-btn lux-toolbar-btn lux-glass-dialog-close-btn" type="button" data-action="project-task-graph-clear-selection" title="Close" aria-label="Close inspector"><i class="fas fa-times"></i></button>
                     </div>
                     <div class="social-project-task-graph-inspector-scroll">
                         ${renderProjectTaskGraphRailOverview(project, runtime, tasks)}
@@ -1373,18 +1411,19 @@
                         <div class="social-project-task-graph-inspector-body lux-card lux-soft-chrome">
                             <span class="social-project-task-graph-inspector-label">Description</span>
                             <p class="social-project-task-graph-inspector-description${description ? '' : ' is-empty'}">${description ? escape(description) : 'No description yet.'}</p>
-                            <button class="social-project-task-graph-inspector-text-link" type="button" data-action="project-task-detail-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}">View full details <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+                            <button class="lux-toolbar-btn social-project-task-graph-inspector-text-link" type="button" data-action="project-task-detail-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}">View full details <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
                         </div>
+                        ${renderProjectTaskGraphProofSection(project, task, Boolean(project.viewerCanContribute))}
                     </div>
                     ${project.viewerCanContribute ? `
                     <div class="social-project-task-graph-inspector-actions">
-                        <button class="lux-secondary-btn" type="button" data-action="project-task-graph-link-from-selected" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}"><i class="fas fa-link"></i> Link</button>
-                        <button class="lux-secondary-btn social-project-task-graph-inspector-delete" type="button" data-action="project-task-delete-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}" title="Delete task" aria-label="Delete task"><i class="fas fa-trash"></i></button>
-                        <button class="lux-primary-btn" type="button" data-action="project-task-edit-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}"><i class="fas fa-pen"></i> Edit task</button>
+                        <button class="lux-secondary-btn lux-toolbar-btn" type="button" data-action="project-task-graph-link-from-selected" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}"><i class="fas fa-link"></i> Link</button>
+                        <button class="lux-secondary-btn lux-toolbar-btn social-project-task-graph-inspector-delete" type="button" data-action="project-task-delete-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}" title="Delete task" aria-label="Delete task"><i class="fas fa-trash"></i></button>
+                        <button class="lux-primary-btn lux-toolbar-btn" type="button" data-action="project-task-edit-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}"><i class="fas fa-pen"></i> Edit task</button>
                     </div>
                     ` : `
                     <div class="social-project-task-graph-inspector-actions">
-                        <button class="lux-primary-btn" type="button" data-action="project-task-detail-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}"><i class="fas fa-list-check"></i> View details</button>
+                        <button class="lux-primary-btn lux-toolbar-btn" type="button" data-action="project-task-detail-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}"><i class="fas fa-list-check"></i> View details</button>
                     </div>
                     `}
                 </div>
@@ -1559,7 +1598,7 @@
             const detailRailMarkup = `<aside class="lux-card social-project-task-graph-detail-rail lux-soft-chrome${railContent.empty ? ' is-empty' : ''}" data-lux-transparency-exempt="1"><div class="social-project-task-graph-rail-sheet-handle" aria-hidden="true"></div>${railContent.markup}</aside>`;
             const modeToolbar = canContribute && linkFromId ? `
                 <div class="social-page-toolbar-group social-project-task-graph-mode-toolbar social-project-task-graph-more-item" role="group" aria-label="Link actions">
-                    <button class="lux-secondary-btn" type="button" data-action="project-task-graph-link-cancel"><i class="fas fa-times"></i> Cancel</button>
+                    <button class="lux-secondary-btn lux-toolbar-btn" type="button" data-action="project-task-graph-link-cancel"><i class="fas fa-times"></i> Cancel</button>
                 </div>
             ` : '';
             const focusGroupId = text(runtime.ui?.projectTaskGraphFocusGroupId || '');
@@ -1588,15 +1627,15 @@
             const showCritical = projectTaskGraphShowCritical(runtime);
             const checkpointBtns = canContribute ? `
                                     <div class="social-page-toolbar-group social-project-task-graph-checkpoint-controls social-project-task-graph-more-item">
-                                        <button class="lux-primary-btn social-project-task-graph-save-btn" type="button" data-action="project-task-graph-save" data-project-id="${escape(text(project.id))}" title="${escape(saveTitle)}"><i class="fas fa-floppy-disk" aria-hidden="true"></i> Save</button>
-                                        <button class="lux-secondary-btn social-project-task-graph-history-btn" type="button" data-action="project-task-graph-history-open" data-project-id="${escape(text(project.id))}" title="${escape(historyTitle)}"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> History${graphCheckpoints.length ? ` <span class="lux-status-pill">${escape(String(graphCheckpoints.length))}</span>` : ''}</button>
+                                        <button class="lux-primary-btn lux-toolbar-btn social-project-task-graph-save-btn" type="button" data-action="project-task-graph-save" data-project-id="${escape(text(project.id))}" title="${escape(saveTitle)}"><i class="fas fa-floppy-disk" aria-hidden="true"></i> Save</button>
+                                        <button class="lux-secondary-btn lux-toolbar-btn social-project-task-graph-history-btn" type="button" data-action="project-task-graph-history-open" data-project-id="${escape(text(project.id))}" title="${escape(historyTitle)}"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> History${graphCheckpoints.length ? ` <span class="lux-status-pill">${escape(String(graphCheckpoints.length))}</span>` : ''}</button>
                                     </div>
             ` : '';
             const criticalToggleBtn = `
-                                    <button class="lux-secondary-btn social-project-task-graph-critical-toggle social-project-task-graph-more-item${showCritical ? ' is-active' : ''}" type="button" data-action="project-task-graph-toggle-critical" title="${showCritical ? 'Hide critical path emphasis on the map' : 'Highlight critical path on the map'}" aria-pressed="${showCritical ? 'true' : 'false'}"><i class="fas fa-route" aria-hidden="true"></i> Critical path</button>
+                                    <button type="button" class="lux-secondary-btn lux-toolbar-btn social-project-task-graph-critical-toggle social-project-task-graph-more-item${showCritical ? ' is-active' : ''}" data-action="project-task-graph-toggle-critical" title="${showCritical ? 'Hide critical path emphasis on the map' : 'Highlight critical path on the map'}" aria-pressed="${showCritical ? 'true' : 'false'}"><i class="fas fa-route" aria-hidden="true"></i> Critical path</button>
             `;
             const onlyMineToolbarBtn = `
-                                    <button type="button" class="social-project-task-graph-my-switch${mineOnly ? ' is-active' : ''}" data-action="project-task-graph-toggle-my" role="switch" aria-checked="${mineOnly ? 'true' : 'false'}" title="Show only tasks assigned to you (same as Desk Mine)">
+                                    <button type="button" class="lux-secondary-btn lux-toolbar-btn social-project-task-graph-my-switch${mineOnly ? ' is-active' : ''}" data-action="project-task-graph-toggle-my" role="switch" aria-checked="${mineOnly ? 'true' : 'false'}" title="Show only tasks assigned to you (same as Desk Mine)">
                                         <span>Only mine</span>
                                         <span class="social-project-task-graph-my-switch-track" aria-hidden="true"></span>
                                     </button>
@@ -1604,18 +1643,18 @@
             return `
                 <main class="social-page-surface social-project-task-graph-page" data-social-page-surface="project-task-graph" data-lux-transparency-exempt="1" data-action="noop" aria-label="Task map">
                         <div class="social-project-task-graph-immersive${railOpen ? ' is-rail-open' : ''}">
-                            <header class="social-page-surface-head social-project-task-graph-page-head lux-soft-chrome home-hover-chip">
+                            <header class="social-page-surface-head social-project-task-graph-page-head lux-soft-chrome">
                                 <div class="social-page-surface-actions social-project-task-graph-immersive-actions social-project-task-graph-page-actions">
                                     <div class="social-page-toolbar-group social-project-task-graph-essential-controls">
-                                        <button class="lux-ghost-btn social-project-task-graph-back-btn" type="button" data-action="dialog-close" aria-label="Back to workspace"><i class="fas fa-arrow-left"></i> <span class="social-project-task-graph-btn-label">Back to workspace</span></button>
+                                        <button class="lux-ghost-btn lux-toolbar-btn social-project-task-graph-back-btn" type="button" data-action="dialog-close" aria-label="Back to workspace"><i class="fas fa-arrow-left"></i> <span class="social-project-task-graph-btn-label">Back to workspace</span></button>
                                         <div class="social-page-toolbar-group social-project-task-graph-zoom-controls">
-                                            <button class="lux-secondary-btn social-project-task-graph-zoom-btn" type="button" data-action="project-task-graph-zoom-out" title="Zoom out" aria-label="Zoom out"><i class="fas fa-minus"></i></button>
+                                            <button class="lux-secondary-btn lux-toolbar-btn social-project-task-graph-zoom-btn" type="button" data-action="project-task-graph-zoom-out" title="Zoom out" aria-label="Zoom out"><i class="fas fa-minus"></i></button>
                                             <span class="social-page-toolbar-zoom-label social-project-task-graph-zoom-label">${escape(String(Math.round(zoom * 100)))}%</span>
-                                            <button class="lux-secondary-btn social-project-task-graph-zoom-btn" type="button" data-action="project-task-graph-zoom-in" title="Zoom in" aria-label="Zoom in"><i class="fas fa-plus"></i></button>
-                                            <button class="lux-secondary-btn social-project-task-graph-zoom-btn social-project-task-graph-reset-view-btn" type="button" data-action="project-task-graph-reset-view" title="Reset view — fit all tasks"><i class="fas fa-expand"></i> <span class="social-project-task-graph-btn-label">Reset</span></button>
+                                            <button class="lux-secondary-btn lux-toolbar-btn social-project-task-graph-zoom-btn" type="button" data-action="project-task-graph-zoom-in" title="Zoom in" aria-label="Zoom in"><i class="fas fa-plus"></i></button>
+                                            <button class="lux-secondary-btn lux-toolbar-btn social-project-task-graph-zoom-btn social-project-task-graph-reset-view-btn" type="button" data-action="project-task-graph-reset-view" title="Reset view — fit all tasks"><i class="fas fa-expand"></i> <span class="social-project-task-graph-btn-label">Reset</span></button>
                                         </div>
                                         ${canContribute
-                                            ? `<button class="lux-primary-btn social-project-task-graph-add-btn social-project-task-graph-essential-add" type="button" data-action="project-task-create-open" data-project-id="${escape(text(project.id))}"><i class="fas fa-plus"></i> <span class="social-project-task-graph-btn-label">Add</span></button>`
+                                            ? `<button class="lux-primary-btn lux-toolbar-btn social-project-task-graph-add-btn social-project-task-graph-essential-add" type="button" data-action="project-task-create-open" data-project-id="${escape(text(project.id))}"><i class="fas fa-plus"></i> <span class="social-project-task-graph-btn-label">Add</span></button>`
                                             : ''}
                                     </div>
                                     <div class="social-project-task-graph-tool-strip social-project-task-graph-more-panel" id="sptg-more-panel" data-project-task-graph-more-panel="1" aria-label="Task map tools" aria-hidden="false">
@@ -1626,7 +1665,7 @@
                                             ${criticalToggleBtn}
                                         </div>
                                         <div class="social-page-toolbar-group social-project-task-graph-nav-controls social-project-task-graph-more-item">
-                                            ${renderProjectWorkspaceNavButtons(project, { buttonClass: 'lux-secondary-btn' })}
+                                            ${renderProjectWorkspaceNavButtons(project, { buttonClass: 'lux-secondary-btn lux-toolbar-btn' })}
                                         </div>
                                         ${onlyMineToolbarBtn}
                                     </div>

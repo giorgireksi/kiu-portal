@@ -398,8 +398,6 @@
     function handleSocialAlertsChange(target, runtime, event) {
         if (!isSocialAlertsChangeTarget(target)) return false;
         return false;
-
-        return true;
     }
 
     window.handleSocialAlertsInput = handleSocialAlertsInput;

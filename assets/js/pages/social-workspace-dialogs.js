@@ -22,6 +22,7 @@
             controlId,
             displayName,
             escape,
+            fileUrl,
             formatProjectScheduleDate,
             formatProjectScheduleHours,
             formatProjectTaskBudgetEstimate,
@@ -78,6 +79,148 @@
                 { id: 'months', label: 'Months' },
                 { id: 'all', label: 'All' }
             ];
+
+        function renderProjectTaskProofSection(project, task, canEdit) {
+            const projectId = text(project?.id || '');
+            const taskId = text(task?.id || '');
+            const items = Array.isArray(task?.proofItems) ? task.proofItems.filter((item) => item && typeof item === 'object') : [];
+            const proofInputId = controlId(`project-task-proof-${taskId || 'files'}`);
+            const fileSource = (item) => {
+                try {
+                    return typeof fileUrl === 'function' ? text(fileUrl(item) || '') : '';
+                } catch (error) {
+                    return '';
+                }
+            };
+            const proofItemsHtml = items.length
+                ? `<div class="spt-proof-list">${items.map((item, index) => {
+                    const proofId = text(item.id || item.storageKey || `proof-${index}`);
+                    const name = text(item.name || 'Proof image') || 'Proof image';
+                    const src = fileSource(item);
+                    const note = text(item.note || '');
+                    const uploadedWhen = text(item.uploadedAt || '');
+                    const imageHtml = src
+                        ? `<img class="spt-proof-thumb" src="${escape(src)}" alt="${escape(`Proof image: ${name}`)}" loading="lazy" data-social-file-key="${escape(text(item.storageKey || ''))}">`
+                        : '<span class="spt-proof-thumb spt-proof-thumb--missing" aria-hidden="true"><i class="fas fa-image"></i></span>';
+                    return `<article class="spt-proof-item" data-proof-id="${escape(proofId)}">
+                        <div class="spt-proof-preview">${src ? `<button type="button" class="spt-proof-thumb-btn" data-action="project-task-proof-preview" data-project-id="${escape(projectId)}" data-task-id="${escape(taskId)}" data-src="${escape(src)}" data-name="${escape(name)}" aria-label="Open ${escape(name)} full preview">${imageHtml}</button>` : imageHtml}</div>
+                        <div class="spt-proof-content">
+                            <div class="spt-proof-head">
+                                <strong class="spt-proof-name" title="${escape(name)}">${escape(name)}</strong>
+                                ${canEdit ? `<button class="spt-proof-remove lux-control-btn" type="button" data-action="project-task-proof-remove" data-project-id="${escape(projectId)}" data-task-id="${escape(taskId)}" data-proof-id="${escape(proofId)}" aria-label="Remove ${escape(name)}" title="Remove proof image"><i class="fas fa-trash" aria-hidden="true"></i></button>` : ''}
+                            </div>
+                            ${uploadedWhen ? `<span class="spt-proof-meta">${escape(when(uploadedWhen))}</span>` : ''}
+                            ${canEdit
+                                ? `<label class="spt-proof-note-label" for="${escape(`${proofInputId}-${index}`)}">Note <textarea class="spt-proof-note lux-control" id="${escape(`${proofInputId}-${index}`)}" data-proof-note maxlength="1000" rows="2" placeholder="Optional note about this proof">${escape(note)}</textarea></label>
+                                   <button class="lux-secondary-btn lux-secondary-btn-xs spt-proof-note-save" type="button" data-action="project-task-proof-save-note" data-project-id="${escape(projectId)}" data-task-id="${escape(taskId)}" data-proof-id="${escape(proofId)}"><i class="fas fa-check" aria-hidden="true"></i> ${note ? 'Save note' : 'Add note'}</button>`
+                                : (note ? `<p class="spt-proof-note-readonly"><span>Note</span>${escape(note)}</p>` : '<span class="spt-proof-no-note">No note added.</span>')}
+                        </div>
+                    </article>`;
+                }).join('')}</div>`
+                : '<p class="spt-proof-empty">No proof images added yet.</p>';
+            const uploader = canEdit ? `<label class="spt-proof-dropzone" data-proof-drop for="${escape(proofInputId)}">
+                    <input class="spt-proof-file-input" id="${escape(proofInputId)}" type="file" name="projectTaskProofFiles" data-project-id="${escape(projectId)}" data-task-id="${escape(taskId)}" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+                    <span class="spt-proof-drop-icon"><i class="fas fa-cloud-arrow-up" aria-hidden="true"></i></span>
+                    <span><strong>Drop images here or browse</strong><small>PNG, JPG, WEBP, or GIF · up to 10 MB each</small></span>
+                </label>` : '<p class="spt-proof-readonly">View only. Project contributors can add proof images and notes.</p>';
+            return `<section class="spt-detail-section lux-studio-section spt-proof-section" aria-labelledby="${escape(`${proofInputId}-title`)}">
+                <div class="spt-proof-section-head">
+                    <div><h3 class="spt-detail-section-title" id="${escape(`${proofInputId}-title`)}">Proof &amp; evidence</h3><p class="spt-detail-section-hint">Show the work with one or more images${items.length ? ` · ${items.length} added` : ''}.</p></div>
+                </div>
+                ${uploader}
+                <p class="spt-proof-upload-status" data-proof-status role="status" aria-live="polite"></p>
+                ${proofItemsHtml}
+            </section>`;
+        }
+
+        function renderProjectTaskProofModal(runtime, project, taskId, options = {}) {
+            if (!project || !text(taskId)) return '';
+            const task = (Array.isArray(project.tasks) ? project.tasks : []).find((entry) => text(entry?.id) === text(taskId)) || null;
+            if (!task) return '';
+            const projectId = text(project.id);
+            const canEdit = Boolean(project.viewerCanContribute);
+            const items = Array.isArray(task.proofItems) ? task.proofItems.filter((item) => item && typeof item === 'object') : [];
+            const proofInputId = controlId(`project-task-proof-modal-${taskId || 'files'}`);
+            const pageSurface = Boolean(options.pageSurface);
+            const fileSource = (item) => {
+                try {
+                    return typeof fileUrl === 'function' ? text(fileUrl(item) || '') : '';
+                } catch (error) {
+                    return '';
+                }
+            };
+            const proofItemsHtml = items.length
+                ? `<div class="spt-proof-gallery-grid">${items.map((item, index) => {
+                    const proofId = text(item.id || item.storageKey || `proof-${index}`);
+                    const name = text(item.name || 'Proof image') || 'Proof image';
+                    const src = fileSource(item);
+                    const note = text(item.note || '');
+                    const uploadedWhen = text(item.uploadedAt || '');
+                    const sizeBytes = Number(item.size || 0);
+                    const sizeLabel = sizeBytes > 0 ? (sizeBytes > 1024 * 1024 ? `${(sizeBytes / (1024 * 1024)).toFixed(1)} MB` : `${Math.round(sizeBytes / 1024)} KB`) : '';
+                    const imageHtml = src
+                        ? `<img class="spt-proof-modal-thumb" src="${escape(src)}" alt="${escape(`Proof image: ${name}`)}" loading="lazy" data-social-file-key="${escape(text(item.storageKey || ''))}">`
+                        : '<span class="spt-proof-modal-thumb spt-proof-thumb--missing" aria-hidden="true"><i class="fas fa-image"></i></span>';
+                    return `<article class="spt-proof-modal-card" data-proof-id="${escape(proofId)}">
+                        <div class="spt-proof-modal-preview">
+                            ${src ? `<button type="button" class="spt-proof-modal-link spt-proof-thumb-btn" data-action="project-task-proof-preview" data-project-id="${escape(projectId)}" data-task-id="${escape(taskId)}" data-src="${escape(src)}" data-name="${escape(name)}" aria-label="Open ${escape(name)} in full resolution" title="Click to view full image in popup lightbox">${imageHtml}<span class="spt-proof-modal-zoom"><i class="fas fa-expand" aria-hidden="true"></i> Full view</span></button>` : imageHtml}
+                        </div>
+                        <div class="spt-proof-modal-info">
+                            <div class="spt-proof-modal-head">
+                                <div class="spt-proof-modal-title-wrap">
+                                    <strong class="spt-proof-modal-name" title="${escape(name)}">${escape(name)}</strong>
+                                    <div class="spt-proof-modal-meta">
+                                        ${uploadedWhen ? `<span><i class="far fa-clock" aria-hidden="true"></i> ${escape(when(uploadedWhen))}</span>` : ''}
+                                        ${sizeLabel ? `<span>· ${escape(sizeLabel)}</span>` : ''}
+                                    </div>
+                                </div>
+                                ${canEdit ? `<button class="spt-proof-remove lux-control-btn" type="button" data-action="project-task-proof-remove" data-project-id="${escape(projectId)}" data-task-id="${escape(taskId)}" data-proof-id="${escape(proofId)}" aria-label="Remove ${escape(name)}" title="Remove proof image"><i class="fas fa-trash" aria-hidden="true"></i></button>` : ''}
+                            </div>
+                            <div class="spt-proof-modal-note-section">
+                                ${canEdit
+                                    ? `<label class="spt-proof-note-label" for="${escape(`${proofInputId}-${index}`)}">Note <textarea class="spt-proof-note lux-control" id="${escape(`${proofInputId}-${index}`)}" data-proof-note maxlength="1000" rows="2" placeholder="Add observations, links, or verification notes...">${escape(note)}</textarea></label>
+                                       <button class="lux-secondary-btn lux-secondary-btn-xs spt-proof-note-save" type="button" data-action="project-task-proof-save-note" data-project-id="${escape(projectId)}" data-task-id="${escape(taskId)}" data-proof-id="${escape(proofId)}"><i class="fas fa-check" aria-hidden="true"></i> ${note ? 'Save note' : 'Add note'}</button>`
+                                    : (note ? `<p class="spt-proof-note-readonly"><span>Note</span>${escape(note)}</p>` : '<span class="spt-proof-no-note">No note added.</span>')}
+                            </div>
+                        </div>
+                    </article>`;
+                }).join('')}</div>`
+                : `<div class="spt-proof-modal-empty">
+                    <div class="spt-proof-modal-empty-icon"><i class="fas fa-images" aria-hidden="true"></i></div>
+                    <h4>No proof images uploaded yet</h4>
+                    <p>Add screenshots, photos, or diagrams as verifiable evidence for this task.</p>
+                </div>`;
+
+            const uploader = canEdit ? `<label class="spt-proof-dropzone spt-proof-modal-dropzone" data-proof-drop for="${escape(proofInputId)}">
+                    <input class="spt-proof-file-input" id="${escape(proofInputId)}" type="file" name="projectTaskProofFiles" data-project-id="${escape(projectId)}" data-task-id="${escape(taskId)}" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+                    <span class="spt-proof-drop-icon"><i class="fas fa-cloud-arrow-up" aria-hidden="true"></i></span>
+                    <span><strong>Drop images or browse files</strong><small>PNG, JPG, WEBP, or GIF · up to 10 MB each · ${items.length}/12 slots used</small></span>
+                </label>` : '<p class="spt-proof-readonly">View only. Project contributors can upload evidence and notes.</p>';
+
+            const backdropClasses = ['lux-glass-dialog-backdrop', 'spt-proof-modal-backdrop', projectTaskGraphStackedBackdropClass(runtime, 'project-task-proof')].filter(Boolean).join(' ');
+
+            return `<div class="${backdropClasses}" data-action="dialog-close" role="dialog" aria-modal="true" aria-labelledby="${escape(`${proofInputId}-title`)}">
+                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--project-task-proof lux-glass-dialog-card--social-glass lux-studio-panel spt-proof-modal-card-dialog" data-action="noop" data-lux-transparency-exempt="1">
+                    <div class="lux-glass-dialog-head lux-studio-head">
+                        <div>
+                            <div class="lux-glass-dialog-eyebrow"><i class="fas fa-tasks" aria-hidden="true"></i> ${escape(text(task.title || 'Task'))}</div>
+                            <h2 class="lux-glass-dialog-title" id="${escape(`${proofInputId}-title`)}">Proof &amp; Evidence Gallery</h2>
+                            <p class="lux-glass-dialog-subtitle">Visual proof, attachments, and verification notes (${items.length}/12).</p>
+                        </div>
+                        <button class="lux-glass-dialog-close" type="button" data-action="dialog-close" aria-label="Close dialog"><i class="fas fa-times" aria-hidden="true"></i></button>
+                    </div>
+                    <div class="lux-glass-dialog-body lux-studio-body spt-proof-modal-body">
+                        ${uploader}
+                        <p class="spt-proof-upload-status" data-proof-status role="status" aria-live="polite"></p>
+                        ${proofItemsHtml}
+                    </div>
+                    <div class="lux-glass-dialog-actions lux-studio-actions spt-proof-modal-actions">
+                        <button class="lux-secondary-btn lux-toolbar-btn" type="button" data-action="project-task-detail-open" data-project-id="${escape(projectId)}" data-task-id="${escape(taskId)}"><i class="fas fa-list-check" aria-hidden="true"></i> Task Details</button>
+                        <button class="lux-primary-btn lux-toolbar-btn" type="button" data-action="dialog-close"><i class="fas fa-check" aria-hidden="true"></i> Done</button>
+                    </div>
+                </div>
+            </div>`;
+        }
 
         function renderProjectTaskDetailModal(runtime, project, taskId, options = {}) {
             if (!project || !text(taskId)) return '';
@@ -331,6 +474,7 @@
                             <h3 class="spt-detail-section-title">Description</h3>
                             <div class="social-project-task-detail-description spt-detail-description${description ? '' : ' is-empty'}">${description ? escape(description) : 'No description added yet.'}</div>
                         </section>
+                        ${renderProjectTaskProofSection(project, editTask, canEdit)}
                         <section class="spt-detail-section lux-studio-section">
                             <h3 class="spt-detail-section-title">Properties</h3>
                             <div class="spt-detail-props spt-detail-props--6">
@@ -1084,15 +1228,18 @@
                                 </section>
                                 <section class="sph-card lux-card lux-soft-chrome sph-card--schedule">
                                     <div class="sph-card-head lux-card-head"><h3>Schedule</h3><span class="sph-auto">auto</span></div>
-                                    <div class="sph-facts sph-facts--tight">
+                                    <div class="sph-schedule-metrics sph-facts sph-facts--tight">
                                         <div class="sph-fact"><span class="sph-fv">${escape(shortestFinish)}</span><span class="sph-fk">Shortest finish</span></div>
                                         <div class="sph-fact"><span class="sph-fv">${criticalIds.length}</span><span class="sph-fk">Critical tasks</span></div>
                                         <div class="sph-fact"><span class="sph-fv ${noEstOpen ? 'sph-bad' : ''}">${noEstOpen}</span><span class="sph-fk">No estimate</span></div>
                                     </div>
-                                    ${criticalIds.length
-                                        ? `<div><div class="sph-mini-label">Critical path</div><div class="sph-chain">${criticalIds.map((id, i) => `${i ? '<span class="sph-arrow">→</span>' : ''}<span class="sph-node">${escape(taskTitle(id))}</span>`).join('')}</div></div>`
-                                        : `<div class="sph-empty">${noEstOpen ? `${noEstOpen} open task${noEstOpen === 1 ? '' : 's'} lack time estimates — critical path stays empty until O/M/P or duration is set.` : 'Add order links and durations to reveal the critical path.'}</div>`}
-                                    <div class="sph-facts">
+                                    <div class="sph-schedule-path">
+                                        <div class="sph-mini-label">Critical path</div>
+                                        ${criticalIds.length
+                                            ? `<div class="sph-chain">${criticalIds.map((id, i) => `${i ? '<span class="sph-arrow">→</span>' : ''}<span class="sph-node">${escape(taskTitle(id))}</span>`).join('')}</div>`
+                                            : `<div class="sph-empty">${noEstOpen ? `${noEstOpen} open task${noEstOpen === 1 ? '' : 's'} lack time estimates — critical path stays empty until O/M/P or duration is set.` : 'Add order links and durations to reveal the critical path.'}</div>`}
+                                    </div>
+                                    <div class="sph-schedule-details sph-facts">
                                         <div class="sph-fact"><span class="sph-fv">${plannedFinishLabel ? escape(plannedFinishLabel) : '—'}</span><span class="sph-fk">CPM planned finish${scheduleStartAt ? '' : ' (set project start)'}</span></div>
                                         <div class="sph-fact"><span class="sph-fv">${lastDueAt ? escape(when(lastDueAt)) : '—'}</span><span class="sph-fk">Latest due date</span></div>
                                         <div class="sph-fact"><span class="sph-fv ${overdueCount ? 'sph-bad' : ''}">${overdueCount}</span><span class="sph-fk">Overdue</span></div>
@@ -1129,8 +1276,8 @@
                         <div class="sph-legend"><span class="sph-auto">auto</span> Hygiene chips open the Work Desk filter. <span class="sph-auto">yours</span> My plan is manual (days / weeks / months / all). Risks open the risk register.</div>
                     </div>
                     <footer class="social-page-surface-footer sph-fs-footer">
-                        <button class="lux-secondary-btn" type="button" data-action="project-task-graph-open" data-project-id="${escape(projectId)}"><i class="fas fa-diagram-project"></i> Open map</button>
-                        <button class="lux-primary-btn" type="button" data-action="dialog-close"><i class="fas fa-arrow-left"></i> Back to map</button>
+                        <button class="lux-secondary-btn lux-toolbar-btn" type="button" data-action="project-task-graph-open" data-project-id="${escape(projectId)}"><i class="fas fa-diagram-project"></i> Open map</button>
+                        <button class="lux-primary-btn lux-toolbar-btn" type="button" data-action="dialog-close"><i class="fas fa-arrow-left"></i> Back to map</button>
                     </footer>
             </main>`;
         }
@@ -1158,6 +1305,7 @@
             renderProjectRiskDialog,
             renderProjectRiskScaleOptions,
             renderProjectTaskDetailModal,
+            renderProjectTaskProofModal,
             sortProjectRisksForRegister
         };
     }

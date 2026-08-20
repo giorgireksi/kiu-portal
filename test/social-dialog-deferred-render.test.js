@@ -132,18 +132,20 @@ function loadShellNav(overrides = {}) {
 }
 
 describe('social dialog deferred render', () => {
-    it('queueDeferredModuleRender skips forceCenterOnly while a dialog is active', () => {
+    it('queueDeferredModuleRender skips forceCenterOnly while a dialog is active', async () => {
         const { api, host, renders } = loadShellRuntime({
             activeDialog: () => ({ type: 'group-create' })
         });
         api.queueDeferredModuleRender('groups-module');
+        await Promise.resolve();
         expect(host.__kiuForceCenterOnly).toBe(false);
         expect(renders).toEqual(['groups-module']);
     });
 
-    it('queueDeferredModuleRender sets forceCenterOnly when no dialog is active', () => {
+    it('queueDeferredModuleRender sets forceCenterOnly when no dialog is active', async () => {
         const { api, host, renders } = loadShellRuntime();
         api.queueDeferredModuleRender('groups-module');
+        await Promise.resolve();
         expect(host.__kiuForceCenterOnly).toBe(true);
         expect(renders).toEqual(['groups-module']);
     });

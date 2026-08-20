@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiu-portal-shell-v20260820-globalpaint1';
+const CACHE_NAME = 'kiu-portal-shell-v20260822-customscroll13';
 const CACHE_PREFIX = 'kiu-portal-shell-';
 const ROUTE_PREFETCH_CACHE_NAME = 'kiu-portal-route-prefetch-v1';
 const ROUTE_PREFETCH_HEADER = 'X-KIU-Route-Prefetch';
@@ -22,12 +22,14 @@ const SHELL_ASSETS = [
   '/news.html',
   '/exams.html',
   '/login.html',
+  '/assets/js/shared/input-autocomplete-guard.js?v=20260627-autocomplete-guard1',
+  '/assets/js/pages/login-runtime.js?v=20260819-fastboot3-swcache1',
   '/assets/css/lux-tokens.css?v=20260725-frosted1',
   '/assets/css/lux-fouc-ht.css?v=20260820-globalpaint2',
   '/assets/css/lux-controls.css?v=20260726-luxtab2',
   '/assets/css/mobile-shell-core.css?v=20260819-sidebarperf2',
-  '/assets/css/shared-lux-core.css?v=196d6e2a',
-  '/assets/css/lux-modals.css?v=20260816-socialmodals1',
+  '/assets/css/shared-lux-core.css?v=16c18c02&customscroll9',
+  '/assets/css/lux-modals.css?v=20260821-toolbarfooter2',
   '/assets/css/mobile-shell.css?v=20260724-chromeshare1',
   '/assets/css/lux-shell.css?v=20260818-isolatedglass1',
   '/assets/css/lux-layout-primitives.css?v=20260725-ssot1',
@@ -36,7 +38,9 @@ const SHELL_ASSETS = [
   '/assets/css/index-home-role.css?v=20260725-homefoucdedup1',
   '/assets/js/theme-primer.js?v=20260819-fastboot2',
   '/assets/js/app/portal-runtime-globals.js?v=20260818-runtimeglobals1',
-  '/assets/js/app/social-standalone-bootstrap.js?v=20260819-fastboot3',
+  '/assets/js/app/api-lms-portal-runtime.js?v=20260822-customscroll13',
+  '/assets/js/app/api.js?v=20260822-customscroll13',
+  '/assets/js/app/social-standalone-bootstrap.js?v=20260822-customscroll13',
   '/assets/js/features/navigation.js?v=20260819-fastboot1',
   '/assets/js/shared/news-home.js?v=20260809-homeassembly2',
   '/assets/js/features/luxury-index-runtime.js?v=20260819-routeobservation1',
@@ -52,12 +56,12 @@ const SHELL_ASSETS = [
   '/assets/js/features/index-home-dashboard.js?v=20260809-homeassembly2',
   '/assets/js/features/index-home-dashboard.plain.js?v=20260809-homeassembly2',
   '/assets/js/pages/index-mobile-shell.js?v=20260809-homeassembly1',
-  '/assets/js/pages/social-page-shell-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-dedupe5',
-  '/assets/js/pages/social-page-interactions-runtime.js?v=20260810-socialbootveil2&perf=20260816-singleowner9',
-  '/assets/js/pages/social-page-boot-runtime.js?v=20260819-socialbootsequence1',
-  '/assets/js/pages/social-page-events.js?v=20260815-socialassemblyclean1&perf=20260816-recovery1',
+  '/assets/js/pages/social-page-shell-runtime.js?v=20260822-customscroll13',
+  '/assets/js/pages/social-page-interactions-runtime.js?v=20260822-customscroll13&perf=20260816-singleowner9',
+  '/assets/js/pages/social-page-boot-runtime.js?v=20260822-customscroll13',
+  '/assets/js/pages/social-page-events.js?v=20260822-customscroll13',
   '/assets/js/pages/social-fingerprint-model.js?v=20260816-socialrecovery1',
-  '/assets/js/pages/social-page.js?v=20260820-socialmodels4',
+  '/assets/js/pages/social-page.js?v=20260822-customscroll13',
 ];
 
 function isVersionedAssetUrl(url) {
@@ -329,6 +333,13 @@ async function handleStaticAssetRequest(request, event) {
   }
   const cached = await cache.match(request);
   if (cached && await isUsableStaticAssetResponse(cached, request)) return cached;
+  // If a versioned request is unavailable during deployment, reuse a valid
+  // cached copy of the same asset from an earlier query version before
+  // returning a synthetic 503. The next successful fetch still replaces it.
+  const cachedPreviousVersion = await cache.match(request, { ignoreSearch: true });
+  if (cachedPreviousVersion && await isUsableStaticAssetResponse(cachedPreviousVersion, request)) {
+    return cachedPreviousVersion;
+  }
   return buildOfflineAssetResponse(request);
 }
 
@@ -354,7 +365,11 @@ self.addEventListener('fetch', event => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith('/api/')) {
-    event.respondWith(handleApiRequest(request));
+    // Never let an API fetch rejection escape respondWith: Firefox reports that
+    // as an unexpected ServiceWorker error and the page receives no response.
+    event.respondWith(
+      handleApiRequest(request).catch(() => buildOfflineApiResponse(request))
+    );
     return;
   }
   if (isRoutePrefetchRequest(request)) {

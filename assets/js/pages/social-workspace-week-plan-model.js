@@ -148,7 +148,7 @@
 
     function isSocialWorkspaceChangeTarget(target) {
         if (!target || typeof target.matches !== 'function') return false;
-        if (target.name === 'projectMediaFile' || target.name === 'portfolioResumeFile') return true;
+        if (target.name === 'projectMediaFile' || target.name === 'portfolioResumeFile' || target.name === 'projectTaskProofFiles') return true;
         if (target.matches('form[data-form="create-project"] [name="projectInviteFaculty"], [name="projectInviteFaculty"], select[name="projectTaskGraphFocusGroup"], select[name="projectDiscoverFaculty"], select[name="projectDiscoverRole"], select[name="portfolioExtraKind"], input[type="checkbox"][data-filter="openOnly"], input[type="checkbox"][data-filter="hidePlanned"]')) return true;
         return false;
     }

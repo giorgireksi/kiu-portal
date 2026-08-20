@@ -53,6 +53,8 @@
         ]);
         const SOCIAL_GRAPH_PAGE_STACKED_DIALOGS = new Set([
             'project-task-detail',
+            'project-task-proof',
+            'project-task-proof-preview',
             'project-task-edit',
             'project-task-create',
             'project-task-delete',
@@ -359,11 +361,14 @@
             'survey-draft-question-delete',
             'survey-draft-choice-delete',
             'project-health-plan-pick',
+            'project-task-proof-preview',
             'post-compose-attach'
         ]);
 
         const PROJECT_HEALTH_GRAPH_SUB_OVERLAYS = new Set([
             'project-task-detail',
+            'project-task-proof',
+            'project-task-proof-preview',
             'project-task-edit',
             'project-task-create',
             'project-task-delete',

@@ -58,6 +58,23 @@ describe('orders route regressions.test', () => {
         expect(block).not.toMatch(/orders-inbox-workspace\s*\{[^}]*background:/);
     });
 
+    it('admin orders workspace contains controls within route panels', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const block = bare.split('/* ── Admin orders workspace')[1]?.split('/* ── Social workspace')[0] || '';
+        expect(block).toContain('#admin-orders-root {');
+        expect(block).toMatch(/#admin-orders-root\s*\{[\s\S]*?max-width:\s*100%/);
+        expect(block).toContain('overflow-x: clip');
+        expect(block).toContain('.orders-admin-command-actions');
+        expect(block).toContain('.orders-admin-command-cta');
+        expect(block).toContain('.orders-admin-audience-tab');
+        expect(block).toContain('.orders-admin-filter-strip > *');
+        expect(block).toContain('.orders-admin-filter-foot .lux-status-pill');
+        expect(block).toContain('.orders-admin-sent-item__summary');
+        const route = readSource('assets/css/route-bare/orders/lux-page-bare-lite.css');
+        expect(route).toContain('overflow-x: clip');
+        expect(route).toContain('grid-template-columns: repeat(4, minmax(0, 1fr))');
+    });
+
     it('fouc-ht orders inbox block paints matte inners and frosted primary shells', () => {
         const fouc = readSource('assets/css/lux-fouc-ht.css');
         const block = fouc.split('/* Orders inbox page:')[1]?.split('/* Social comments dialog:')[0] || '';

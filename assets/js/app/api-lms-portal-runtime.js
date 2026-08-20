@@ -580,6 +580,23 @@ async function uploadBackgroundGalleryAsset(file, options = {}) {
     });
 }
 
+function inferPortalUploadMimeType(file, sourceBlob) {
+    const declared = String(file?.type || sourceBlob?.type || '').trim().toLowerCase();
+    const extension = String(file?.name || '').trim().toLowerCase().match(/\.([a-z0-9]+)$/)?.[1] || '';
+    const byExtension = {
+        jpg: 'image/jpeg',
+        jpeg: 'image/jpeg',
+        png: 'image/png',
+        webp: 'image/webp',
+        gif: 'image/gif'
+    };
+    if (byExtension[extension] && (!declared || declared === 'application/octet-stream' || declared === 'binary/octet-stream')) {
+        return byExtension[extension];
+    }
+    if (declared === 'image/jpg') return 'image/jpeg';
+    return declared || 'application/octet-stream';
+}
+
 async function uploadPortalStoredFile(file, scope = 'file') {
     if (!file) return null;
     const sourceBlob = file.blob instanceof Blob ? file.blob : (file instanceof Blob ? file : null);
@@ -598,9 +615,10 @@ async function uploadPortalStoredFile(file, scope = 'file') {
     if (!dataUrl) return null;
     const payload = await kiuPortalFetch('/api/files/upload', {
         method: 'POST',
+        timeoutMs: 30000,
         body: JSON.stringify({
             name: file.name || 'download.bin',
-            type: file.type || sourceBlob?.type || 'application/octet-stream',
+            type: inferPortalUploadMimeType(file, sourceBlob),
             uploadedAt: file.uploadedAt || new Date().toISOString(),
             uploadedBy: activeUser?.id || '',
             scope,

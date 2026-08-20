@@ -25,7 +25,7 @@
         restorePreviousDialog, invalidateSocialRenderCache, setPanel, root, scrollSocialCenterTo,
         getSocialCenterMaxScroll, getSocialCenterScroller, ensureSocialCenterScrollBounds, buildSocialRenderSignature, patchProjectHealthPlanCard,
         patchProjectHealthPlanPick, writeDeskSavedViews, assertUniqueProjectTaskTitle, createPortalSocialProject, createPortalSocialProjectBudgetCategory,
-        createPortalSocialProjectBudgetExpense, createPortalSocialProjectRisk, createPortalSocialProjectTask, deletePortalSocialProjectTask, focusSocialDialog,
+        createPortalSocialProjectBudgetExpense, createPortalSocialProjectRisk, createPortalSocialProjectTask, addPortalSocialProjectTaskProof, updatePortalSocialProjectTaskProofNote, removePortalSocialProjectTaskProof, deletePortalSocialProjectTask, focusSocialDialog,
         fromDateTimeLocalValue, parseDependsOnFromForm, parseProjectTaskActualsPayload, parseProjectTaskBudgetEstimate, parseProjectTaskPriorityPayload,
         setPortalSocialFlash, setPortalSocialProjectMembership, syncSocialOverlayLock, updatePortalSocialProject, updatePortalSocialProjectRisk,
         updatePortalSocialProjectTask, queueProjectInviteSearchRefresh, syncPortfolioEditorInput, syncTaskChecklistInput,
@@ -289,6 +289,8 @@
     const PROJECT_TASK_GRAPH_PAN_SLACK = 2400;
     const PROJECT_TASK_GRAPH_STACKED_DIALOGS = new Set([
         'project-task-detail',
+        'project-task-proof',
+        'project-task-proof-preview',
         'project-task-edit',
         'project-task-create',
         'project-task-delete',
@@ -827,6 +829,7 @@
         controlId,
         displayName,
         escape,
+        fileUrl,
         formatProjectScheduleDate,
         formatProjectScheduleHours,
         formatProjectTaskBudgetEstimate,
@@ -882,6 +885,7 @@
     const renderProjectRiskDialog = __wsDialogsApi?.renderProjectRiskDialog;
     const renderProjectRiskScaleOptions = __wsDialogsApi?.renderProjectRiskScaleOptions;
     const renderProjectTaskDetailModal = __wsDialogsApi?.renderProjectTaskDetailModal;
+    const renderProjectTaskProofModal = __wsDialogsApi?.renderProjectTaskProofModal;
     const sortProjectRisksForRegister = __wsDialogsApi?.sortProjectRisksForRegister;
 
     /* ── Task form / desk / board UI: social-workspace-task-ui.js ── */
@@ -939,6 +943,7 @@
     __kiuSwApi.renderProjectTaskCreateDialog = renderProjectTaskCreateDialog;
     __kiuSwApi.renderProjectTaskFormFields = renderProjectTaskFormFields;
     __kiuSwApi.renderProjectTaskDetailModal = renderProjectTaskDetailModal;
+    __kiuSwApi.renderProjectTaskProofModal = renderProjectTaskProofModal;
     __kiuSwApi.renderProjectHealthDialog = renderProjectHealthDialog;
     __kiuSwApi.renderProjectHealthPlanCardHtml = renderProjectHealthPlanCardHtml;
     __kiuSwApi.renderProjectHealthPlanPickDialog = renderProjectHealthPlanPickDialog;
@@ -1080,6 +1085,7 @@
         displayName,
         ensureProjectTaskGraphPositionsLoaded,
         escape,
+        fileUrl,
         filterProjectTaskGraphVisibleTasks,
         formatProjectScheduleDate,
         formatProjectScheduleFloat,
@@ -1266,6 +1272,7 @@
         renderProjectTaskCreateDialog,
         renderProjectTaskDeleteConfirmDialog,
         renderProjectTaskDetailModal,
+        renderProjectTaskProofModal,
         renderProjectTaskGraphFullscreen,
         renderProjectTaskGraphHistoryDialog,
         renderProjectTaskGraphScheduleHelpDialog,
@@ -1302,6 +1309,9 @@
         PROJECT_TASK_GRAPH_MIN_ZOOM,
         accountById,
         activeDialog,
+        addPortalSocialProjectTaskProof,
+        updatePortalSocialProjectTaskProofNote,
+        removePortalSocialProjectTaskProof,
         addManyToProjectWeekPlan,
         addProjectTaskDependency,
         applyProjectTaskGraphResetView,

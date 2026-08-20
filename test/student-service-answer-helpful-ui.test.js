@@ -503,18 +503,18 @@ describe('student service owner resolution cycle button', () => {
         expect(css).toContain('prefers-reduced-motion');
     });
 
-    it('thread modal binds Dark-style chip burst on modal buttons', () => {
+    it('uses the shared burst runtime for modal buttons', () => {
         const events = readAsset('assets/js/pages/student-service-events.js');
-        const css = readAsset('assets/css/lux-page-bare-lite.css');
+        const css = readAsset('assets/css/lux-button-burst.css');
+        const runtime = readAsset('assets/js/shared/lux-button-burst.js');
         const html = readAsset('student-service.html');
-        expect(events).toContain('__studentServiceModalChipBurstBound');
-        expect(events).toContain("closest?.('.student-service-qa-thread-modal button')");
-        expect(events).toContain('spawnLuxChipBurstParticles');
-        expect(events).toContain("addEventListener('pointerdown'");
-        expect(css).toContain('#student-service-modal-root > .lux-chip-burst-particle');
+        expect(events).not.toContain('__studentServiceModalChipBurstBound');
+        expect(events).not.toContain('spawnLuxChipBurstParticles');
+        expect(css).toContain('body > #lux-button-burst-layer');
         expect(css).toContain('@keyframes lux-chip-particle-out');
         expect(css).toContain('@keyframes lux-chip-particle-spark');
         expect(css).toContain('@keyframes lux-chip-particle-streak');
-        expect(html).toContain('lux-page-bare-lite.css?v=20260803-ssburst1');
+        expect(runtime).toContain("document.addEventListener('pointerdown'");
+        expect(html).toContain('lux-button-burst.css?v=20260821-globalburst2');
     });
 });

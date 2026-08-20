@@ -1,5 +1,5 @@
 /* Thin route diff: faculty-gradebook. Core in shared-lux-core.css */
-/* Included source lines: 2500-2713, 3785-3799, 4693-5041, 5043-6312, 11909-12050, 45758-46440. */
+/* Included source lines: 2500-2713, 3785-3799, 4693-5041, 5043-6312, 11909-12050, 46058-46740. */
 
 
 body.lux-route-faculty-gradebook .lux-faculty-gradebook-page {
@@ -1995,685 +1995,686 @@ body.lux-route-study-card #page-study-card .lms-route-card-title {
 }
 
 
-
-
-#page-study-card .study-card-command-deck.lux-panel {
-    padding: clamp(16px, 2vw, 24px);
-    margin-bottom: 0;
-}
-
-body.lux-route-study-card #page-study-card {
-    display: grid;
-    gap: 14px;
-    padding: 12px 0 84px;
-}
-
-body.lux-route-study-card .study-card-command-deck {
-    display: grid;
-    gap: 16px;
-    min-width: 0;
-    border-radius: 26px;
-}
-
-body.lux-route-study-card .study-card-page-head {
-    display: grid;
-    gap: 14px;
-    min-width: 0;
-}
-
-body.lux-route-study-card .study-card-title-row {
-    display: grid;
-    gap: 8px;
-    min-width: 0;
-}
-
-body.lux-route-study-card .study-card-workspace {
-    min-width: 0;
-    padding: 4px 0 0;
-}
-
-body.lux-route-study-card .study-card-shell {
-    display: grid;
-    gap: 24px;
-    min-width: 0;
-}
-
-body.lux-route-study-card .study-card-shell__terms {
-    display: grid;
-    gap: 16px;
-    min-width: 0;
-}
-
-body.lux-route-study-card .study-card-term-block {
-    display: grid;
+body.lux-route-exams #admin-exams-root .ex2-timeline {
+    display: flex;
     gap: 12px;
-    margin-top: 24px;
-    min-width: 0;
+    overflow-x: auto;
+    padding: 8px 0;
 }
 
-body.lux-route-study-card .study-card-term-block.is-first {
+body.lux-route-exams #admin-exams-root .ex2-timeline-card {
+    min-width: 180px;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid var(--lux-border);
+    background: var(--lux-surface);
+    flex-shrink: 0;
+    transition: transform .2s;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-timeline-card:hover {
+    transform: translateY(-2px);
+}
+
+
+body.lux-route-exams #admin-exams-root .ex2-mini-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-mini-grid--flush {
     margin-top: 0;
 }
 
-body.lux-route-study-card .study-card-term-header,
-body.lux-route-study-card .semester-header.study-card-term-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 14px 18px;
-    border-radius: 16px;
-    min-width: 0;
-}
-
-body.lux-route-study-card .study-card-semester-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 12px;
-}
-
-body.lux-route-study-card .study-card-semester-table > thead {
-    display: table-header-group;
-}
-
-body.lux-route-study-card .study-card-semester-table > thead > tr {
-    display: table-row;
-}
-
-body.lux-route-study-card .study-card-semester-table > thead > tr > th {
-    display: table-cell;
-}
-
-body.lux-route-study-card .study-card-semester-table thead th {
-    padding: 0 14px 8px;
+body.lux-route-exams #admin-exams-root .ex2-mini-grid > div {
     text-align: center;
 }
 
-body.lux-route-study-card .study-card-heading--left {
-    text-align: left;
-}
-
-body.lux-route-study-card .study-card-heading--right {
-    text-align: right;
-}
-
-body.lux-route-study-card .study-card-term-row td {
-    padding: 16px 14px;
-    border-top: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-border));
-    border-bottom: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-border));
-    vertical-align: middle;
-}
-
-body.lux-route-study-card .study-card-term-row td:first-child {
-    border-left: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-border));
-    border-radius: 18px 0 0 18px;
-}
-
-body.lux-route-study-card .study-card-term-row td:last-child {
-    border-right: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-border));
-    border-radius: 0 18px 18px 0;
-}
-
-body.lux-route-study-card .study-card-cell--subject {
-    width: 28%;
-    min-width: 0;
-}
-
-body.lux-route-study-card .study-card-cell--professor {
-    width: 18%;
-    min-width: 0;
-}
-
-body.lux-route-study-card .study-card-cell--ects,
-body.lux-route-study-card .study-card-cell--score,
-body.lux-route-study-card .study-card-cell--grade {
-    width: 10%;
+body.lux-route-exams #admin-exams-root .ex2-review-summary-card,
+body.lux-route-exams #admin-exams-root .ex2-session-stat-card {
     text-align: center;
 }
 
-body.lux-route-study-card .study-card-cell--assessment {
-    width: 24%;
-    text-align: right;
+body.lux-route-exams #admin-exams-root .ex2-review-summary-value,
+body.lux-route-exams #admin-exams-root .ex2-session-stat-value {
+    display: block;
 }
 
-body.lux-route-study-card .study-card-cell-meta {
+body.lux-route-exams #admin-exams-root .ex2-review-summary-label,
+body.lux-route-exams #admin-exams-root .ex2-session-stat-label {
+    display: block;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-session-summary-card {
+    text-align: center;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-session-summary-value {
+    display: block;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-session-summary-label {
+    display: block;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-activity-metric {
+    text-align: center;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-activity-metric-value {
+    display: block;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-activity-metric-label {
+    display: block;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-select-card-title {
+    display: block;
+    font-weight: 700;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-select-card-copy {
+    display: block;
+    margin-top: 4px;
+    color: var(--lux-text-muted);
+    font-size: 12px;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-select-card-state {
+    font-size: 12px;
+    color: var(--lux-text-muted);
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-mini-grid strong {
+    display: block;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-mini-grid span {
+    font-size: 11px;
+    color: var(--lux-text-muted);
+    text-transform: uppercase;
+}
+
+
+body.lux-route-exams #admin-exams-root .ex2-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    background: rgba(var(--lux-accent-rgb),.08);
+    color: rgba(var(--lux-accent-rgb),1);
+}
+
+body.lux-route-exams #admin-exams-root .ex2-cohort-card-meta,
+body.lux-route-exams #admin-exams-root .ex2-session-card-meta {
     margin-top: 6px;
 }
 
-body.lux-route-study-card .study-card-grade-circle {
-    --study-card-grade-color: rgba(var(--lux-accent-rgb), 0.42);
-    display: inline-flex;
+body.lux-route-exams #admin-exams-root .ex2-cohort-card-copy,
+body.lux-route-exams #admin-exams-root .ex2-session-card-copy {
+    margin-top: 10px;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-session-card-title {
+    margin: 6px 0 0;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-session-head-main,
+body.lux-route-exams #admin-exams-root .ex2-session-action-row {
     align-items: center;
-    justify-content: center;
-    min-width: 44px;
-    min-height: 44px;
-    padding: 0 10px;
-    border-radius: 999px;
-    border: 1px solid var(--study-card-grade-color, var(--lux-border));
-    color: var(--lux-text);
-    font-weight: 900;
 }
 
-body.lux-route-study-card .study-card-grade-circle--empty {
-    --study-card-grade-color: #94a3b8;
+body.lux-route-exams #admin-exams-root .ex2-session-status-chip,
+body.lux-route-exams #admin-exams-root .ex2-session-published-pill {
+    color: inherit;
 }
 
-body.lux-route-study-card .study-card-grade-circle--grade-a {
-    --study-card-grade-color: var(--lux-accent);
-}
 
-body.lux-route-study-card .study-card-grade-circle--grade-b {
-    --study-card-grade-color: var(--lux-accent-2);
-}
-
-body.lux-route-study-card .study-card-grade-circle--grade-c {
-    --study-card-grade-color: rgba(var(--lux-home-secondary-rgb, 110, 160, 255), 0.96);
-}
-
-body.lux-route-study-card .study-card-grade-circle--grade-d {
-    --study-card-grade-color: #d4a24d;
-}
-
-body.lux-route-study-card .study-card-grade-circle--grade-e {
-    --study-card-grade-color: #c97b4b;
-}
-
-body.lux-route-study-card .study-card-grade-circle--grade-fx,
-body.lux-route-study-card .study-card-grade-circle--grade-f {
-    --study-card-grade-color: #d46b6b;
-}
-
-body.lux-route-study-card .study-card-grade-circle.is-empty {
-    color: transparent;
-}
-
-body.lux-route-study-card .study-card-assessment-btn {
-    padding: 10px 14px;
-}
-
-body.lux-route-study-card .study-card-empty.lux-empty-state {
+body.lux-route-exams #admin-exams-root .ex2-cohort-grid {
     display: grid;
-    gap: 8px;
-    justify-items: center;
-    padding: 32px 20px;
-    text-align: center;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
 }
 
-body.lux-route-study-card.study-card-assessment-open {
-    overflow: hidden;
+body.lux-route-exams #admin-exams-root .ex2-cohort-card {
+    padding: 18px;
+    border-radius: 16px;
+    border: 1px solid var(--lux-border);
+    background: var(--lux-surface);
+    transition: border-color .2s, background .2s;
 }
 
-body.lux-route-study-card .study-card-assessment-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 7200;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
+body.lux-route-exams #admin-exams-root .ex2-cohort-card.is-selected {
+    border-color: rgba(var(--lux-accent-rgb),.4);
+    background: rgba(var(--lux-accent-rgb),.04);
 }
 
-body.lux-route-study-card .study-card-assessment-window {
-    display: flex;
-    flex-direction: column;
-    width: min(1240px, calc(100vw - 32px));
-    height: min(88vh, 920px);
-    border-radius: 28px;
-    overflow: hidden;
-    min-width: 0;
+body.lux-route-exams #admin-exams-root .ex2-cohort-check-label {
+    color: inherit;
 }
 
-body.lux-route-study-card .study-card-assessment-window__header {
-    display: flex;
-    justify-content: space-between;
-    gap: 18px;
-    align-items: flex-start;
-    padding: 24px 26px;
-    border-bottom: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-border));
-    min-width: 0;
+body.lux-route-exams #admin-exams-root .ex2-mini-list-item--muted {
+    color: var(--lux-text-muted);
 }
 
-body.lux-route-study-card .study-card-assessment-window__copy {
-    min-width: min(100%, 420px);
-}
 
-body.lux-route-study-card .study-card-assessment-window__actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    align-items: center;
-}
-
-body.lux-route-study-card .study-card-assessment-window__chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 12px;
-}
-
-body.lux-route-study-card .study-card-assessment-window__body {
-    flex: 1;
-    min-height: 0;
-    padding: 24px;
-    overflow: auto;
-}
-
-body.lux-route-study-card .study-card-assessment-layout {
+body.lux-route-exams #admin-exams-root .ex2-two-col {
     display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 20px;
-    min-width: 0;
-}
-
-body.lux-route-study-card .study-card-assessment-layout:has(.study-card-assessment-panel--activity) {
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
     align-items: start;
 }
 
-body.lux-route-study-card .study-card-assessment-panel {
-    min-width: 0;
+
+@media (max-width: 1100px) {
+    body.lux-route-exams #admin-exams-root .ex2-builder-layout,
+    body.lux-route-exams #admin-exams-root .ex2-two-col {
+        grid-template-columns: 1fr;
+    }
 }
 
-body.lux-route-study-card .study-card-assessment-panel-head {
-    display: grid;
+@media (max-width: 768px) {
+    body.lux-route-exams #admin-exams-root .ex2-card-grid {
+        grid-template-columns: 1fr;
+    }
+    body.lux-route-exams #admin-exams-root .ex2-form-grid {
+        grid-template-columns: 1fr;
+    }
+    body.lux-route-exams #admin-exams-root .ex2-stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+
+
+body.lux-route-exams #admin-exams-root :is(.ex2-input, .ex2-textarea, .ex2-select):not(.lux-control) {
+    background: color-mix(in srgb, var(--lux-surface-2) 90%, transparent);
+    border: 1px solid var(--lux-border);
+    color: var(--lux-text);
+}
+
+body.lux-route-exams #admin-exams-root :is(.ex2-input, .ex2-textarea, .ex2-select):not(.lux-control):hover:not(:disabled) {
+    border-color: rgba(var(--lux-accent-rgb), 0.35);
+}
+
+body.lux-route-exams #admin-exams-root .ex2-btn.is-secondary:not(.lux-secondary-btn):hover {
+    border-color: rgba(var(--lux-accent-rgb), 0.45);
+    background: color-mix(in srgb, rgba(var(--lux-accent-rgb), 0.14) 84%, var(--lux-surface));
+}
+
+body.lux-route-exams #admin-exams-root .ex2-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-field--picker .lux-picker-btn--compact {
+    min-height: 42px;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-status {
+    display: inline-flex;
+    align-items: center;
     gap: 6px;
-    margin-bottom: 12px;
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay {
-    display: grid;
-    gap: 16px;
-    min-width: 0;
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay .gb-modern-card,
-body.lux-route-study-card .study-card-gradebook-overlay .gb-transcript-card,
-body.lux-route-study-card .study-card-gradebook-overlay .gb-timeline {
-    margin: 0;
-    min-width: 0;
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay .gb-modern-card-head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-    overflow: visible;
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay .gb-scheme-progress-section.is-study-card-overlay {
-    display: grid;
-    gap: 10px;
-    min-width: 0;
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay .gb-modern-card-head h3 {
-    margin: 4px 0 0;
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay .gb-modern-card-head p {
-    margin: 8px 0 0;
-    max-width: 62ch;
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay .gb-overall-strip {
-    display: grid;
-    gap: 10px;
-    margin-top: 12px;
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay .gb-overall-strip-label {
+    padding: 4px 10px;
+    border-radius: 999px;
     font-size: 11px;
     font-weight: 800;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border: 1px solid var(--lux-border);
+    background: color-mix(in srgb, var(--lux-surface-2) 88%, transparent);
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-exams #admin-exams-root .ex2-summary-group-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--lux-text-muted);
+    margin-bottom: 8px;
 }
 
-body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-bar,
-body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-track.is-stacked {
-    display: flex;
-    width: 100%;
-    min-height: 8px;
-    overflow: hidden;
-    border-radius: 999px;
-    background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.28);
+body.lux-route-exams #admin-exams-root .ex2-builder-step-body.is-entering {
 }
 
-body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-bar span,
-body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-track.is-stacked span {
-    display: block;
-    width: var(--gb-track-width, 0%);
-    min-width: 0;
-    height: 100%;
-}
 
-body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-bar .is-earned,
-body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-track .is-earned {
-    background: rgb(var(--lux-accent-rgb));
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-bar .is-pending,
-body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-track .is-pending {
-    background: #f59e0b;
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-bar .is-remaining,
-body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-track .is-remaining {
-    background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.42);
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px 14px;
-    margin-top: 2px;
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-legend-stat {
-    display: inline-flex;
-    align-items: center;
-    gap: 0;
-    margin: 0;
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 1.45;
-    white-space: normal;
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-legend-stat.lux-panel-copy {
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 1.45;
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-legend i {
-    display: inline-block;
-    flex-shrink: 0;
-    width: 10px;
-    height: 10px;
-    margin-right: 6px;
-    border-radius: 999px;
-    vertical-align: middle;
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-legend .is-earned {
-    background: rgb(var(--lux-accent-rgb));
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-legend .is-pending {
-    background: #f59e0b;
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-legend .is-remaining {
-    background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.42);
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-stack {
-    display: grid;
-    gap: 10px;
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    grid-template-areas:
-        "label score chevron"
-        "track track track";
-    gap: 8px 12px;
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 16px;
-    border: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-border));
-    background: transparent;
-    color: inherit;
-    text-align: left;
-    cursor: default;
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay button.gb-weight-row.is-student-clickable {
-    cursor: pointer;
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay button.gb-weight-row.is-student-clickable:hover {
-    border-color: color-mix(in srgb, var(--lux-accent) 28%, var(--lux-soft-chrome-border-accent));
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-label {
-    grid-area: label;
+body.lux-route-exams #admin-exams-root :is(.lms-route-input, .lms-route-select, .lms-route-textarea).lux-control {
     min-width: 0;
 }
 
-body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-label-main {
-    display: grid;
-    gap: 4px;
+body.lux-route-exams #admin-exams-root :is(.lms-route-input, .lms-route-select).lux-control {
+    min-height: 44px;
 }
 
-body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-row-meta {
-    font-size: 12px;
-    color: var(--lux-text-muted);
+body.lux-route-exams #admin-exams-root :is(.lms-route-textarea, .lms-route-textarea-min-110).lux-control {
+    min-height: 110px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    resize: vertical;
 }
 
-body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-row-dot {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    margin-right: 8px;
-    border-radius: 999px;
-    background: var(--gb-row-accent, rgb(var(--lux-accent-rgb)));
-    vertical-align: 1px;
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-score-badge {
-    grid-area: score;
-    align-self: center;
-    padding: 6px 10px;
-    border-radius: 999px;
-    border: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-border));
-    font-size: 11px;
-    font-weight: 800;
-    white-space: nowrap;
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-score-badge.is-pending {
-    color: #f59e0b;
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-row-chevron {
-    grid-area: chevron;
-    align-self: center;
-    flex-shrink: 0;
-    color: var(--lux-text-muted);
-}
-
-body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-track {
-    grid-area: track;
-}
-
-body.lux-route-study-card .study-card-activity-feed {
-    display: grid;
-    gap: 10px;
-}
-
-body.lux-route-study-card .study-card-activity-item {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 12px;
-    align-items: start;
-    width: 100%;
-    padding: 14px 16px;
-    border-radius: 16px;
-    color: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-
-body.lux-route-study-card .study-card-activity-item-main {
-    display: grid;
-    gap: 6px;
+body.lux-route-exams #admin-exams-root .ex2-builder-toolbar.lux-soft-chrome,
+body.lux-route-exams #admin-exams-root .ex2-progress-bar.lux-soft-chrome,
+body.lux-route-exams #admin-exams-root .ex2-builder-summary-strip.lux-soft-chrome {
     min-width: 0;
 }
 
-body.lux-route-study-card .study-card-activity-item-side {
-    display: grid;
-    gap: 8px;
-    justify-items: end;
-    align-content: start;
-}
-
-body.lux-route-study-card .study-card-activity-item-note {
-    margin: 0;
-    font-size: 12px;
-    color: var(--lux-text-muted);
-}
-
-body.lux-route-study-card #study-card-assessment-window .study-card-gradebook-overlay .gb-modern-card-head .lms-route-copy,
-body.lux-route-study-card #study-card-assessment-window .study-card-assessment-panel-head .lms-route-copy {
-    margin: 0;
-}
-
-body.lux-route-study-card #student-evaluation-history-modal.gb-modal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 7400;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-}
-
-body.lux-route-study-card #gradebook-category-history-modal.gb-category-history-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 7500;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-}
-
-body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #gradebook-category-history-modal .gb-category-history-card.lux-soft-chrome {
-    overflow: visible;
-}
-
-body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #student-evaluation-history-modal :is(
-    .gb-modal-history-card.lux-soft-chrome,
-    .gb-modal-category-card.lux-soft-chrome
-) {
-    overflow: visible;
-}
-
-body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(
-    #gradebook-category-history-modal,
-    #student-evaluation-history-modal
-) :is(button, div).gb-score-history-row {
+body.lux-route-exams #admin-exams-root .ex2-builder-toolbar.lux-soft-chrome {
     padding: 12px 14px;
+    border-radius: 16px;
 }
 
-
-body.lux-route-study-card #page-study-card .study-card-title-row :is(.lux-section-kicker, .lux-page-title),
-body.lux-route-study-card #study-card-assessment-window .study-card-assessment-window__title {
-    overflow: visible;
-    text-overflow: clip;
-    overflow-wrap: anywhere;
+body.lux-route-exams #admin-exams-root .ex2-progress-bar.lux-soft-chrome {
+    padding: 8px 12px;
+    border-radius: 14px;
 }
 
-body.lux-route-study-card #study-card-assessment-window :is(
-    .study-card-assessment-window__meta,
-    .study-card-assessment-panel-copy,
-    .study-card-assessment-hint
+body.lux-route-exams #admin-exams-root .ex2-builder-summary-strip.lux-soft-chrome {
+    padding: 12px 14px;
+    border-radius: 16px;
+}
+
+body.lux-route-exams #admin-exams-root :is(
+    .ex2-builder-title.lms-route-card-title,
+    .ex2-builder-section-title.lms-route-card-title,
+    .ex2-question-card-title.lms-route-card-title
 ) {
-    overflow: visible;
-    text-overflow: clip;
-    overflow-wrap: anywhere;
+    color: var(--lux-text);
 }
 
-body.lux-route-study-card #page-study-card .lms-route-meta-12 {
-    color: var(--lux-text-muted);
-}
-
-body.lux-route-study-card #page-study-card .study-card-cell .lms-route-copy {
+body.lux-route-exams #admin-exams-root .ex2-builder-section-copy.lms-route-copy,
+body.lux-route-exams #admin-exams-root .ex2-builder-empty-copy.lms-route-copy {
     margin: 0;
-    color: var(--lux-text-muted);
 }
 
-body.lux-route-study-card #page-study-card .study-card-heading.lms-route-field-label {
-    margin-bottom: 0;
-    color: var(--lux-text-muted);
+
+
+body.lux-route-exams #admin-exams-root .ex2-shell,
+            body.lux-route-exams #admin-exams-root .ex2-stack,
+            body.lux-route-exams #admin-exams-root .ex2-list,
+            body.lux-route-exams #admin-exams-root .ex2-attempt-list,
+            body.lux-route-exams #admin-exams-root .ex2-options,
+            body.lux-route-exams #admin-exams-root .ex2-mini-list {
+                display: grid;
+                gap: 16px;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-kicker {
+                font-size: 11px;
+                font-weight: 900;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                opacity: 0.82;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-hero p,
+            body.lux-route-exams #admin-exams-root .ex2-card-copy,
+            body.lux-route-exams #admin-exams-root .ex2-list-copy,
+            body.lux-route-exams #admin-exams-root .ex2-side-copy {
+                color: inherit;
+                line-height: 1.65;
+                font-size: 14px;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-chip-row,
+            body.lux-route-exams #admin-exams-root .ex2-inline-actions,
+            body.lux-route-exams #admin-exams-root .ex2-tag-row,
+            body.lux-route-exams #admin-exams-root .ex2-step-row,
+            body.lux-route-exams #admin-exams-root .ex2-tab-row,
+            body.lux-route-exams #admin-exams-root .ex2-attempt-meta {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-manual-stack {
+                display: grid;
+                gap: 8px;
+                min-width: 220px;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-manual-score-row {
+                display: grid;
+                grid-template-columns: minmax(72px, 1fr) 88px;
+                align-items: center;
+                gap: 8px;
+                font-size: 11px;
+                font-weight: 800;
+                color: var(--lux-text-muted);
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-chip,
+            body.lux-route-exams #admin-exams-root .ex2-tag,
+            body.lux-route-exams #admin-exams-root .ex2-faculty-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 12px;
+                border-radius: 999px;
+                border: 1px solid color-mix(in srgb, var(--lux-border) 75%, transparent);
+                font-size: 12px;
+                font-weight: 700;
+                color: var(--lux-text-muted);
+                background: color-mix(in srgb, var(--lux-surface-2) 88%, transparent);
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-chip {
+                border-color: rgba(255,255,255,0.2);
+                color: rgba(255,255,255,0.92);
+                background: rgba(255,255,255,0.1);
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-hero-stats,
+            body.lux-route-exams #admin-exams-root .ex2-mini-grid,
+            body.lux-route-exams #admin-exams-root .ex2-summary-list,
+            body.lux-route-exams #admin-exams-root .ex2-form-grid,
+            body.lux-route-exams #admin-exams-root .ex2-card-grid,
+            body.lux-route-exams #admin-exams-root .ex2-cohort-grid,
+            body.lux-route-exams #admin-exams-root .ex2-schedule-board,
+            body.lux-route-exams #admin-exams-root .ex2-two-col,
+            body.lux-route-exams #admin-exams-root .ex2-three-col {
+                display: grid;
+                gap: 16px;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-hero-stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                align-self: start;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-panel-head,
+            body.lux-route-exams #admin-exams-root .ex2-card-top,
+            body.lux-route-exams #admin-exams-root .ex2-question-head,
+            body.lux-route-exams #admin-exams-root .ex2-session-head,
+            body.lux-route-exams #admin-exams-root .ex2-attempt-main {
+                display: flex;
+                justify-content: space-between;
+                gap: 16px;
+                align-items: flex-start;
+                flex-wrap: wrap;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-panel-head p,
+            body.lux-route-exams #admin-exams-root .ex2-meta,
+            body.lux-route-exams #admin-exams-root .ex2-muted {
+                margin: 6px 0 0;
+                color: var(--lux-text-muted);
+                font-size: 13px;
+                line-height: 1.6;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-card-grid,
+            body.lux-route-exams #admin-exams-root .ex2-cohort-grid,
+            body.lux-route-exams #admin-exams-root .ex2-schedule-board {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-three-col {
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr) minmax(320px, 0.86fr);
+                align-items: start;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-btn,
+body.lux-route-exams #admin-exams-root .ex2-tab,
+            body.lux-route-exams #admin-exams-root .ex2-select-card {
+                appearance: none;
+                cursor: pointer;
+                font: inherit;
+                transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-btn,
+body.lux-route-exams #admin-exams-root .ex2-tab {
+                min-height: 42px;
+                padding: 0 16px;
+                border-radius: 14px;
+                border: 1px solid var(--lux-border);
+                color: var(--lux-text);
+                background: color-mix(in srgb, var(--lux-surface-2) 90%, transparent);
+                font-weight: 800;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-btn.is-secondary,
+            body.lux-route-exams #admin-exams-root .ex2-step.is-active,
+            body.lux-route-exams #admin-exams-root .ex2-tab.is-active,
+            body.lux-route-exams #admin-exams-root .ex2-select-card.is-selected,
+            body.lux-route-exams #admin-exams-root .ex2-cohort-card.is-selected {
+                border-color: rgba(var(--lux-accent-rgb), 0.5);
+                background: color-mix(in srgb, rgba(var(--lux-accent-rgb), 0.16) 84%, var(--lux-surface));
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-step-row {
+                justify-content: flex-end;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-mini-grid > div,
+            body.lux-route-exams #admin-exams-root .ex2-summary-list > div {
+                padding: 14px;
+                border-radius: 18px;
+                border: 1px solid var(--lux-border);
+                background: color-mix(in srgb, var(--lux-surface-2) 90%, transparent);
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-summary-list > div {
+                display: flex;
+                justify-content: space-between;
+                gap: 12px;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-mini-grid strong,
+            body.lux-route-exams #admin-exams-root .ex2-summary-list strong {
+                display: block;
+                font-size: 20px;
+                line-height: 1;
+                margin-bottom: 6px;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-mini-grid span,
+            body.lux-route-exams #admin-exams-root .ex2-summary-list span {
+                color: var(--lux-text-muted);
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                font-weight: 800;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-filter-row {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 220px;
+                gap: 12px;
+                margin-bottom: 18px;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-options {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-toggle {
+                display: flex;
+                gap: 12px;
+                align-items: center;
+                margin-top: 16px;
+                color: var(--lux-text);
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-issue-list,
+            body.lux-route-exams #admin-exams-root .ex2-warning {
+                margin-top: 16px;
+                padding: 14px 16px;
+                border-radius: 16px;
+                border: 1px solid rgba(214, 138, 17, 0.35);
+                background: rgba(214, 138, 17, 0.1);
+                color: #c47a0a;
+                display: grid;
+                gap: 8px;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-side-panel {
+                position: sticky;
+                top: 92px;
+                display: grid;
+                gap: 16px;
+                align-self: start;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-side-kicker {
+                text-transform: uppercase;
+                letter-spacing: 0.12em;
+                font-size: 11px;
+                font-weight: 900;
+                color: var(--lux-text-muted);
+                margin-bottom: 14px;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-summary-list {
+                gap: 10px;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-list-card,
+            body.lux-route-exams #admin-exams-root .ex2-attempt-row {
+                display: grid;
+                gap: 14px;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-cohort-card.is-selected,
+            body.lux-route-exams #admin-exams-root .ex2-select-card.is-selected,
+            body.lux-route-exams #admin-exams-root .ex2-btn:hover,
+            body.lux-route-exams #admin-exams-root .ex2-tab:hover,
+            body.lux-route-exams #admin-exams-root .ex2-step:hover {
+                transform: translateY(-1px);
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-results-row,
+            body.lux-route-exams #admin-exams-root .ex2-results-meta {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-modal-head {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 18px 22px;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-modal-head.is-accent {
+                background: linear-gradient(135deg, rgba(var(--lux-accent-rgb),0.95), rgba(var(--lux-accent-rgb),0.72));
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-modal-head.is-warm {
+                background: linear-gradient(135deg, #d68a11, #c47a0a);
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-modal-head h3 { margin: 0; color: #fff; font-size: 16px; }
+
+body.lux-route-exams #admin-exams-root .ex2-modal-close.lux-ghost-btn {
+    color: #fff;
 }
 
-body.lux-route-study-card #page-study-card .study-card-cell--ects,
-body.lux-route-study-card #page-study-card .study-card-cell--score {
-    font-weight: 700;
-    color: var(--lux-text);
-}
+body.lux-route-exams #admin-exams-root .ex2-modal-body {
+                padding: 18px;
+                display: grid;
+                gap: 14px;
+            }
 
-body.lux-light-mode.lux-route-study-card #page-study-card :is(
-    .lux-page-title,
-    .lms-route-card-title,
-    .study-card-cell--ects,
-    .study-card-cell--score
-),
-html.lux-light-mode body.lux-route-study-card #page-study-card :is(
-    .lux-page-title,
-    .lms-route-card-title,
-    .study-card-cell--ects,
-    .study-card-cell--score
-) {
-    color: var(--lux-text);
-}
+body.lux-route-exams #admin-exams-root .ex2-modal-search {
+                margin-bottom: 0;
+            }
 
-body.lux-light-mode.lux-route-study-card #page-study-card :is(
-    .lux-card-copy,
-    .lms-route-copy,
-    .lms-route-meta-12,
-    .study-card-heading
-),
-html.lux-light-mode body.lux-route-study-card #page-study-card :is(
-    .lux-card-copy,
-    .lms-route-copy,
-    .lms-route-meta-12,
-    .study-card-heading
-) {
-    color: var(--lux-text-muted, var(--lux-text-secondary));
-}
+body.lux-route-exams #admin-exams-root .ex2-modal-list {
+                max-height: 320px;
+                overflow: auto;
+            }
 
-@media (max-width: 900px) {
-    body.lux-route-study-card .study-card-semester-table,
-    body.lux-route-study-card .study-card-semester-table thead,
-    body.lux-route-study-card .study-card-semester-table tbody,
-    body.lux-route-study-card .study-card-semester-table tr,
-    body.lux-route-study-card .study-card-semester-table td,
-    body.lux-route-study-card .study-card-semester-table th {
-        display: block;
-        width: 100%;
-    }
+body.lux-route-exams #admin-exams-root .ex2-modal-meta {
+                font-size: 12px;
+                color: var(--lux-text-muted);
+            }
 
-    body.lux-route-study-card .study-card-semester-table > thead {
-        display: none !important;
-    }
+body.lux-route-exams #admin-exams-root .ex2-modal-actions {
+                margin-top: 4px;
+            }
 
-    body.lux-route-study-card .study-card-term-row td {
-        border-radius: 0;
-        border-left: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-border));
-        border-right: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-border));
-    }
+body.lux-route-exams #admin-exams-root .ex2-card-returned {
+                border-color: rgba(214,138,17,0.35) !important;
+            }
 
-    body.lux-route-study-card .study-card-term-row td:first-child {
-        border-radius: 18px 18px 0 0;
-    }
 
-    body.lux-route-study-card .study-card-term-row td:last-child {
-        border-radius: 0 0 18px 18px;
-        text-align: left;
-    }
+            body.lux-route-exams #admin-exams-root .ex2-step-num {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 22px;
+                height: 22px;
+                border-radius: 50%;
+                background: rgba(var(--lux-accent-rgb),0.2);
+                font-size: 11px;
+                font-weight: 900;
+                margin-right: 4px;
+            }
 
-    body.lux-route-study-card .study-card-assessment-window__header {
-        flex-direction: column;
-    }
+body.lux-route-exams #admin-exams-root .ex2-step.is-active .ex2-step-num {
+                background: rgba(var(--lux-accent-rgb),0.5);
+                color: #fff;
+            }
 
-    body.lux-route-study-card .study-card-assessment-layout:has(.study-card-assessment-panel--activity) {
-        grid-template-columns: minmax(0, 1fr);
-    }
-}
+@media (max-width: 1180px) {
+                body.lux-route-exams #admin-exams-root .ex2-hero,
+                body.lux-route-exams #admin-exams-root .ex2-two-col,
+                body.lux-route-exams #admin-exams-root .ex2-three-col {
+                    grid-template-columns: 1fr;
+                }
+                body.lux-route-exams #admin-exams-root .ex2-side-panel {
+                    position: static;
+                }
+            }
+
+@media (max-width: 760px) {
+                body.lux-route-exams #admin-exams-root .ex2-card-grid,
+                body.lux-route-exams #admin-exams-root .ex2-cohort-grid,
+                body.lux-route-exams #admin-exams-root .ex2-schedule-board,
+                body.lux-route-exams #admin-exams-root .ex2-form-grid,
+                body.lux-route-exams #admin-exams-root .ex2-options,
+                body.lux-route-exams #admin-exams-root .ex2-filter-row,
+                body.lux-route-exams #admin-exams-root .ex2-mini-grid,
+                body.lux-route-exams #admin-exams-root .ex2-hero-stats {
+                    grid-template-columns: 1fr;
+                }
+                body.lux-route-exams #admin-exams-root .ex2-hero,
+                body.lux-route-exams #admin-exams-root .ex2-panel,
+                body.lux-route-exams #admin-exams-root .ex2-card,
+                body.lux-route-exams #admin-exams-root .ex2-cohort-card,
+                body.lux-route-exams #admin-exams-root .ex2-session-card,
+                body.lux-route-exams #admin-exams-root .ex2-list-card,
+                body.lux-route-exams #admin-exams-root .ex2-question-card,
+                body.lux-route-exams #admin-exams-root .ex2-review-card,
+                body.lux-route-exams #admin-exams-root .ex2-side-card,
+                body.lux-route-exams #admin-exams-root .ex2-toolbar {
+                    padding: 18px;
+                }
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-qnav-dot {
+                width: 32px;
+                height: 32px;
+                border-radius: 10px;
+                border: 1px solid var(--lux-border);
+                background: transparent;
+                color: var(--lux-text-muted);
+                font-size: 12px;
+                font-weight: 700;

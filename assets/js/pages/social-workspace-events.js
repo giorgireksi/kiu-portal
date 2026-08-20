@@ -13,6 +13,9 @@
             PROJECT_TASK_GRAPH_MIN_ZOOM,
             accountById,
             activeDialog,
+            addPortalSocialProjectTaskProof,
+            updatePortalSocialProjectTaskProofNote,
+            removePortalSocialProjectTaskProof,
             addManyToProjectWeekPlan,
             addProjectTaskDependency,
             applyProjectTaskGraphResetView,
@@ -902,6 +905,42 @@
                     refreshProjectTasksTabPane('project-task-move');
                 });
             }
+            if (action === 'project-task-proof-save-note') {
+                const projectId = text(trigger.getAttribute('data-project-id') || state().ui?.activeProjectId || '');
+                const taskId = text(trigger.getAttribute('data-task-id') || '');
+                const proofId = text(trigger.getAttribute('data-proof-id') || '');
+                const note = text(trigger.closest('.spt-proof-item')?.querySelector('[data-proof-note]')?.value || '');
+                if (!projectId || !taskId || !proofId || typeof updatePortalSocialProjectTaskProofNote !== 'function') return;
+                return withBusy(async () => {
+                    try {
+                        await updatePortalSocialProjectTaskProofNote(projectId, taskId, proofId, note, { silent: true });
+                        if (typeof refreshProjectTaskGraphDialog === 'function') {
+                            refreshProjectTaskGraphDialog(['selection']);
+                        }
+                        renderDialogOnlyNow();
+                    } catch (error) {
+                        if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash(error?.message || 'Proof note could not be saved.', 'danger');
+                    }
+                });
+            }
+            if (action === 'project-task-proof-remove') {
+                const projectId = text(trigger.getAttribute('data-project-id') || state().ui?.activeProjectId || '');
+                const taskId = text(trigger.getAttribute('data-task-id') || '');
+                const proofId = text(trigger.getAttribute('data-proof-id') || '');
+                if (!projectId || !taskId || !proofId || typeof removePortalSocialProjectTaskProof !== 'function') return;
+                if (typeof window !== 'undefined' && typeof window.confirm === 'function' && !window.confirm('Remove this proof image from the task?')) return;
+                return withBusy(async () => {
+                    try {
+                        await removePortalSocialProjectTaskProof(projectId, taskId, proofId, { silent: true });
+                        if (typeof refreshProjectTaskGraphDialog === 'function') {
+                            refreshProjectTaskGraphDialog(['selection']);
+                        }
+                        renderDialogOnlyNow();
+                    } catch (error) {
+                        if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash(error?.message || 'Proof image could not be removed.', 'danger');
+                    }
+                });
+            }
             if (action === 'project-task-delete-open') {
                 const projectId = text(trigger.getAttribute('data-project-id') || state().ui?.activeProjectId || '');
                 const taskId = text(trigger.getAttribute('data-task-id') || '');
@@ -923,6 +962,31 @@
                 const editTask = (Array.isArray(project?.tasks) ? project.tasks : []).find((task) => text(task?.id) === taskId) || null;
                 if (!editTask) return;
                 return openDialog('project-task-detail', { projectId, taskId });
+            }
+            if (action === 'project-task-proof-open') {
+                const runtime = state();
+                const projectId = text(trigger.getAttribute('data-project-id') || runtime.ui?.activeProjectId || '');
+                const taskId = text(trigger.getAttribute('data-task-id') || '');
+                const project = resolveActiveSocialProject(runtime, projectId);
+                const editTask = (Array.isArray(project?.tasks) ? project.tasks : []).find((task) => text(task?.id) === taskId) || null;
+                if (!editTask) return;
+                return openDialog('project-task-proof', { projectId, taskId });
+            }
+            if (action === 'project-task-proof-preview') {
+                const src = text(trigger.getAttribute('data-src') || '');
+                const name = text(trigger.getAttribute('data-name') || 'Proof image');
+                const projectId = text(trigger.getAttribute('data-project-id') || '');
+                const taskId = text(trigger.getAttribute('data-task-id') || '');
+                if (!src) return;
+                const current = activeDialog();
+                const previewPayload = { src, name, projectId, taskId };
+                // Thumbnails rendered outside the gallery (for example in the
+                // task detail surface) must still place the Proof & Evidence
+                // Gallery underneath the lightbox so Close always returns there.
+                if (projectId && taskId && current?.type !== 'project-task-proof') {
+                    openDialog('project-task-proof', { projectId, taskId });
+                }
+                return openDialog('project-task-proof-preview', previewPayload);
             }
             if (action === 'project-task-create-open') {
                 const createRuntime = state();

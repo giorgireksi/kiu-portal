@@ -26,7 +26,7 @@ describe('social bare shell era', () => {
         expect(html).toMatch(/lux-shell\.css/);
         expect(html).not.toMatch(/lux-shell-paint\.css/);
         expect(html).toMatch(/lux-focus-panel\.css/);
-        expect(html).toContain('lux-modals.css?v=20260816-socialmodals1');
+        expect(html).toContain('lux-modals.css?v=20260821-toolbarfooter2');
         for (const f of [
             'social-rebuild.css',
             'social-material.css',

@@ -541,20 +541,6 @@ function bindStudentServiceDelegatedInteractions() {
             if (!modalRoot.contains(event.target)) return;
             handleStudentServiceQaThreadClick(event);
         });
-        if (!window.__studentServiceModalChipBurstBound) {
-            window.__studentServiceModalChipBurstBound = true;
-            modalRoot.addEventListener('pointerdown', (event) => {
-                if (event.button !== 0) return;
-                const button = event.target.closest?.('.student-service-qa-thread-modal button');
-                if (!button || !modalRoot.contains(button) || button.disabled) return;
-                if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-                const spawn = window.spawnLuxChipBurstParticles;
-                if (typeof spawn !== 'function') return;
-                window.requestAnimationFrame(() => {
-                    spawn(button, event, modalRoot);
-                });
-            }, true);
-        }
     }
 }
 

@@ -19,6 +19,8 @@ Publishes only the host/runtime contract consumed by its loader.
 
     const PROJECT_TASK_GRAPH_STACKED_DIALOGS = new Set([
         'project-task-detail',
+        'project-task-proof',
+        'project-task-proof-preview',
         'project-task-edit',
         'project-task-create',
         'project-task-delete',
@@ -30,6 +32,8 @@ Publishes only the host/runtime contract consumed by its loader.
     ]);
     const PROJECT_HEALTH_OVERLAY_DIALOGS = new Set([
         'project-task-detail',
+        'project-task-proof',
+        'project-task-proof-preview',
         'project-task-edit',
         'project-task-create',
         'project-task-delete',
@@ -46,11 +50,13 @@ Publishes only the host/runtime contract consumed by its loader.
             text, state, root,
             PROJECT_TASK_GRAPH_STACKED_DIALOGS,
             PROJECT_HEALTH_OVERLAY_DIALOGS,
-            workspaceDialogKeepsCenter: typeof window.workspaceDialogKeepsCenter === 'function' ? window.workspaceDialogKeepsCenter : workspaceDialogKeepsCenter,
-            overlayDialogPreservesScroll: typeof window.overlayDialogPreservesScroll === 'function' ? window.overlayDialogPreservesScroll : overlayDialogPreservesScroll,
-            isProjectTaskGraphStackActive: typeof window.isProjectTaskGraphStackActive === 'function' ? window.isProjectTaskGraphStackActive : () => false,
-            getProjectTaskGraphStackAnchorDialog: typeof window.getProjectTaskGraphStackAnchorDialog === 'function' ? window.getProjectTaskGraphStackAnchorDialog : () => null,
-            renderDialogOnlyNow,
+            workspaceDialogKeepsCenter: (...args) => (typeof window.workspaceDialogKeepsCenter === 'function' ? window.workspaceDialogKeepsCenter(...args) : workspaceDialogKeepsCenter(...args)),
+            overlayDialogPreservesScroll: (...args) => (typeof window.overlayDialogPreservesScroll === 'function' ? window.overlayDialogPreservesScroll(...args) : overlayDialogPreservesScroll(...args)),
+            isProjectTaskGraphStackActive: (...args) => isProjectTaskGraphStackActive(...args),
+            getProjectTaskGraphStackAnchorDialog: (...args) => getProjectTaskGraphStackAnchorDialog(...args),
+            renderDialogOnlyNow: () => {
+                renderDialogOnlyNow();
+            },
             renderSocialPageNow: (reason) => {
                 const fn = window.renderSocialPageNow || window.__kiuSocialLiteRenderPage;
                 return typeof fn === 'function' ? fn(reason) : undefined;
@@ -71,20 +77,38 @@ Publishes only the host/runtime contract consumed by its loader.
                 const fn = window.__kiuBindOverlayPortalEvents || window.bindOverlayPortalEvents;
                 if (typeof fn === 'function') fn();
             },
-            ensurePhotographyUploadFileSink: typeof window.ensurePhotographyUploadFileSink === 'function' ? window.ensurePhotographyUploadFileSink : () => {},
-            bindPhotographyUploadDialogFileInput: typeof window.bindPhotographyUploadDialogFileInput === 'function' ? window.bindPhotographyUploadDialogFileInput : () => {},
-            revokePhotographyUploadPreview: typeof window.revokePhotographyUploadPreview === 'function' ? window.revokePhotographyUploadPreview : () => {},
+            ensurePhotographyUploadFileSink: (...args) => (typeof window.ensurePhotographyUploadFileSink === 'function' ? window.ensurePhotographyUploadFileSink(...args) : undefined),
+            bindPhotographyUploadDialogFileInput: (...args) => (typeof window.bindPhotographyUploadDialogFileInput === 'function' ? window.bindPhotographyUploadDialogFileInput(...args) : undefined),
+            revokePhotographyUploadPreview: (...args) => (typeof window.revokePhotographyUploadPreview === 'function' ? window.revokePhotographyUploadPreview(...args) : undefined),
             clearEventDraft: (...args) => {
                 const fn = window.clearEventDraft || (window.KiuSocialChromeModel || {}).clearEventDraft;
                 return typeof fn === 'function' ? fn(...args) : undefined;
             },
-            clearPostComposeDraft: typeof window.clearPostComposeDraft === 'function' ? window.clearPostComposeDraft : () => {},
-            getProjectTaskGraphHost: typeof window.getProjectTaskGraphHost === 'function' ? window.getProjectTaskGraphHost : () => null,
-            readProjectTaskGraphPanFromScroll: typeof window.readProjectTaskGraphPanFromScroll === 'function' ? window.readProjectTaskGraphPanFromScroll : () => ({ x: 0, y: 0 }),
-            clampProjectTaskGraphZoom: typeof window.clampProjectTaskGraphZoom === 'function' ? window.clampProjectTaskGraphZoom : (z) => z,
-            persistProjectTaskGraphView: typeof window.persistProjectTaskGraphView === 'function' ? window.persistProjectTaskGraphView : () => {},
-            clearProjectTabPaneCache: typeof window.clearProjectTabPaneCache === 'function' ? window.clearProjectTabPaneCache : () => {},
-            rebuildActiveProjectTabPaneIfPreviewHost: typeof window.rebuildActiveProjectTabPaneIfPreviewHost === 'function' ? window.rebuildActiveProjectTabPaneIfPreviewHost : () => {},
+            clearPostComposeDraft: (...args) => (typeof window.clearPostComposeDraft === 'function' ? window.clearPostComposeDraft(...args) : undefined),
+            getProjectTaskGraphHost: (...args) => {
+                const fn = window.getProjectTaskGraphHost || window.KiuSocialWorkspace?.getProjectTaskGraphHost || __kiuWorkspaceStubBag?.getProjectTaskGraphHost;
+                return typeof fn === 'function' ? fn(...args) : null;
+            },
+            readProjectTaskGraphPanFromScroll: (...args) => {
+                const fn = window.readProjectTaskGraphPanFromScroll || window.KiuSocialWorkspace?.readProjectTaskGraphPanFromScroll || __kiuWorkspaceStubBag?.readProjectTaskGraphPanFromScroll;
+                return typeof fn === 'function' ? fn(...args) : ({ x: 0, y: 0 });
+            },
+            clampProjectTaskGraphZoom: (...args) => {
+                const fn = window.clampProjectTaskGraphZoom || window.KiuSocialWorkspace?.clampProjectTaskGraphZoom || __kiuWorkspaceStubBag?.clampProjectTaskGraphZoom;
+                return typeof fn === 'function' ? fn(...args) : (args[0]);
+            },
+            persistProjectTaskGraphView: (...args) => {
+                const fn = window.persistProjectTaskGraphView || window.KiuSocialWorkspace?.persistProjectTaskGraphView || __kiuWorkspaceStubBag?.persistProjectTaskGraphView;
+                if (typeof fn === 'function') return fn(...args);
+            },
+            clearProjectTabPaneCache: (...args) => {
+                const fn = window.clearProjectTabPaneCache || window.KiuSocialWorkspace?.clearProjectTabPaneCache || __kiuWorkspaceStubBag?.clearProjectTabPaneCache;
+                if (typeof fn === 'function') return fn(...args);
+            },
+            rebuildActiveProjectTabPaneIfPreviewHost: (...args) => {
+                const fn = window.rebuildActiveProjectTabPaneIfPreviewHost || window.KiuSocialWorkspace?.rebuildActiveProjectTabPaneIfPreviewHost || __kiuWorkspaceStubBag?.rebuildActiveProjectTabPaneIfPreviewHost;
+                if (typeof fn === 'function') return fn(...args);
+            },
             relayoutCommentTrunks: (scope) => {
                 const fn = window.relayoutCommentTrunks || window.__kiuRelayoutCommentTrunks;
                 if (typeof fn === 'function') fn(scope);
@@ -183,15 +207,15 @@ Publishes only the host/runtime contract consumed by its loader.
         return candidates.length ? Math.max(...candidates) : 0;
     }
     const SOCIAL_COMMUNITY_MODULE_URL = 'assets/js/pages/social-community.js?v=20260816-socialperf1';
-    const SOCIAL_ALERTS_MODULE_URL = 'assets/js/pages/social-alerts.js?v=20260714-alerts-click1';
+    const SOCIAL_ALERTS_MODULE_URL = 'assets/js/pages/social-alerts.js?v=20260822-customscroll13';
     const SOCIAL_LOST_FOUND_MODULE_URL = 'assets/js/pages/social-lost-found.js?v=20260807-socialtopnav34';
-    const SOCIAL_PHOTOGRAPHY_MODULE_URL = 'assets/js/pages/social-photography.js?v=20260807-socialtopnav34';
-    const SOCIAL_SURVEYS_MODULE_URL = 'assets/js/pages/social-surveys.js?v=20260807-socialtopnav34';
+    const SOCIAL_PHOTOGRAPHY_MODULE_URL = 'assets/js/pages/social-photography.js?v=20260822-customscroll13';
+    const SOCIAL_SURVEYS_MODULE_URL = 'assets/js/pages/social-surveys.js?v=20260807-socialtopnav35';
     const SOCIAL_RESEARCH_PDF_RUNTIME_URL = 'assets/js/pages/social-research-pdf-runtime.js?v=20260801-researchviewer12';
     const SOCIAL_RESEARCH_MODULE_URL = 'assets/js/pages/social-research.js?v=20260807-socialtopnav34';
     const PHOTOGRAPHY_UPLOAD_FILE_SINK_ID = 'kiu-photography-upload-file-sink';
     const PHOTOGRAPHY_UPLOAD_MAX_BYTES = 25 * 1024 * 1024;
-    const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260816-customscroll4';
+    const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260822-customscroll13';
     const SOCIAL_PROFILE_MODEL_URL = 'assets/js/pages/social-profile-model.js?v=20260820-socialintent1';
     const SOCIAL_PROFILE_MODULE_URL = 'assets/js/pages/social-profile.js?v=20260714-profile-click1';
     const SOCIAL_TASK_MODEL_URL = 'assets/js/pages/social-task-model.js?v=20260720-w23task1';
@@ -201,35 +225,35 @@ Publishes only the host/runtime contract consumed by its loader.
     const SOCIAL_FEED_COMMENTS_MODULE_URL = 'assets/js/pages/social-feed-comments-runtime.js?v=20260728-socshell25';
     const SOCIAL_FEED_MODULE_URL = 'assets/js/pages/social-feed.js?v=20260807-socialtopnav34';
     const SOCIAL_PAGES_MODULE_URL = 'assets/js/pages/social-pages.js?v=20260807-socialtopnav34';
-    const SOCIAL_DIALOG_STYLES_URL = 'assets/css/lux-modals.css?v=20260816-socialmodals1';
+    const SOCIAL_DIALOG_STYLES_URL = 'assets/css/lux-modals.css?v=20260821-toolbarfooter2';
     let socialDialogStylesPromise = null;
     let socialDialogStylesReady = false;
     const SOCIAL_WORKSPACE_SCHEDULE_MODEL_URL = 'assets/js/pages/social-workspace-schedule-model.js?v=20260726-socfix16';
     const SOCIAL_WORKSPACE_HEALTH_MODEL_URL = 'assets/js/pages/social-workspace-health-model.js?v=20260726-socfix16';
     const SOCIAL_WORKSPACE_GRAPH_DESK_MODEL_URL = 'assets/js/pages/social-workspace-graph-desk-model.js?v=20260726-socfix20';
-    const SOCIAL_WORKSPACE_GRAPH_MODEL_URL = 'assets/js/pages/social-workspace-graph-model.js?v=20260726-socfix20';
+    const SOCIAL_WORKSPACE_GRAPH_MODEL_URL = 'assets/js/pages/social-workspace-graph-model.js?v=20260821-graphports1';
     const SOCIAL_WORKSPACE_PORTFOLIO_MODEL_URL = 'assets/js/pages/social-workspace-portfolio-model.js?v=20260726-socfix16';
-    const SOCIAL_WORKSPACE_WEEK_PLAN_MODEL_URL = 'assets/js/pages/social-workspace-week-plan-model.js?v=20260726-socfix16';
+    const SOCIAL_WORKSPACE_WEEK_PLAN_MODEL_URL = 'assets/js/pages/social-workspace-week-plan-model.js?v=20260822-taskproof33';
     const SOCIAL_WORKSPACE_GRAPH_SYNC_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-sync-runtime.js?v=20260808-overallperf1';
-    const SOCIAL_WORKSPACE_GRAPH_LAYOUT_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-layout-runtime.js?v=20260807-runtimefix1';
+    const SOCIAL_WORKSPACE_GRAPH_LAYOUT_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-layout-runtime.js?v=20260821-graphports1';
     const SOCIAL_WORKSPACE_SCHEDULE_UI_URL = 'assets/js/pages/social-workspace-schedule-ui.js?v=20260726-socfix16';
     const SOCIAL_WORKSPACE_TAB_RUNTIME_URL = 'assets/js/pages/social-workspace-tab-runtime.js?v=20260726-socfix42';
-    const SOCIAL_WORKSPACE_EVENTS_INPUT_URL = 'assets/js/pages/social-workspace-events-input-runtime.js?v=20260807-socialtopnav34';
+    const SOCIAL_WORKSPACE_EVENTS_INPUT_URL = 'assets/js/pages/social-workspace-events-input-runtime.js?v=20260822-taskproof33';
     const SOCIAL_WORKSPACE_EVENTS_SUBMIT_URL = 'assets/js/pages/social-workspace-events-submit-runtime.js?v=20260807-socialtopnav34';
-    const SOCIAL_WORKSPACE_EVENTS_URL = 'assets/js/pages/social-workspace-events.js?v=20260805-health-scroll2';
+    const SOCIAL_WORKSPACE_EVENTS_URL = 'assets/js/pages/social-workspace-events.js?v=20260822-taskproof33';
     const SOCIAL_WORKSPACE_PANEL_BUDGET_URL = 'assets/js/pages/social-workspace-panel-budget-runtime.js?v=20260726-socfix38';
     const SOCIAL_WORKSPACE_PANEL_TEAM_URL = 'assets/js/pages/social-workspace-panel-team-runtime.js?v=20260726-socfix43';
     const SOCIAL_WORKSPACE_PANEL_URL = 'assets/js/pages/social-workspace-panel.js?v=20260818-shellfailopen1';
-    const SOCIAL_WORKSPACE_GRAPH_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-runtime.js?v=20260808-overallperf1';
-    const SOCIAL_WORKSPACE_DIALOGS_URL = 'assets/js/pages/social-workspace-dialogs.js?v=20260807-socialsurface1';
-    const SOCIAL_WORKSPACE_GRAPH_RENDER_URL = 'assets/js/pages/social-workspace-graph-render.js?v=20260807-mapopaque1';
+    const SOCIAL_WORKSPACE_GRAPH_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-runtime.js?v=20260821-graphports1';
+    const SOCIAL_WORKSPACE_DIALOGS_URL = 'assets/js/pages/social-workspace-dialogs.js?v=20260822-taskproof33';
+    const SOCIAL_WORKSPACE_GRAPH_RENDER_URL = 'assets/js/pages/social-workspace-graph-render.js?v=20260822-taskproof33';
     const SOCIAL_WORKSPACE_TASK_UI_URL = 'assets/js/pages/social-workspace-task-ui.js?v=20260807-socialsurface1';
     const SOCIAL_WORKSPACE_PORTFOLIO_RUNTIME_URL = 'assets/js/pages/social-workspace-portfolio-runtime.js?v=20260802-portfolio-viewer1';
     const SOCIAL_WORKSPACE_PORTFOLIO_EDITOR_URL = 'assets/js/pages/social-workspace-portfolio-editor.js?v=20260802-portfolio-viewer3';
-    const SOCIAL_WORKSPACE_PORTFOLIO_UI_URL = 'assets/js/pages/social-workspace-portfolio-ui.js?v=20260802-pincss1';
+    const SOCIAL_WORKSPACE_PORTFOLIO_UI_URL = 'assets/js/pages/social-workspace-portfolio-ui.js?v=20260802-pincss2';
     const SOCIAL_WORKSPACE_PROJECT_CHROME_URL = 'assets/js/pages/social-workspace-project-chrome.js?v=20260807-socialsurface1';
-    const SOCIAL_WORKSPACE_DIALOG_ROUTE_URL = 'assets/js/pages/social-workspace-dialog-route.js?v=20260807-graphstack1';
-    const SOCIAL_WORKSPACE_MODULE_URL = 'assets/js/pages/social-workspace.js?v=20260807-runtimefix1';
+    const SOCIAL_WORKSPACE_DIALOG_ROUTE_URL = 'assets/js/pages/social-workspace-dialog-route.js?v=20260822-taskproof33';
+    const SOCIAL_WORKSPACE_MODULE_URL = 'assets/js/pages/social-workspace.js?v=20260822-taskproof33';
     const DIRECTORY_REFRESH_MS = 180;
     const MAX_RENDER_ATTEMPTS = 24;
     const USER_ROLES_FALLBACK = {
@@ -409,6 +433,7 @@ Publishes only the host/runtime contract consumed by its loader.
         'project-task-edit',
         'project-column-tasks',
         'project-task-detail',
+        'project-task-proof',
         'project-task-delete',
         'project-task-graph',
         'project-task-graph-history',
@@ -1405,8 +1430,6 @@ Publishes only the host/runtime contract consumed by its loader.
             && live('renderWorkspaceOwnedDialog', renderWorkspaceOwnedDialog));
     }
     function resolveSocialExportImpl(name) {
-        const direct = window[name];
-        if (typeof direct === 'function') return direct;
         const bags = [
             window.KiuSocialWorkspace,
             window.KiuSocialWorkspaceRiskModel,
@@ -1425,6 +1448,8 @@ Publishes only the host/runtime contract consumed by its loader.
     }
     function createSocialLazyStub(name, has, ensure, fallback = '', afterLoad = null) {
         function stub(...args) {
+            const direct = window[name];
+            if (has() && typeof direct === 'function' && direct !== stub) return direct(...args);
             const impl = resolveSocialExportImpl(name);
             if (has() && typeof impl === 'function' && impl !== stub) return impl(...args);
             if (window.__KIU_SOCIAL_LAZY_MODULES_DEFERRED) {
@@ -1468,8 +1493,8 @@ Publishes only the host/runtime contract consumed by its loader.
         : {});
     const {
         readProjectWeekPlansStore, readProjectWeekPlan, writeProjectWeekPlan, addToProjectWeekPlan, addManyToProjectWeekPlan, removeFromProjectWeekPlan,
-        normalizeProjectWeekPlanWindow, shouldRenderProjectTaskGraphStack: shouldRenderProjectTaskGraphStackRaw, shouldRenderProjectHealthStack, renderWorkspaceOwnedDialog, isProjectTaskGraphStackActive, getProjectTaskGraphStackAnchorDialog,
-        wrapProjectTaskGraphStack, wrapProjectHealthStack, renderHealthStackLayers, maybeWrapStackedProjectDialog, renderStackedProjectTaskChild, trySyncProjectTaskGraphStackDialog: trySyncProjectTaskGraphStackDialogRaw, syncProjectTaskGraphStackSlotState,
+        normalizeProjectWeekPlanWindow, shouldRenderProjectTaskGraphStack: shouldRenderProjectTaskGraphStackRaw, shouldRenderProjectHealthStack, renderWorkspaceOwnedDialog, isProjectTaskGraphStackActive: isProjectTaskGraphStackActiveRaw, getProjectTaskGraphStackAnchorDialog: getProjectTaskGraphStackAnchorDialogRaw,
+        wrapProjectTaskGraphStack, wrapProjectHealthStack, renderHealthStackLayers, maybeWrapStackedProjectDialog, renderStackedProjectTaskChild, renderProjectTaskProofModal, trySyncProjectTaskGraphStackDialog: trySyncProjectTaskGraphStackDialogRaw, syncProjectTaskGraphStackSlotState,
         projectTaskGraphStackedBackdropClass, resolveProjectTaskGraphNodeFromTarget, sortProjectBoardTasksByPriority, filterProjectBoardTasks, projectTaskDependsOnIds, resolveDeskTaskReadiness,
         orderDeskTasksByDependency, buildDeskTaskForest, buildProjectTaskInspectorFields, syncProjectTaskMatrixPreview, computePertExpected, taskHasPert,
         resolveTaskScheduleEstimate, resolveProjectTaskPriorityDisplay, clampProjectTaskGraphCardHeight, estimateProjectTaskGraphCardHeight, measureProjectTaskGraphCardHeights, normalizeProjectTaskGraphMode,
@@ -1531,6 +1556,56 @@ Publishes only the host/runtime contract consumed by its loader.
         if (!workspaceStackDialogKind()) return false;
         return trySyncProjectTaskGraphStackDialogRaw(...args);
     }
+    let resolvingProjectTaskGraphStackState = false;
+    function isProjectTaskGraphStackActive(runtime = state()) {
+        if (resolvingProjectTaskGraphStackState) return false;
+        resolvingProjectTaskGraphStackState = true;
+        try {
+            const publicBridge = window.isProjectTaskGraphStackActive;
+            const impl = window.KiuSocialWorkspace?.isProjectTaskGraphStackActive;
+            if (typeof impl === 'function' && impl !== isProjectTaskGraphStackActive && impl !== publicBridge) return impl(runtime);
+            const raw = isProjectTaskGraphStackActiveRaw;
+            return typeof raw === 'function' && raw !== isProjectTaskGraphStackActive && raw !== publicBridge
+                ? raw(runtime)
+                : false;
+        } finally {
+            resolvingProjectTaskGraphStackState = false;
+        }
+    }
+    let resolvingProjectTaskGraphStackAnchor = false;
+    function getProjectTaskGraphStackAnchorDialog(runtime = state()) {
+        // The lazy workspace export and this page bridge can temporarily point
+        // at each other while the graph module is being installed. Never let
+        // that bootstrap cycle recurse through the public bridge.
+        if (resolvingProjectTaskGraphStackAnchor) return null;
+        resolvingProjectTaskGraphStackAnchor = true;
+        try {
+            const publicBridge = window.getProjectTaskGraphStackAnchorDialog;
+            // Resolve through the identity-stable lazy stub only. Looking up
+            // the same method on KiuSocialWorkspace first can resolve back to
+            // this bridge during module installation and recurse forever.
+            const raw = getProjectTaskGraphStackAnchorDialogRaw;
+            if (typeof raw === 'function' && raw !== getProjectTaskGraphStackAnchorDialog && raw !== publicBridge) {
+                return raw(runtime);
+            }
+            return null;
+        } finally {
+            resolvingProjectTaskGraphStackAnchor = false;
+        }
+    }
+    window.isProjectTaskGraphStackActive = isProjectTaskGraphStackActive;
+    window.getProjectTaskGraphStackAnchorDialog = getProjectTaskGraphStackAnchorDialog;
+    window.shouldRenderProjectTaskGraphStack = shouldRenderProjectTaskGraphStack;
+    window.wrapProjectTaskGraphStack = wrapProjectTaskGraphStack;
+    window.trySyncProjectTaskGraphStackDialog = trySyncProjectTaskGraphStackDialog;
+    window.renderWorkspaceOwnedDialog = renderWorkspaceOwnedDialog;
+    window.renderStackedProjectTaskChild = renderStackedProjectTaskChild;
+    window.renderProjectTaskProofModal = renderProjectTaskProofModal;
+    window.renderProjectTaskDetailModal = renderProjectTaskDetailModal;
+    window.renderProjectTaskCreateDialog = renderProjectTaskCreateDialog;
+    window.renderProjectRiskDialog = renderProjectRiskDialog;
+    window.renderProjectHealthDialog = renderProjectHealthDialog;
+    window.renderProjectSettingsDialog = renderProjectSettingsDialog;
 
     function ensureSocialFeedModule() {
         if (window.__KIU_SOCIAL_FEED_MODULE_LOADED
@@ -2246,7 +2321,7 @@ Publishes only the host/runtime contract consumed by its loader.
         closeDialog, restorePreviousDialog, invalidateSocialRenderCache, setPanel, root,
         buildSocialRenderSignature, patchProjectWorkspaceTab, patchProjectHealthPlanCard, patchProjectHealthPlanPick, revealDeskExpandTarget,
         writeDeskSavedViews, assertUniqueProjectTaskTitle, createPortalSocialProject, createPortalSocialProjectBudgetCategory, createPortalSocialProjectBudgetExpense,
-        createPortalSocialProjectRisk, createPortalSocialProjectTask, deletePortalSocialProjectTask, ensureProjectTaskGraphPositionForTask, focusSocialDialog,
+        createPortalSocialProjectRisk, createPortalSocialProjectTask, addPortalSocialProjectTaskProof, updatePortalSocialProjectTaskProofNote, removePortalSocialProjectTaskProof, deletePortalSocialProjectTask, ensureProjectTaskGraphPositionForTask, focusSocialDialog,
         fromDateTimeLocalValue, getProjectTaskGraphPositions, markProjectTaskGraphPreviewStale, notifyProjectTaskGraphSurfaceChanged, parseDependsOnFromForm,
         parsePortfolioLinksInput, parseProjectTaskActualsPayload, parseProjectTaskBudgetEstimate, parseProjectTaskPriorityPayload, projectRiskScaleRank,
         refreshProjectTaskGraphDialog, resetPortfolioEditor, scrubDeletedTaskFromProjectTaskGraphGroups, setPortalSocialFlash, setPortalSocialProjectMembership,

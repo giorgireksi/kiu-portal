@@ -219,6 +219,65 @@ function normalizeTaskDescription(value) {
     return socialText(value || '').slice(0, 2000);
 }
 
+const SOCIAL_TASK_PROOF_MAX_ITEMS = 12;
+const SOCIAL_TASK_PROOF_MAX_NOTE_LENGTH = 1000;
+const SOCIAL_TASK_PROOF_IMAGE_TYPES = new Set([
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'image/gif'
+]);
+
+function normalizeTaskProofItems(value, context, actorId = '', existingItems = []) {
+    if (!Array.isArray(value)) return [];
+    const existingByStorageKey = new Map(asArray(existingItems)
+        .filter((item) => item && typeof item === 'object')
+        .map((item) => [socialText(item.storageKey || item.id), item]));
+    const normalizedActorId = socialText(actorId);
+    const files = context?.state?.files && typeof context.state.files === 'object' ? context.state.files : {};
+    return value.slice(0, SOCIAL_TASK_PROOF_MAX_ITEMS).map((item, index) => {
+        if (!item || typeof item !== 'object') return null;
+        const storageKey = socialText(item.storageKey || item.id);
+        if (!storageKey) return null;
+        const file = files[storageKey] || null;
+        const existing = existingByStorageKey.get(storageKey) || null;
+        // Existing records may survive a later cleanup/migration; new references
+        // must point to a real image owned by the contributing actor (or admin).
+        if (!file && !existing) return null;
+        const name = socialText(item.name || file?.name || existing?.name || 'Proof image').slice(0, 180);
+        let type = socialText(file?.type || existing?.type || item.type || '').toLowerCase();
+        if (type === 'image/jpg') type = 'image/jpeg';
+        if (!SOCIAL_TASK_PROOF_IMAGE_TYPES.has(type)) {
+            if (/\.(png)$/i.test(name)) type = 'image/png';
+            else if (/\.(jpe?g)$/i.test(name)) type = 'image/jpeg';
+            else if (/\.(webp)$/i.test(name)) type = 'image/webp';
+            else if (/\.(gif)$/i.test(name)) type = 'image/gif';
+            else return null;
+        }
+        if (file && !existing) {
+            const ownerId = socialText(file.ownerUserId || file.uploadedBy || '');
+            const isAdmin = typeof context?.isSocialAdmin === 'function' && context.isSocialAdmin(normalizedActorId);
+            if (ownerId && ownerId !== normalizedActorId && !isAdmin) return null;
+        }
+        const proofId = socialText(item.id || existing?.id || makeId('task-proof'));
+        const size = Math.max(0, Math.round(Number(item.size || file?.size || existing?.size || 0)));
+        const uploadedAt = socialText(item.uploadedAt || existing?.uploadedAt || file?.uploadedAt || nowIso());
+        const uploadedBy = socialText(item.uploadedBy || existing?.uploadedBy || file?.uploadedBy || file?.ownerUserId || normalizedActorId);
+        return {
+            id: proofId,
+            storageKey,
+            storageBackend: 'bridge',
+            name: name || 'Proof image',
+            type,
+            size,
+            uploadedAt,
+            uploadedBy,
+            note: socialText(item.note || '').slice(0, SOCIAL_TASK_PROOF_MAX_NOTE_LENGTH),
+            sortOrder: Number.isFinite(Number(item.sortOrder)) ? Math.max(0, Math.round(Number(item.sortOrder))) : index
+        };
+    }).filter(Boolean);
+}
+
 function normalizeTaskTimeUnit(value) {
     return socialText(value).toLowerCase() === 'd' ? 'd' : 'h';
 }
@@ -1202,6 +1261,7 @@ function createSocialProjectTask(projectId, payload = {}, actorId = '') {
         isMilestone: Boolean(payload.isMilestone),
         actualTime: normalizeTaskTimeEstimate(payload.actualTime),
         actualCost: normalizeTaskBudgetEstimate(payload.actualCost),
+        proofItems: normalizeTaskProofItems(payload.proofItems, this, normalizedActorId),
         checklist: asArray(payload.checklist).map((item, index) => ({
             id: socialText(item?.id || makeId(`check${index + 1}`)),
             label: socialText(item?.label || item?.title || ''),
@@ -1234,6 +1294,9 @@ function updateSocialProjectTask(projectId, taskId, payload = {}, actorId = '') 
     const normalizedActorId = socialText(actorId || payload.actorId || '');
     if (!project || !task || !canContributeToSocialProject.call(this, project, normalizedActorId)) return null;
     const beforeState = clone(task);
+    if (Object.prototype.hasOwnProperty.call(payload, 'proofItems')) {
+        task.proofItems = normalizeTaskProofItems(payload.proofItems, this, normalizedActorId, task.proofItems);
+    }
     if (Object.prototype.hasOwnProperty.call(payload, 'title')) task.title = normalizeTaskTitle(payload.title || task.title);
     if (Object.prototype.hasOwnProperty.call(payload, 'description')) task.description = normalizeTaskDescription(payload.description || '');
     if (Object.prototype.hasOwnProperty.call(payload, 'status')) task.status = normalizeTaskStatus(payload.status || task.status);

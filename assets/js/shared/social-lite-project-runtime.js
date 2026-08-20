@@ -176,6 +176,88 @@ async function updateProjectTask(projectId, taskId, input = {}, options = {}) {
     return task;
 }
 
+function projectTaskProofItems(projectId, taskId) {
+    const project = (Array.isArray(runtime?.social?.projects) ? runtime.social.projects : [])
+        .find((entry) => text(entry?.id) === text(projectId));
+    const task = (Array.isArray(project?.tasks) ? project.tasks : [])
+        .find((entry) => text(entry?.id) === text(taskId));
+    return Array.isArray(task?.proofItems) ? task.proofItems.filter((item) => item && typeof item === 'object') : [];
+}
+
+function isProjectTaskProofImage(file) {
+    if (!file) return false;
+    const type = text(file.type || '').toLowerCase();
+    const name = text(file.name || '').toLowerCase();
+    return /^image\/(jpe?g|png|webp|gif)$/i.test(type)
+        || /\.(jpe?g|png|webp|gif)$/i.test(name);
+}
+
+async function addProjectTaskProof(projectId, taskId, files, options = {}) {
+    const resolvedProjectId = text(projectId);
+    const resolvedTaskId = text(taskId);
+    const actorId = currentUserId();
+    if (!actorId || !resolvedProjectId || !resolvedTaskId) throw new Error('Task proof could not be uploaded.');
+    const selectedFiles = Array.from(files || []).filter(Boolean);
+    if (!selectedFiles.length) return null;
+    const existing = projectTaskProofItems(resolvedProjectId, resolvedTaskId);
+    if (existing.length >= 12) throw new Error('This task already has the maximum of 12 proof images.');
+    const accepted = selectedFiles.slice(0, 12 - existing.length);
+    const next = existing.slice();
+    const rejected = [];
+    for (const file of accepted) {
+        if (!isProjectTaskProofImage(file) || Number(file.size || 0) > 10 * 1024 * 1024) {
+            rejected.push(text(file.name || 'Selected file'));
+            continue;
+        }
+        if (typeof window.uploadPortalStoredFile !== 'function') throw new Error('Image storage is unavailable.');
+        const uploaded = await window.uploadPortalStoredFile(file, 'project-task-proof');
+        if (!uploaded?.storageKey) {
+            rejected.push(text(file.name || 'Selected file'));
+            continue;
+        }
+        next.push({
+            id: text(uploaded.storageKey),
+            storageKey: text(uploaded.storageKey),
+            storageBackend: 'bridge',
+            name: text(uploaded.name || file.name || 'Proof image'),
+            type: text(uploaded.type || file.type || 'image/jpeg').toLowerCase(),
+            size: Number(uploaded.size || file.size || 0) || 0,
+            uploadedAt: text(uploaded.uploadedAt || new Date().toISOString()),
+            uploadedBy: actorId,
+            note: '',
+            sortOrder: next.length
+        });
+    }
+    if (rejected.length && typeof setFlash === 'function') {
+        setFlash(`Skipped: ${rejected.join(', ')}. Use an image up to 10 MB.`, 'danger', { skipRender: true });
+    }
+    if (next.length === existing.length) return null;
+    const task = await updateProjectTask(resolvedProjectId, resolvedTaskId, { proofItems: next }, { silent: true });
+    if (!(options && options.silent)) await hydrateRuntime(true);
+    return task;
+}
+
+async function updateProjectTaskProofNote(projectId, taskId, proofId, note, options = {}) {
+    const items = projectTaskProofItems(projectId, taskId);
+    const id = text(proofId);
+    if (!id || !items.some((item) => text(item.id || item.storageKey) === id)) return null;
+    const next = items.map((item) => text(item.id || item.storageKey) === id
+        ? { ...item, note: text(note || '').slice(0, 1000) }
+        : item);
+    const task = await updateProjectTask(projectId, taskId, { proofItems: next }, { silent: true });
+    if (!(options && options.silent)) await hydrateRuntime(true);
+    return task;
+}
+
+async function removeProjectTaskProof(projectId, taskId, proofId, options = {}) {
+    const id = text(proofId);
+    const next = projectTaskProofItems(projectId, taskId).filter((item) => text(item.id || item.storageKey) !== id);
+    if (!id || next.length === projectTaskProofItems(projectId, taskId).length) return null;
+    const task = await updateProjectTask(projectId, taskId, { proofItems: next }, { silent: true });
+    if (!(options && options.silent)) await hydrateRuntime(true);
+    return task;
+}
+
 async function deleteProjectTask(projectId, taskId) {
     const actorId = currentUserId();
     if (!actorId || !text(projectId) || !text(taskId)) throw new Error('Project task could not be deleted.');
@@ -379,6 +461,12 @@ async function publishProjectShowcase(projectId) {
             createProjectTask,
             applyProjectTaskLocally,
             updateProjectTask,
+            addProjectTaskProof,
+            updateProjectTaskProofNote,
+            removeProjectTaskProof,
+            addPortalSocialProjectTaskProof: addProjectTaskProof,
+            updatePortalSocialProjectTaskProofNote: updateProjectTaskProofNote,
+            removePortalSocialProjectTaskProof: removeProjectTaskProof,
             deleteProjectTask,
             createProjectBudgetCategory,
             updateProjectBudgetCategory,
