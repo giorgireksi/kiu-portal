@@ -671,8 +671,14 @@ function socialScrollLockMedia() {
     }
 }
 function isSocialRouteDesktopScroll() {
-    return document.body.classList.contains('lux-route-social')
-        && Boolean(socialScrollLockMedia().matches);
+    if (!document.body.classList.contains('lux-route-social')) return false;
+    if (!Boolean(socialScrollLockMedia().matches)) return false;
+    // Only the standalone Messages panel owns the desktop viewport. Feed,
+    // Groups, Events, and workspace surfaces remain normal page flow so the
+    // overall page scrollbar stays available.
+    const socialRoots = document.querySelectorAll('#social-neo-root, #public-social-root, .social-neo[data-panel]');
+    const panel = Array.from(socialRoots).map((node) => String(node?.dataset?.panel || '').trim()).find(Boolean) || '';
+    return panel === 'messages';
 }
 function socialScrollLockActive() {
     return document.body.classList.contains('social-neo-scroll-lock');

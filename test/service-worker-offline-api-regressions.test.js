@@ -15,13 +15,13 @@ describe('service worker offline API regressions', () => {
         expect(source).not.toContain('refresh in');
         expect(source).not.toContain('fetch(request)\n          .then((networkResponse)');
         expect(source).not.toMatch(/SHELL_ASSETS[\s\S]*lux-page-bare-lite\.css/);
-        expect(source).toContain("/assets/css/shared-lux-core.css?v=16c18c02&customscroll9");
+        expect(source).toContain("/assets/css/shared-lux-core.css?v=96922958&customscroll32");
         expect(source).toContain("/assets/js/features/luxury-shell-chrome.js?v=20260819-sidebarperf3");
         expect(source).toContain("/assets/js/pages/login-runtime.js?v=20260819-fastboot3-swcache1");
         expect(source).toContain("const cachedPreviousVersion = await cache.match(request, { ignoreSearch: true });");
         expect(source).not.toContain("'/assets/css/lux-page-bare-lite.css");
         expect(source).not.toContain('"/assets/css/lux-page-bare-lite.css');
-        expect(source).toMatch(/const CACHE_NAME = 'kiu-portal-shell-v20260822-customscroll13'/);
+        expect(source).toMatch(/const CACHE_NAME = 'kiu-portal-shell-v20260822-customscroll32'/);
         expect(source).toContain('isSocialStandaloneNavigation');
         expect(source).toContain('const buildNavigationRequest = (cacheMode) => new Request(request, {');
     });

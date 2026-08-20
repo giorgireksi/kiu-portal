@@ -29774,6 +29774,48 @@ body.lux-route-social #public-social-root:has(.social-neo[data-panel="messages"]
     overflow: hidden;
 }
 
+/* Give Messages a little more vertical room than the viewport section while
+   retaining bounded inner scrollports and the normal page scrollbar. */
+@media (min-width: 761px) {
+    body.lux-route-social .social-neo[data-panel="messages"],
+    body.lux-route-social #public-social-root:has(.social-neo[data-panel="messages"]) {
+        min-height: calc(100dvh - var(--social-shortcuts-top-nav-height, 60px) - 24px + 56px);
+        height: calc(100dvh - var(--social-shortcuts-top-nav-height, 60px) - 24px + 56px);
+        max-height: none;
+        overflow: hidden;
+    }
+
+    body.lux-route-social .social-neo[data-panel="messages"] .social-neo-shell,
+    body.lux-route-social .social-neo[data-panel="messages"] #social-neo-center-region {
+        height: 100% !important;
+        max-height: 100% !important;
+        overflow: hidden !important;
+    }
+
+    body.lux-route-social .social-neo[data-panel="messages"] .social-neo-shell {
+        grid-template-rows: 100% !important;
+    }
+
+    body.lux-route-social .social-neo[data-panel="messages"] .social-neo-shell > #social-neo-workspace-nav-region,
+    body.lux-route-social .social-neo[data-panel="messages"] .social-neo-workspace-nav,
+    body.lux-route-social .social-neo[data-panel="messages"] .social-neo-workspace-nav-card {
+        min-height: 0 !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        overflow: hidden !important;
+    }
+
+    body.lux-route-social .social-neo[data-panel="messages"] .social-neo-workspace-nav-card {
+        grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    body.lux-route-social .social-neo[data-panel="messages"] .social-neo-workspace-nav-list {
+        min-height: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+}
+
 body.lux-route-social .social-neo[data-panel="messages"] .social-neo-shell {
     height: 100% !important;
     max-height: 100% !important;
@@ -44408,60 +44450,9 @@ body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sp
     }
 }
 
-/* Social thread: single custom rail, native hidden */
+/* Generic scrollbar runtime uses the thread shell as its positioning context. */
 body.lux-route-social .social-neo-messages__thread-shell {
     position: relative;
-}
-body.lux-route-social .social-neo-messages__thread-scroll {
-    scrollbar-width: none !important;
-    -ms-overflow-style: none;
-}
-body.lux-route-social .social-neo-messages__thread-scroll::-webkit-scrollbar {
-    width: 0;
-    height: 0;
-}
-body.lux-route-social .social-project-workspace-chat .social-neo-messages__thread-scroll {
-    scrollbar-width: none !important;
-}
-body.lux-route-social .social-neo-messages__custom-scrollbar {
-    position: absolute;
-    z-index: 3;
-    top: 0;
-    right: 2px;
-    width: var(--lux-scrollbar-size);
-    min-height: 32px;
-    display: block;
-    opacity: 1;
-    border: 1px solid rgba(var(--lux-accent-rgb), 0.35);
-    border-radius: 999px;
-    background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.9);
-    touch-action: none;
-    user-select: none;
-}
-body.lux-route-social .social-neo-messages__custom-scrollbar[aria-disabled="true"] {
-    opacity: .35;
-    pointer-events: none;
-}
-body.lux-route-social .social-neo-messages__custom-scrollbar-thumb {
-    position: absolute;
-    inset: 1px 1px auto;
-    min-height: 32px;
-    border-radius: 999px;
-    background: var(--lux-scrollbar-thumb);
-    box-shadow: 0 0 8px rgba(var(--lux-accent-rgb), 0.35);
-}
-body.lux-route-social .social-neo-messages__custom-scrollbar-thumb:hover {
-    background: var(--lux-scrollbar-thumb-hover);
-}
-body.lux-route-social .social-neo-messages__custom-scrollbar:focus-visible {
-    outline: 2px solid var(--lux-scrollbar-thumb);
-    outline-offset: 2px;
-}
-/* The unified-shell child-material rule gives direct children relative positioning.
-   Keep the bespoke message rail anchored to the thread shell instead. */
-body.lux-route-social.lux-unified-shell .social-neo-messages__thread-shell > .social-neo-messages__custom-scrollbar {
-    position: absolute !important;
-    z-index: 2147483000 !important;
 }
 /* Picker panels must remain overlays when their scrollport gets a custom rail. */
 body.lux-route-social .lux-picker-field > :is(.lux-picker-panel, .lux-universal-picker-panel, .lux-droplist-panel) {
@@ -48895,33 +48886,75 @@ body.lux-route-social #social-neo-overlay-portal .social-page-surface[data-lux-t
     background-clip: padding-box;
 }
 
-/* Messages workspace: keep the page bounded while inbox/thread content scrolls. */
+/* Messages uses the same natural section height as the other Social panels;
+   only inbox/thread content keeps bounded inner scrollports. */
 @media (min-width: 1025px) {
+    body.lux-route-social .social-neo[data-panel="messages"],
+    body.lux-route-social #public-social-root:has(.social-neo[data-panel="messages"]) {
+        min-height: 0 !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    body.lux-route-social .social-neo[data-panel="messages"] .social-neo-shell,
     body.lux-route-social .social-neo[data-panel="messages"] #social-neo-center-region {
-        min-height: 0;
-        overflow: hidden;
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    body.lux-route-social .social-neo[data-panel="messages"] .social-neo-shell {
+        grid-template-rows: auto !important;
     }
 
     body.lux-route-social .social-neo[data-panel="messages"] .social-neo-messages {
-        min-height: 0;
-        height: min(100%, calc(100dvh - 190px));
-        max-height: calc(100dvh - 190px);
-        overflow: hidden;
+        min-height: 0 !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        overflow: hidden !important;
+        contain: size;
     }
 
     body.lux-route-social .social-neo[data-panel="messages"] .social-neo-messages__inbox,
     body.lux-route-social .social-neo[data-panel="messages"] .social-neo-messages__thread-shell {
-        min-height: 0;
-        max-height: 100%;
-        overflow: hidden;
+        min-height: 0 !important;
+        max-height: 100% !important;
+        overflow: hidden !important;
     }
 
     body.lux-route-social .social-neo[data-panel="messages"] .social-neo-chat-items,
     body.lux-route-social .social-neo[data-panel="messages"] .social-neo-messages__thread-scroll {
         min-height: 0;
-        max-height: none;
+        height: 0 !important;
+        contain: size;
+        max-height: 100%;
         overflow-y: auto;
         overscroll-behavior: contain;
+    }
+
+    /* The inbox list is a grid row, not a zero-height flex viewport. */
+    body.lux-route-social .social-neo[data-panel="messages"] .social-neo-chat-items {
+        height: auto !important;
+        contain: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="messages"] .social-neo-shell > #social-neo-workspace-nav-region,
+    body.lux-route-social .social-neo[data-panel="messages"] .social-neo-workspace-nav,
+    body.lux-route-social .social-neo[data-panel="messages"] .social-neo-workspace-nav-card {
+        min-height: 0 !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    body.lux-route-social .social-neo[data-panel="messages"] .social-neo-workspace-nav-card {
+        grid-template-rows: auto auto !important;
+    }
+
+    body.lux-route-social .social-neo[data-panel="messages"] .social-neo-workspace-nav-list {
+        min-height: auto !important;
+        overflow: visible !important;
     }
 }
 

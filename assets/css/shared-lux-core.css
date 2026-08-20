@@ -1,4 +1,4 @@
-/* shared-lux-core — generated from 8 sources — hash 16c18c02 — edit SOURCES, run tools/build-shared-lux-core.mjs */
+/* shared-lux-core — generated from 8 sources — hash 96922958 — edit SOURCES, run tools/build-shared-lux-core.mjs */
 /* source: assets/css/lux-tokens.css */
 
 
@@ -86,10 +86,10 @@
   --lux-panel-blur-filter: blur(calc(var(--lux-transparency-blur, var(--lux-glass-blur, 14px)) * 0.55));
   --lux-grid-row-height: 28px;
   --lux-topbar-fill-alpha: 0.78;
-  --lux-scrollbar-size: 7px;
+  --lux-scrollbar-size: 10px;
   --lux-scrollbar-track: transparent;
-  --lux-scrollbar-thumb: rgba(var(--lux-accent-rgb), calc(0.24 + var(--lux-glass-alpha, 0.06)));
-  --lux-scrollbar-thumb-hover: rgba(var(--lux-accent-rgb), calc(0.42 + var(--lux-panel-glow, 0.22) * 0.35));
+  --lux-scrollbar-thumb: rgba(var(--lux-accent-rgb), 0.78);
+  --lux-scrollbar-thumb-hover: rgba(var(--lux-accent-rgb), 0.96);
 }
 html {
   scrollbar-width: thin;
@@ -195,6 +195,11 @@ html[data-lux-custom-scrollbar-target="window"] {
   z-index: 999 !important;
   pointer-events: auto;
 }
+
+body.lux-unified-shell .lux-custom-scrollbar:not(.lux-custom-scrollbar--window) {
+  position: absolute !important;
+  z-index: 1000 !important;
+}
 body[data-lux-portal-modal-scroll-lock] .lux-custom-scrollbar--window:not(.lux-custom-scrollbar--page),
 body.social-neo-scroll-lock .lux-custom-scrollbar--window:not(.lux-custom-scrollbar--page) {
   opacity: 0 !important;
@@ -254,8 +259,9 @@ body.lux-light-mode:not([data-faculty]), body.lux-light-mode[data-faculty=""] {
 }
 body.lux-light-mode {
   --lux-glass-tint-rgb: 246, 239, 229;
-  --lux-scrollbar-thumb: rgba(48, 34, 22, 0.18);
-  --lux-scrollbar-thumb-hover: color-mix(in srgb, rgba(var(--lux-accent-rgb), 0.48) 55%, rgba(48, 34, 22, 0.28));
+
+  --lux-scrollbar-thumb: rgba(var(--lux-accent-rgb), 0.78);
+  --lux-scrollbar-thumb-hover: rgba(var(--lux-accent-rgb), 0.96);
   --lux-bg: #efebe4;
   --lux-shell-background: radial-gradient(ellipse at 20% 14%, rgba(200, 160, 80, 0.06), transparent 38%), radial-gradient(ellipse at 80% 80%, rgba(180, 140, 90, 0.04), transparent 30%), linear-gradient(168deg, #f8f4ec 0%, #f2ece0 40%, #eee6d6 100%);
   --lux-bg-soft: #f7f3ec;
@@ -293,7 +299,7 @@ html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(
 }
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode {
   --lux-hero-glow: 0;
-  --lux-scrollbar-thumb: rgba(48, 34, 22, 0.16);
+  --lux-scrollbar-thumb: rgba(var(--lux-accent-rgb), 0.78);
 }
 :root { --lux-transparency-blur: 18px; --lux-transparency-saturate: 145%; }
 body[data-lux-performance='efficient'] { --lux-scrollbar-size: 6px; }

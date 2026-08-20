@@ -1,5 +1,5 @@
 /* Thin route diff: study-card. Core in shared-lux-core.css */
-/* Included source lines: 3785-3799, 5043-6312, 46058-46740. */
+/* Included source lines: 3785-3799, 5043-6312, 46093-46775. */
 body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .lms-route-panel {
     display: grid;
     gap: 14px;
@@ -1287,50 +1287,6 @@ body.lux-route-study-card #page-study-card .lms-route-card-title {
     color: var(--lux-text);
 }
 
-body.lux-route-exams #admin-exams-root .ex2-timeline {
-    display: flex;
-    gap: 12px;
-    overflow-x: auto;
-    padding: 8px 0;
-}
-
-body.lux-route-exams #admin-exams-root .ex2-timeline-card {
-    min-width: 180px;
-    padding: 16px;
-    border-radius: 16px;
-    border: 1px solid var(--lux-border);
-    background: var(--lux-surface);
-    flex-shrink: 0;
-    transition: transform .2s;
-}
-
-body.lux-route-exams #admin-exams-root .ex2-timeline-card:hover {
-    transform: translateY(-2px);
-}
-
-
-body.lux-route-exams #admin-exams-root .ex2-mini-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    gap: 10px;
-    margin-top: 12px;
-}
-
-body.lux-route-exams #admin-exams-root .ex2-mini-grid--flush {
-    margin-top: 0;
-}
-
-body.lux-route-exams #admin-exams-root .ex2-mini-grid > div {
-    text-align: center;
-}
-
-body.lux-route-exams #admin-exams-root .ex2-review-summary-card,
-body.lux-route-exams #admin-exams-root .ex2-session-stat-card {
-    text-align: center;
-}
-
-body.lux-route-exams #admin-exams-root .ex2-review-summary-value,
-body.lux-route-exams #admin-exams-root .ex2-session-stat-value {
     display: block;
 }
 
@@ -1970,3 +1926,47 @@ body.lux-route-exams #admin-exams-root .ex2-qnav-dot {
                 color: var(--lux-text-muted);
                 font-size: 12px;
                 font-weight: 700;
+                cursor: pointer;
+                transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-qnav-dot:hover {
+                background: rgba(var(--lux-accent-rgb), 0.12);
+                border-color: rgba(var(--lux-accent-rgb), 0.3);
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-qnav-dot.is-active {
+                background: linear-gradient(135deg, var(--lux-accent), var(--lux-accent-2, var(--lux-accent)));
+                color: #fff;
+                border-color: transparent;
+                box-shadow: 0 2px 10px rgba(var(--lux-accent-rgb), 0.35);
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-qnav-dot.has-content:not(.is-active) {
+                background: rgba(var(--lux-accent-rgb), 0.1);
+                border-color: rgba(var(--lux-accent-rgb), 0.22);
+                color: var(--lux-text);
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-question-head {
+                align-items: center;
+                padding-bottom: 16px;
+                border-bottom: 1px solid rgba(var(--lux-border-rgb, 148, 163, 184), 0.28);
+            }
+
+body.lux-route-exams #admin-exams-root .ex2-options {
+                gap: 12px;
+            }
+
+
+body.lux-route-exams #admin-exams-root .ex2-rq-console {
+    display: grid;
+    gap: 16px;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-rq-console-head {
+    align-items: flex-start;
+}

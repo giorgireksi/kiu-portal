@@ -346,15 +346,12 @@
                     ${renderThreadToolbar()}
                     ${renderThreadSearchBar()}
                 </div>
-                <div class="social-neo-messages__thread-scroll" id="${escape(threadScrollId)}" data-social-thread-scroll tabindex="0" role="region" aria-label="Message history">
+                <div class="social-neo-messages__thread-scroll" id="${escape(threadScrollId)}" data-social-thread-scroll data-lux-scrollport data-lux-scroll-axis="vertical" tabindex="0" role="region" aria-label="Message history">
                     <div class="social-neo-thread-messages social-neo-messages__thread-stream" data-lux-transparency-exempt="1">
                         ${activeMessages(chat).length ? activeMessages(chat).map(renderMessageCard).join('') : `<div class="social-neo-empty">No messages yet.</div>`}
                     </div>
                     ${isGroupThread ? renderGroupCallCard() : ''}
                     ${renderDirectCallHint()}
-                </div>
-                <div class="social-neo-messages__custom-scrollbar" data-social-thread-scrollbar role="scrollbar" aria-orientation="vertical" aria-controls="${escape(threadScrollId)}" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" aria-disabled="true" tabindex="0">
-                    <span class="social-neo-messages__custom-scrollbar-thumb" data-social-thread-scrollbar-thumb></span>
                 </div>
                 <form class="${messageComposeFormClass} social-neo-messages__composer" data-form="send-message" data-chat-id="${escape(text(chat.id))}" autocomplete="off">
                     ${renderFileChip(messageFile)}
@@ -371,85 +368,6 @@
             requestAnimationFrame(() => {
                 const scroller = findVisibleThreadScroller(chat.id);
                 if (!scroller) return;
-                const shell = scroller.closest('.social-neo-messages__thread-shell');
-                const rail = shell?.querySelector('[data-social-thread-scrollbar]');
-                const thumb = rail?.querySelector('[data-social-thread-scrollbar-thumb]');
-                const syncScrollbar = () => {
-                    if (!rail || !thumb || !shell) return;
-                    const shellRect = shell.getBoundingClientRect();
-                    const scrollRect = scroller.getBoundingClientRect();
-                    const maxScroll = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
-                    const hasOverflow = maxScroll > 1;
-                    rail.setAttribute('aria-disabled', hasOverflow ? 'false' : 'true');
-                    rail.setAttribute('aria-valuemax', String(maxScroll));
-                    rail.setAttribute('aria-valuenow', String(Math.round(scroller.scrollTop)));
-                    rail.style.top = `${scrollRect.top - shellRect.top}px`;
-                    rail.style.height = `${scrollRect.height}px`;
-                    if (!hasOverflow) {
-                        thumb.style.height = '32px';
-                        thumb.style.top = '0px';
-                        return;
-                    }
-                    const railHeight = Math.max(1, rail.clientHeight);
-                    const thumbHeight = Math.max(32, Math.round(railHeight * (scroller.clientHeight / scroller.scrollHeight)));
-                    const travel = Math.max(0, railHeight - thumbHeight);
-                    thumb.style.height = `${thumbHeight}px`;
-                    thumb.style.top = `${(scroller.scrollTop / maxScroll) * travel}px`;
-                };
-                scroller.addEventListener('scroll', syncScrollbar, { passive: true });
-                try {
-                    if (typeof ResizeObserver === 'function') {
-                        const ro = new ResizeObserver(syncScrollbar);
-                        ro.observe(scroller);
-                    }
-                } catch (error) {}
-                scroller.addEventListener('wheel', (event) => {
-                    const maxScroll = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
-                    if (maxScroll <= 1) return;
-                    const atTop = scroller.scrollTop <= 0;
-                    const atBottom = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 1;
-                    if ((event.deltaY < 0 && !atTop) || (event.deltaY > 0 && !atBottom)) {
-                        event.preventDefault();
-                        scroller.scrollTop += event.deltaY;
-                        syncScrollbar();
-                    }
-                }, { passive: false });
-                if (rail && thumb) {
-                    rail.addEventListener('wheel', (event) => {
-                        event.preventDefault();
-                        scroller.scrollTop += event.deltaY;
-                    }, { passive: false });
-                    const setScrollFromPointer = (clientY) => {
-                        const railRect = rail.getBoundingClientRect();
-                        const thumbHeight = thumb.getBoundingClientRect().height;
-                        const travel = Math.max(1, railRect.height - thumbHeight);
-                        const ratio = Math.max(0, Math.min(1, (clientY - railRect.top - thumbHeight / 2) / travel));
-                        scroller.scrollTop = ratio * Math.max(0, scroller.scrollHeight - scroller.clientHeight);
-                    };
-                    let dragging = false;
-                    rail.addEventListener('pointerdown', (event) => {
-                        if (rail.getAttribute('aria-disabled') === 'true') return;
-                        event.preventDefault();
-                        dragging = true;
-                        rail.setPointerCapture?.(event.pointerId);
-                        setScrollFromPointer(event.clientY);
-                    });
-                    rail.addEventListener('pointermove', (event) => {
-                        if (dragging) setScrollFromPointer(event.clientY);
-                    });
-                    const stopDragging = () => { dragging = false; };
-                    rail.addEventListener('pointerup', stopDragging);
-                    rail.addEventListener('pointercancel', stopDragging);
-                    rail.addEventListener('keydown', (event) => {
-                        const page = Math.max(40, scroller.clientHeight * 0.85);
-                        const increments = { ArrowUp: -40, ArrowDown: 40, PageUp: -page, PageDown: page };
-                        if (event.key === 'Home') scroller.scrollTop = 0;
-                        else if (event.key === 'End') scroller.scrollTop = scroller.scrollHeight;
-                        else if (increments[event.key]) scroller.scrollTop += increments[event.key];
-                        else return;
-                        event.preventDefault();
-                    });
-                }
                 const jumpEl = scroller.querySelector('.is-highlighted, .is-search-active');
                 if (jumpEl) {
                     jumpEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
@@ -459,7 +377,8 @@
                     const maxScroll = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
                     scroller.scrollTop = Math.max(0, maxScroll - previousDistanceFromBottom);
                 }
-                syncScrollbar();
+                window.initLuxCustomScrollbar?.(scroller, { axis: 'vertical' });
+                window.syncLuxCustomScrollbar?.();
             });
         } catch (error) {}
         return renderedHtml;

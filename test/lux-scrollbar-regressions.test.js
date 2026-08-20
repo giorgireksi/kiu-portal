@@ -13,6 +13,12 @@ describe('lux scrollbar regressions', () => {
         const tokens = readSource('assets/css/lux-tokens.css');
         const shell = readSource('assets/css/lux-shell.css');
         const controls = readSource('assets/css/lux-controls.css');
+        const runtime = readSource('assets/js/shared/lux-custom-scrollbar.js');
+
+        expect(runtime).toContain('data-lux-scrollport');
+        expect(runtime).toContain('One inner rail belongs to one scrollport');
+        expect(runtime).toContain('function isSocialCenterScroller(el)');
+        expect(runtime).toContain('function releaseSocialCenterScroller(el)');
 
         const primitives = readSource('assets/css/lux-layout-primitives.css');
         expect(existsSync(join(process.cwd(), 'assets/css/lux-layout-primitives.css'))).toBe(true);
@@ -24,7 +30,7 @@ describe('lux scrollbar regressions', () => {
         expect(tokens).toContain('--lux-scrollbar-thumb-hover');
         expect(tokens).toContain('--lux-scrollbar-track');
         expect(tokens).toContain('--lux-scrollbar-size');
-        expect(tokens).toContain('--lux-scrollbar-thumb: rgba(48, 34, 22, 0.18)');
+        expect(tokens).toContain('--lux-scrollbar-thumb: rgba(var(--lux-accent-rgb), 0.78)');
         expect(tokens).toMatch(/--lux-scrollbar-thumb-hover:\s*rgba\(var\(--lux-accent-rgb\)/);
 
         expect(shell).toContain('.lux-nav::-webkit-scrollbar');
@@ -42,8 +48,8 @@ describe('lux scrollbar regressions', () => {
 
     it('keeps light-mode scrollbar thumb token for shared chrome', () => {
         const tokens = readSource('assets/css/lux-tokens.css');
-        expect(tokens).toContain('--lux-scrollbar-thumb: rgba(48, 34, 22, 0.18)');
+        expect(tokens).toContain('--lux-scrollbar-thumb: rgba(var(--lux-accent-rgb), 0.78)');
         expect(tokens).toContain('--lux-scrollbar-thumb-hover');
-        expect(tokens).toMatch(/body\.lux-light-mode[\s\S]*?--lux-scrollbar-thumb-hover:\s*color-mix/);
+        expect(tokens).toMatch(/body\.lux-light-mode[\s\S]*?--lux-scrollbar-thumb-hover:\s*rgba\(var\(--lux-accent-rgb\), 0\.96\)/);
     });
 });

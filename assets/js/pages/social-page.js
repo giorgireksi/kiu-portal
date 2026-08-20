@@ -207,15 +207,15 @@ Publishes only the host/runtime contract consumed by its loader.
         return candidates.length ? Math.max(...candidates) : 0;
     }
     const SOCIAL_COMMUNITY_MODULE_URL = 'assets/js/pages/social-community.js?v=20260816-socialperf1';
-    const SOCIAL_ALERTS_MODULE_URL = 'assets/js/pages/social-alerts.js?v=20260822-customscroll13';
+    const SOCIAL_ALERTS_MODULE_URL = 'assets/js/pages/social-alerts.js?v=20260822-customscroll32';
     const SOCIAL_LOST_FOUND_MODULE_URL = 'assets/js/pages/social-lost-found.js?v=20260807-socialtopnav34';
-    const SOCIAL_PHOTOGRAPHY_MODULE_URL = 'assets/js/pages/social-photography.js?v=20260822-customscroll13';
+    const SOCIAL_PHOTOGRAPHY_MODULE_URL = 'assets/js/pages/social-photography.js?v=20260822-customscroll32';
     const SOCIAL_SURVEYS_MODULE_URL = 'assets/js/pages/social-surveys.js?v=20260807-socialtopnav35';
     const SOCIAL_RESEARCH_PDF_RUNTIME_URL = 'assets/js/pages/social-research-pdf-runtime.js?v=20260801-researchviewer12';
     const SOCIAL_RESEARCH_MODULE_URL = 'assets/js/pages/social-research.js?v=20260807-socialtopnav34';
     const PHOTOGRAPHY_UPLOAD_FILE_SINK_ID = 'kiu-photography-upload-file-sink';
     const PHOTOGRAPHY_UPLOAD_MAX_BYTES = 25 * 1024 * 1024;
-    const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260822-customscroll13';
+    const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260822-customscroll32';
     const SOCIAL_PROFILE_MODEL_URL = 'assets/js/pages/social-profile-model.js?v=20260820-socialintent1';
     const SOCIAL_PROFILE_MODULE_URL = 'assets/js/pages/social-profile.js?v=20260714-profile-click1';
     const SOCIAL_TASK_MODEL_URL = 'assets/js/pages/social-task-model.js?v=20260720-w23task1';

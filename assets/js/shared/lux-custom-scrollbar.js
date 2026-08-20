@@ -57,8 +57,11 @@
         const isWindow = isWindowScroller(scroller);
         const isPage = isPageScroller(scroller) || isWindowScroller(shell);
         if (!isPage) {
-            const existing = shell.querySelector(`[${RAIL_ATTR}]`);
-            if (existing) return existing;
+            // One inner rail belongs to one scrollport. Reusing the first rail
+            // in a shared modal/panel shell makes sibling lists control each
+            // other and leaves one of them visually untracked.
+            const existingInstance = INSTANCE_MAP.get(scroller);
+            if (existingInstance?.rail?.isConnected) return existingInstance.rail;
         } else {
             const existingPage = document.body.querySelector(`[${RAIL_ATTR}="window"]`);
             if (existingPage && isWindow) return existingPage;
@@ -360,6 +363,13 @@
             } catch (_) {}
             INSTANCE_MAP.delete(scroller);
             scroller.removeAttribute(BOUND_ATTR);
+            if (isWindow) {
+                document.documentElement.removeAttribute('data-lux-custom-scrollbar-target');
+            } else {
+                scroller.removeAttribute('data-lux-custom-scrollbar-target');
+            }
+            scroller.style.removeProperty('scrollbar-width');
+            scroller.style.removeProperty('-ms-overflow-style');
             try { rail.remove(); } catch (_) {}
         }};
         INSTANCE_MAP.set(scroller, instance);
@@ -445,39 +455,83 @@
             '.chancellery-case-scroll'
         ];
         const seenAttr = 'data-lux-custom-auto-seen';
-        function isSocialInboxPanel() {
-            const root = document.querySelector('#social-neo-root');
-            if (root && (root.dataset.panel === 'messages' || root.dataset.panel === 'alerts')) return true;
-            const center = document.querySelector('#social-neo-center-region');
-            if (center && (center.querySelector('.social-neo-messages') || center.querySelector('.sn-alerts-panel'))) return true;
-            return false;
+        function isSocialCenterScroller(el) {
+            return document.body?.classList.contains('lux-route-social')
+                && el?.matches?.('#social-neo-center-region, .social-neo-center');
+        }
+        function releaseSocialCenterScroller(el) {
+            if (!el) return;
+            const instance = INSTANCE_MAP.get(el);
+            if (instance && typeof instance.destroy === 'function') instance.destroy();
+            el.removeAttribute(seenAttr);
+            el.removeAttribute('data-lux-custom-scrollbar-auto');
+            el.removeAttribute(AXIS_ATTR);
+            el.removeAttribute(BOUND_ATTR);
+            el.removeAttribute('data-lux-custom-scrollbar-target');
+            el.style.removeProperty('scrollbar-width');
+            el.style.removeProperty('-ms-overflow-style');
+        }
+        function isIgnoredScrollport(el) {
+            return !el
+                || el === document.documentElement
+                || el === document.body
+                || el.matches('script, style, link, meta, svg, canvas, video, iframe, input, select, textarea, [data-lux-scrollbar-ignore]');
+        }
+        function hasScrollableOverflow(el) {
+            if (isIgnoredScrollport(el) || isSocialCenterScroller(el)) return false;
+            const style = getComputedStyle(el);
+            const x = /(auto|scroll|overlay)/.test(style.overflowX);
+            const y = /(auto|scroll|overlay)/.test(style.overflowY);
+            return (x && el.scrollWidth > el.clientWidth + 1)
+                || (y && el.scrollHeight > el.clientHeight + 1);
+        }
+        function resolveAxis(el) {
+            const declared = el.getAttribute(AXIS_ATTR) || el.getAttribute('data-lux-scroll-axis');
+            if (declared === HORIZONTAL) return HORIZONTAL;
+            if (declared === 'vertical') return 'vertical';
+            return el.scrollWidth > el.clientWidth + 1 && el.scrollHeight <= el.clientHeight + 1
+                ? HORIZONTAL
+                : 'vertical';
         }
         function scan(root) {
             if (!root || !root.querySelectorAll) return;
+            const candidates = new Set();
+            const add = (el, force = false) => {
+                if (!el || isIgnoredScrollport(el) || isSocialCenterScroller(el)) {
+                    if (isSocialCenterScroller(el)) releaseSocialCenterScroller(el);
+                    return;
+                }
+                const explicit = el.hasAttribute('data-lux-scrollport')
+                    || el.hasAttribute('data-lux-custom-scrollbar-auto')
+                    || el.hasAttribute('data-lux-scrollbar-auto');
+                if (force || explicit || hasScrollableOverflow(el)) candidates.add(el);
+            };
             autoSelectors.forEach((sel) => {
-                try {
-                    root.querySelectorAll(sel).forEach((el) => {
-                        if (el.hasAttribute(seenAttr)) return;
-                        // center is not scrollable in inbox (messages/alerts) — skip
-                        if (el.matches('#social-neo-center-region, .social-neo-center') && isSocialInboxPanel()) return;
-                        el.setAttribute(seenAttr, '1');
-                        const isCenterScroller = el.matches('#social-neo-center-region, .social-neo-center');
-                        // check overflow style (center is made scrollable via JS after layout, so allow it)
-                        const st = getComputedStyle(el);
-                        const isScroll = isCenterScroller || /(auto|scroll)/.test(st.overflowY + st.overflowX + st.overflow);
-                        if (!isScroll && !el.classList.contains('lux-scrollbar') && !el.classList.contains('modal-body')) {
-                            // still init if marked lux-scrollbar
-                            if (!el.matches('.modal-content:not(:has(> .modal-body))')) return;
-                        }
-                        const isH = el.matches('.timetable-grid, .lux-program-semester-table-scroll, .admin-scheduler-session-modal-chip-list, .lms-whiteboard-command-bar-scroll');
-                        el.setAttribute('data-lux-custom-scrollbar-auto', isH ? HORIZONTAL : 'vertical');
-                        if (isH) el.setAttribute(AXIS_ATTR, HORIZONTAL);
-                        // defer init to next frame to ensure layout
-                        requestAnimationFrame(() => {
-                            try { window.initLuxCustomScrollbar(el, { axis: isH ? HORIZONTAL : 'vertical' }); } catch (_) {}
-                        });
-                    });
-                } catch (_) {}
+                try { root.querySelectorAll(sel).forEach((el) => add(el, true)); } catch (_) {}
+            });
+            try {
+                root.querySelectorAll('[data-lux-scrollport], [data-lux-scrollbar-auto], [data-lux-custom-scrollbar-auto]')
+                    .forEach((el) => add(el, true));
+            } catch (_) {}
+            // Universal discovery gives previously unregistered route sections
+            // the same rail without forcing every overflow:visible wrapper to
+            // become a scroll owner. Mutation scans stay subtree-scoped.
+            try {
+                const nodes = [];
+                if (root.nodeType === 1) nodes.push(root);
+                root.querySelectorAll('*').forEach((el) => nodes.push(el));
+                nodes.forEach((el) => add(el));
+            } catch (_) {}
+            candidates.forEach((el) => {
+                if (el.getAttribute(seenAttr) === '1' && el.getAttribute(BOUND_ATTR) === '1') return;
+                el.setAttribute(seenAttr, '1');
+                const axis = resolveAxis(el);
+                el.setAttribute('data-lux-scrollport', '1');
+                el.setAttribute('data-lux-custom-scrollbar-auto', axis);
+                if (axis === HORIZONTAL) el.setAttribute(AXIS_ATTR, HORIZONTAL);
+                requestAnimationFrame(() => {
+                    try { window.initLuxCustomScrollbar(el, { axis }); } catch (_) {}
+                });
             });
         }
         scan(document);

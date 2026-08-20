@@ -13,25 +13,27 @@ describe('social-messages-scroll-regressions.test (bare-shell era)', () => {
 
     it('uses one scoped thread viewport with an accessible visual rail', () => {
         const css = readSource('assets/css/lux-page-bare-lite.css');
+        const tokens = readSource('assets/css/lux-tokens.css');
         const messages = readSource('assets/js/pages/social-messages.js');
 
         expect(messages).toContain('data-social-thread-shell');
-        expect(messages).toContain('data-social-thread-scrollbar');
-        expect(messages).toContain('role="scrollbar"');
-        expect(messages).toContain("rail.addEventListener('wheel'");
-        expect(messages).toContain("scroller.addEventListener('wheel'");
+        expect(messages).toContain('data-lux-scrollport');
+        expect(messages).toContain('window.initLuxCustomScrollbar');
+        expect(messages).not.toContain('data-social-thread-scrollbar');
         expect(css).toMatch(/social-project-workspace-chat\s*\{[\s\S]*?height:\s*min\(74vh, calc\(100dvh - 190px\)\)/);
+        expect(css).toMatch(/@media\s*\(min-width:\s*761px\)[\s\S]*?social-neo\[data-panel="messages"\][\s\S]*?min-height:\s*calc\(100dvh - var\(--social-shortcuts-top-nav-height, 60px\) - 24px \+ 56px\)[\s\S]*?height:\s*calc\(100dvh - var\(--social-shortcuts-top-nav-height, 60px\) - 24px \+ 56px\)[\s\S]*?max-height:\s*none/);
         expect(css).toMatch(/social-project-workspace-chat \.social-neo-messages__thread-scroll\s*\{[\s\S]*?flex:\s*1 1 0% !important[\s\S]*?overflow-y:\s*auto !important/);
         expect(css).toMatch(/social-project-workspace-chat \.social-neo-messages__composer\s*\{[\s\S]*?margin-top:\s*0 !important/);
-        expect(css).toContain('social-neo-messages__custom-scrollbar');
-        expect(css).toContain('social-neo-messages__custom-scrollbar[aria-disabled="true"]');
-        expect(css).toContain('social-neo-messages__thread-shell > .social-neo-messages__custom-scrollbar');
-        expect(css).toContain('position: absolute !important');
+        expect(css).toContain('.lux-custom-scrollbar');
+        expect(tokens).toContain('body.lux-unified-shell .lux-custom-scrollbar:not(.lux-custom-scrollbar--window)');
+        expect(tokens).toContain('position: absolute !important');
 
         const scrollbarRuntime = readSource('assets/js/shared/lux-custom-scrollbar.js');
         expect(scrollbarRuntime).not.toContain("'.social-neo-messages__thread-scroll'");
 
         const shellRuntime = readSource('assets/js/pages/social-page-shell-runtime.js');
+        const interactionsRuntime = readSource('assets/js/pages/social-page-interactions-runtime.js');
+        expect(interactionsRuntime).toContain('return panel === \'messages\';');
         expect(shellRuntime).toContain('.social-neo-messages__thread-scroll, .social-neo-chat-items');
         expect(shellRuntime).not.toContain('.social-neo-messages__thread-scroll, .social-neo-thread-messages');
     });
@@ -49,6 +51,11 @@ describe('social-messages-scroll-regressions.test (bare-shell era)', () => {
         expect(css).toMatch(/\[data-panel="messages"\][\s\S]*\.social-neo-messages__thread-shell[\s\S]*flex-direction:\s*column/);
         expect(css).toMatch(/\[data-panel="messages"\][\s\S]*\.social-neo-messages__thread-scroll[\s\S]*overflow-y:\s*auto/);
         expect(css).toMatch(/\.social-neo-messages\.is-group-rail-open[\s\S]*grid-template-columns:\s*minmax\(300px, 340px\) minmax\(0, 1fr\)/);
+
+        const scrollbarRuntime = readSource('assets/js/shared/lux-custom-scrollbar.js');
+        expect(scrollbarRuntime).toContain('function isSocialCenterScroller(el)');
+        expect(scrollbarRuntime).toContain('releaseSocialCenterScroller(el)');
+        expect(scrollbarRuntime).toContain("document.documentElement.removeAttribute('data-lux-custom-scrollbar-target')");
 
         expect(shell).toContain('.social-neo-chat-items');
         expect(shell).toContain('.social-neo-messages__thread-scroll');

@@ -1,5 +1,47 @@
 /* Thin route diff: exams. Core in shared-lux-core.css */
-/* Included source lines: 43354-46057. */
+/* Included source lines: 43354-46092. */
+    color: var(--lux-text);
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+}
+body.lux-route-social .sptg-context-menu-item:hover,
+.sptg-context-menu-item:hover {
+    background: var(--lux-panel-control);
+}
+body.lux-route-social .sptg-context-menu-icon,
+.sptg-context-menu-icon {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    background: var(--lux-panel-control);
+    color: var(--lux-text-muted);
+}
+body.lux-route-social .sptg-context-menu-icon.is-risk {
+    color: #fb7185;
+}
+
+
+
+
+body.lux-route-social .social-project-tab-panel {
+    display: grid;
+    gap: var(--social-gap);
+    min-width: 0;
+}
+
+body.lux-route-social .social-project-scroll-list {
+    --project-scroll-max: 420px;
+    display: grid;
+    gap: 12px;
+    max-height: var(--project-scroll-max);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+    overscroll-behavior: contain;
     scrollbar-width: thin;
 }
 body.lux-route-social .social-project-scroll-list::-webkit-scrollbar {
@@ -1059,56 +1101,6 @@ body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sp
 
 body.lux-route-social .social-neo-messages__thread-shell {
     position: relative;
-}
-body.lux-route-social .social-neo-messages__thread-scroll {
-    scrollbar-width: none !important;
-    -ms-overflow-style: none;
-}
-body.lux-route-social .social-neo-messages__thread-scroll::-webkit-scrollbar {
-    width: 0;
-    height: 0;
-}
-body.lux-route-social .social-project-workspace-chat .social-neo-messages__thread-scroll {
-    scrollbar-width: none !important;
-}
-body.lux-route-social .social-neo-messages__custom-scrollbar {
-    position: absolute;
-    z-index: 3;
-    top: 0;
-    right: 2px;
-    width: var(--lux-scrollbar-size);
-    min-height: 32px;
-    display: block;
-    opacity: 1;
-    border: 1px solid rgba(var(--lux-accent-rgb), 0.35);
-    border-radius: 999px;
-    background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.9);
-    touch-action: none;
-    user-select: none;
-}
-body.lux-route-social .social-neo-messages__custom-scrollbar[aria-disabled="true"] {
-    opacity: .35;
-    pointer-events: none;
-}
-body.lux-route-social .social-neo-messages__custom-scrollbar-thumb {
-    position: absolute;
-    inset: 1px 1px auto;
-    min-height: 32px;
-    border-radius: 999px;
-    background: var(--lux-scrollbar-thumb);
-    box-shadow: 0 0 8px rgba(var(--lux-accent-rgb), 0.35);
-}
-body.lux-route-social .social-neo-messages__custom-scrollbar-thumb:hover {
-    background: var(--lux-scrollbar-thumb-hover);
-}
-body.lux-route-social .social-neo-messages__custom-scrollbar:focus-visible {
-    outline: 2px solid var(--lux-scrollbar-thumb);
-    outline-offset: 2px;
-}
-
-body.lux-route-social.lux-unified-shell .social-neo-messages__thread-shell > .social-neo-messages__custom-scrollbar {
-    position: absolute !important;
-    z-index: 2147483000 !important;
 }
 
 body.lux-route-social .lux-picker-field > :is(.lux-picker-panel, .lux-universal-picker-panel, .lux-droplist-panel) {
@@ -2700,3 +2692,49 @@ body.lux-route-exams #admin-exams-root .ex2-split-box {
     border: 1px dashed rgba(var(--lux-accent-rgb),.35);
     background: rgba(var(--lux-accent-rgb),.03);
 }
+
+
+body.lux-route-exams #admin-exams-root .ex2-timeline {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 8px 0;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-timeline-card {
+    min-width: 180px;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid var(--lux-border);
+    background: var(--lux-surface);
+    flex-shrink: 0;
+    transition: transform .2s;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-timeline-card:hover {
+    transform: translateY(-2px);
+}
+
+
+body.lux-route-exams #admin-exams-root .ex2-mini-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-mini-grid--flush {
+    margin-top: 0;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-mini-grid > div {
+    text-align: center;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-review-summary-card,
+body.lux-route-exams #admin-exams-root .ex2-session-stat-card {
+    text-align: center;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-review-summary-value,
+body.lux-route-exams #admin-exams-root .ex2-session-stat-value {

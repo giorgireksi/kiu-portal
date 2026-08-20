@@ -1,5 +1,5 @@
 /* Thin route diff: lms. Core in shared-lux-core.css */
-/* Included source lines: 3261-12050, 46616-47313, 47958-48783. */
+/* Included source lines: 3261-12050, 46651-47348, 47993-48818. */
 
 
 
@@ -8789,50 +8789,6 @@ body.lux-route-lms .lms-interaction-direct__thread-empty {
 }
 
 
-            body.lux-route-exams #admin-exams-root .ex2-step:hover {
-                transform: translateY(-1px);
-            }
-
-body.lux-route-exams #admin-exams-root .ex2-results-row,
-            body.lux-route-exams #admin-exams-root .ex2-results-meta {
-                display: flex;
-                gap: 10px;
-                align-items: center;
-                flex-wrap: wrap;
-            }
-
-body.lux-route-exams #admin-exams-root .ex2-modal-head {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 18px 22px;
-            }
-
-body.lux-route-exams #admin-exams-root .ex2-modal-head.is-accent {
-                background: linear-gradient(135deg, rgba(var(--lux-accent-rgb),0.95), rgba(var(--lux-accent-rgb),0.72));
-            }
-
-body.lux-route-exams #admin-exams-root .ex2-modal-head.is-warm {
-                background: linear-gradient(135deg, #d68a11, #c47a0a);
-            }
-
-body.lux-route-exams #admin-exams-root .ex2-modal-head h3 { margin: 0; color: #fff; font-size: 16px; }
-
-body.lux-route-exams #admin-exams-root .ex2-modal-close.lux-ghost-btn {
-    color: #fff;
-}
-
-body.lux-route-exams #admin-exams-root .ex2-modal-body {
-                padding: 18px;
-                display: grid;
-                gap: 14px;
-            }
-
-body.lux-route-exams #admin-exams-root .ex2-modal-search {
-                margin-bottom: 0;
-            }
-
-body.lux-route-exams #admin-exams-root .ex2-modal-list {
                 max-height: 320px;
                 overflow: auto;
             }
@@ -9487,49 +9443,49 @@ body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-track.is-stac
 
 body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-bar span,
 body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-track.is-stacked span {
-
-    border-radius: 18px;
+    display: block;
+    width: var(--gb-track-width, 0%);
+    min-width: 0;
+    height: 100%;
 }
 
-body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-panel {
-    display: grid;
-    gap: 14px;
-    width: min(420px, calc(100% - 32px));
-    max-height: min(78vh, 720px);
-    overflow: auto;
-    padding: 18px;
-    border-radius: 18px;
+body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-bar .is-earned,
+body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-track .is-earned {
+    background: rgb(var(--lux-accent-rgb));
 }
 
-body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-save-name-panel {
-    display: grid;
-    gap: 14px;
-    width: min(420px, calc(100% - 32px));
-    max-height: min(78vh, 420px);
-    overflow: auto;
-    padding: 18px;
-    border-radius: 18px;
+body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-bar .is-pending,
+body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-track .is-pending {
+    background: #f59e0b;
 }
 
-body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-panel-head {
+body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-bar .is-remaining,
+body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-track .is-remaining {
+    background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.42);
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-legend {
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    margin-top: 2px;
 }
 
-body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-panel-head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
+body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-legend-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    margin: 0;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.45;
+    white-space: normal;
 }
 
-body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-save-name-panel-head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
+body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-legend-stat.lux-panel-copy {
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.45;
 }
 
 body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-close {
@@ -10313,3 +10269,47 @@ body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page
     color: var(--lux-btn-label, #f7fbff);
     box-shadow: var(--lux-btn-frame-shadow);
     backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page-actions .lux-toolbar-btn:is(:hover, :focus-visible) {
+    border-color: var(--lux-btn-border-solid, var(--lux-accent));
+    background: var(--lux-btn-well-hover, var(--lux-btn-well));
+    box-shadow: var(--lux-btn-frame-shadow-hover);
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page-actions .lux-toolbar-btn:is(.is-active, [aria-pressed="true"], [aria-checked="true"]) {
+    background: var(--lux-btn-well-hover, var(--lux-btn-well));
+    box-shadow: var(--lux-btn-frame-shadow-hover);
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-inspector .lux-toolbar-btn {
+    border-radius: var(--lux-btn-pill-radius, 0 22px 0 22px);
+    border-width: var(--lux-btn-frame-width, 3.5px);
+    border-style: solid;
+    border-color: var(--lux-btn-border-solid, var(--lux-accent));
+    background: var(--lux-btn-well);
+    background-origin: padding-box;
+    background-clip: padding-box;
+    color: var(--lux-btn-label, #f7fbff);
+    box-shadow: var(--lux-btn-frame-shadow);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    padding: 0 18px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    line-height: 1.2;
+    text-decoration: none;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-inspector .lux-toolbar-btn:is(:hover, :focus-visible) {
+    border-color: var(--lux-btn-border-solid, var(--lux-accent));
+    background: var(--lux-btn-well-hover, var(--lux-btn-well));
+    box-shadow: var(--lux-btn-frame-shadow-hover);
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-inspector .lux-toolbar-btn:is(.is-active, [aria-pressed="true"], [aria-checked="true"]) {
+    background: var(--lux-btn-well-hover, var(--lux-btn-well));
+    box-shadow: var(--lux-btn-frame-shadow-hover);
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-inspector-head .lux-glass-dialog-close-btn.lux-toolbar-btn {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
