@@ -652,9 +652,18 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         return nextEntry;
     }
     function applyForcedLuxuryVisualDefaults(values = {}) {
+        const existing = values && typeof values === 'object' ? values : {};
+        const forcedDefaults = buildForcedLuxuryVisualDefaults();
+        // Transparency is an independent user preference. The historical
+        // forced-default migration must not overwrite a value selected in the
+        // studio while it normalizes the other visual defaults.
+        const savedTransparency = existing.surfaceTransparency;
         return {
-            ...(values && typeof values === 'object' ? values : {}),
-            ...buildForcedLuxuryVisualDefaults()
+            ...existing,
+            ...forcedDefaults,
+            ...(savedTransparency != null && String(savedTransparency).trim() !== ''
+                ? { surfaceTransparency: String(savedTransparency) }
+                : {})
         };
     }
     function migrateForcedLuxuryVisualDefaults() {
@@ -690,8 +699,14 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             localStorage.setItem('kiuLuxuryParticleDensity', String(forcedDefaults.particleDensity));
             localStorage.setItem('kiuLuxuryParticleQuality', forcedDefaults.particleQuality);
             localStorage.setItem('kiuLuxuryGlassBlurQuality', forcedDefaults.glassBlurQuality || 'auto');
-            localStorage.setItem('kiuLuxurySurfaceTransparency', String(forcedDefaults.surfaceTransparency));
-            localStorage.setItem('kiuLuxurySurfaceTransparencyValue', (Number(forcedDefaults.surfaceTransparency) / 100).toFixed(2));
+            const savedTransparency = String(
+                localStorage.getItem('kiuLuxurySurfaceTransparency')
+                ?? store[currentUserId]?.visuals?.surfaceTransparency
+                ?? ''
+            ).trim();
+            const preservedTransparency = savedTransparency || String(forcedDefaults.surfaceTransparency);
+            localStorage.setItem('kiuLuxurySurfaceTransparency', preservedTransparency);
+            localStorage.setItem('kiuLuxurySurfaceTransparencyValue', (Number(preservedTransparency) / 100).toFixed(2));
             localStorage.setItem('kiuLuxuryPalette', forcedDefaults.paletteKey);
             localStorage.setItem('kiuLuxuryPaletteFaculty', forcedDefaults.paletteFaculty);
             localStorage.setItem('kiu-palette', forcedDefaults.paletteKey);
@@ -703,6 +718,55 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         if (typeof saveState === 'function') saveState();
     }
     migrateForcedLuxuryVisualDefaults();
+
+    // Palette and interface mode are portal-wide preferences. Older builds
+    // stored them inside role/faculty dashboard scopes, which made the same
+    // account render different themes on different routes. Consolidate the
+    // active scoped visual record into the global visual record once, then
+    // keep scoped records available only for legacy layout data.
+    const GLOBAL_VISUAL_PREFERENCES_MIGRATION_VERSION = '20260823-global-visuals-v1';
+    function migrateGlobalVisualPreferences() {
+        const activeUserId = getDashboardPreferenceUserId();
+        const store = ensureDashboardPreferenceStore();
+        const activeEntry = store[activeUserId];
+        if (activeEntry?.globalVisualPreferencesVersion === GLOBAL_VISUAL_PREFERENCES_MIGRATION_VERSION) return false;
+        const preferredScope = getHomeScopeKey();
+        let changed = false;
+        Object.entries(store).forEach(([userId, rawEntry]) => {
+            const entry = rawEntry && typeof rawEntry === 'object'
+                ? rawEntry
+                : createDashboardPreferenceEntry();
+            const scopes = entry.visualsByScope && typeof entry.visualsByScope === 'object'
+                ? entry.visualsByScope
+                : {};
+            const scopedCandidate = userId === activeUserId
+                ? scopes[preferredScope]
+                : null;
+            const firstScopedCandidate = scopedCandidate
+                || Object.values(scopes).find((value) => value && typeof value === 'object')
+                || null;
+            const currentGlobal = entry.visuals && typeof entry.visuals === 'object'
+                ? entry.visuals
+                : {};
+            const source = firstScopedCandidate || currentGlobal;
+            const nextVisuals = {
+                ...buildAdvancedDefaultVisuals(),
+                ...currentGlobal,
+                ...(source && typeof source === 'object' ? source : {}),
+                paletteFaculty: GLOBAL_LUXURY_PALETTE_SCOPE
+            };
+            if (JSON.stringify(currentGlobal) !== JSON.stringify(nextVisuals)
+                || entry.globalVisualPreferencesVersion !== GLOBAL_VISUAL_PREFERENCES_MIGRATION_VERSION) changed = true;
+            entry.visuals = nextVisuals;
+            entry.visualsByScope = scopes;
+            entry.globalVisualPreferencesVersion = GLOBAL_VISUAL_PREFERENCES_MIGRATION_VERSION;
+            entry.version = ADVANCED_HOME_LAYOUT_VERSION;
+            store[userId] = entry;
+        });
+        if (changed && typeof saveState === 'function') saveState();
+        return changed;
+    }
+    migrateGlobalVisualPreferences();
     function getDefaultInspectorState() {
         const width = Math.min(390, Math.max(320, (window.innerWidth || 1440) - 48));
         return {
@@ -739,32 +803,24 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         }, { persist });
         return nextState;
     }
-    function getDashboardVisuals(scopeKey = getHomeScopeKey()) {
+    function getDashboardVisuals(_scopeKey = getHomeScopeKey()) {
         const entry = getDashboardPreferenceEntry();
-        const scopedVisuals = entry.visualsByScope?.[scopeKey];
         const visuals = {
             ...buildAdvancedDefaultVisuals(),
-            ...(scopedVisuals || entry.visuals || {})
+            ...(entry.visuals || {})
         };
-        // Keep the current forced-default generation authoritative even after
-        // PostgreSQL bootstrap merges an older per-scope visual preference.
-        let defaultsVersion = '';
-        try {
-            defaultsVersion = String(localStorage.getItem('KIU_LUXURY_VISUAL_DEFAULTS_VERSION') || '').trim();
-        } catch (error) {}
-        if (defaultsVersion === FORCED_LUXURY_VISUAL_DEFAULTS_VERSION) {
-            visuals.surfaceTransparency = String(ADVANCED_DEFAULT_VISUALS.surfaceTransparency);
-        }
+        // Do not normalize transparency here. Palette, theme mode, and
+        // background changes may re-render surfaces, but this getter must
+        // always return the user's independently selected opacity.
         return visuals;
     }
-    function setDashboardVisuals(values, persist = true, scopeKey = getHomeScopeKey()) {
+    function setDashboardVisuals(values, persist = true, _scopeKey = getHomeScopeKey()) {
         updateDashboardPreferenceEntry((entry) => {
-            entry.visualsByScope = entry.visualsByScope || {};
-            entry.visualsByScope[scopeKey] = {
+            entry.visuals = {
                 ...buildAdvancedDefaultVisuals(),
                 ...(entry.visuals || {}),
-                ...(entry.visualsByScope?.[scopeKey] || {}),
-                ...(values || {})
+                ...(values || {}),
+                paletteFaculty: GLOBAL_LUXURY_PALETTE_SCOPE
             };
         }, { persist });
     }
@@ -1747,6 +1803,16 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         rehydrateIndexPortalEntry,
         bootstrapIndexPortalChromeSync,
     });
+    window.addEventListener('kiu:portal-bootstrap-complete', () => {
+        migrateGlobalVisualPreferences();
+        // Bootstrap can replace the initial state after theme-primer has
+        // painted. Always reapply the resolved global theme to every route.
+        applyThemeMode(getThemeMode(), false);
+        applyResolvedPalette();
+        applyAtmosphereSettings();
+        window.syncVisualStateOnly?.();
+    });
+
     ready(() => {
         window.renderLuxuryAdminToolsPage = (...args) => renderLuxuryAdminToolsPage(...args);
         const scheduleBackgroundGalleryEnhancement = window.requestIdleCallback || ((callback) => window.setTimeout(callback, 900));

@@ -328,6 +328,9 @@
     }
 
     function renderModeControl(panel = currentPanel()) {
+        // Messages has its own inbox/thread scrollports; pagination controls
+        // are not applicable to that section.
+        if (normalizePanel(panel) === 'messages') return '';
         const mode = normalizeMode(ui().socialPaginationMode);
         const selectedPageSize = pageSize();
         return `
@@ -388,8 +391,9 @@
             node.removeAttribute('data-social-pagination-group-hidden');
         });
         const currentUi = ui();
-        if (normalizeMode(currentUi.socialPaginationMode) !== MODE_PAGES) return;
-        syncPanel(panel);
+        const normalizedPanel = normalizePanel(panel) || currentPanel();
+        if (normalizedPanel === 'messages' || normalizeMode(currentUi.socialPaginationMode) !== MODE_PAGES) return;
+        syncPanel(normalizedPanel);
         const groups = collectionGroups(center, panel);
         const currentPage = pageFor(panel);
         const size = pageSize();

@@ -59,6 +59,8 @@
         togglePortalCallCamera,
         closeDialog,
         sendPortalMessage,
+        createPortalSocialGroupConversation,
+        renamePortalSocialGroupConversation,
         deletePortalChatMessage,
         invalidateSocialRenderCache,
         activeChat
@@ -119,6 +121,8 @@
         || typeof togglePortalCallCamera !== 'function'
         || typeof closeDialog !== 'function'
         || typeof sendPortalMessage !== 'function'
+        || typeof createPortalSocialGroupConversation !== 'function'
+        || typeof renamePortalSocialGroupConversation !== 'function'
         || typeof deletePortalChatMessage !== 'function'
         || typeof invalidateSocialRenderCache !== 'function'
         || typeof activeChat !== 'function'
@@ -144,6 +148,50 @@
             && candidate.getClientRects().length
         ));
         return shell?.querySelector('.social-neo-messages__thread-scroll') || null;
+    }
+
+    function conversationName(chat) {
+        if (text(chat?.conversationName)) return text(chat.conversationName);
+        if (text(chat?.type || '') === 'group' && (!text(chat?.conversationId) || text(chat?.conversationId) === 'general')) return 'General';
+        return text(chat?.name) || 'Conversation';
+    }
+
+    function groupConversationChats(groupId) {
+        const normalizedGroupId = text(groupId);
+        return activeChats()
+            .filter((entry) => text(entry?.type || '') === 'group')
+            .filter((entry) => text(entry?.groupId) === normalizedGroupId || text(groupForChat(entry)?.id) === normalizedGroupId)
+            .sort((left, right) => {
+                const leftGeneral = text(left?.conversationId) === 'general' ? 0 : 1;
+                const rightGeneral = text(right?.conversationId) === 'general' ? 0 : 1;
+                if (leftGeneral !== rightGeneral) return leftGeneral - rightGeneral;
+                return String(left?.createdAt || '').localeCompare(String(right?.createdAt || ''));
+            });
+    }
+
+    function buildMessagesInboxEntries(chats) {
+        const entries = [];
+        const groups = new Map();
+        (Array.isArray(chats) ? chats : []).forEach((chat) => {
+            const group = groupForChat(chat);
+            if (!group || text(chat?.type || '') !== 'group') {
+                entries.push({ chat, group: null, channels: [chat], unreadCount: unreadMessages(chat) });
+                return;
+            }
+            const groupId = text(group.id);
+            let entry = groups.get(groupId);
+            if (!entry) {
+                entry = { chat, group, channels: [], unreadCount: 0 };
+                groups.set(groupId, entry);
+                entries.push(entry);
+            }
+            entry.channels.push(chat);
+            entry.unreadCount += unreadMessages(chat);
+            const currentStamp = chat?.messages?.[chat.messages.length - 1]?.sentAt || chat?.updatedAt || '';
+            const existingStamp = entry.chat?.messages?.[entry.chat.messages.length - 1]?.sentAt || entry.chat?.updatedAt || '';
+            if (String(currentStamp).localeCompare(String(existingStamp)) > 0) entry.chat = chat;
+        });
+        return entries;
     }
 
     window.renderMessagesThreadShell = function renderMessagesThreadShell(chat, options = {}) {
@@ -221,6 +269,40 @@
         const currentParticipants = currentCallParticipants(call);
         const inCurrentCall = viewerInCall(call);
         const memberIds = Array.isArray(group?.memberIds) ? group.memberIds : [];
+        const groupConversations = isGroupThread ? groupConversationChats(group.id) : [];
+        const conversationMenuOpen = Boolean(runtime.ui?.groupConversationMenuByGroup?.[text(group?.id)]);
+        const currentConversationUnread = unreadMessages(chat);
+        const renderGroupConversationSwitcher = () => {
+            if (!isGroupThread) return '';
+            const groupId = text(group.id);
+            const canRenameConversation = Boolean(group.isManager || text(chat.createdBy) === currentUserId());
+            return `
+                <div class="social-neo-group-conversation-switcher">
+                    <div class="social-neo-group-conversation-switcher__main">
+                        <button class="social-neo-group-conversation-select lux-picker-btn lux-picker-btn--compact" type="button" data-action="chat-conversation-menu-toggle" data-group-id="${escape(groupId)}" data-chat-id="${escape(text(chat.id))}" aria-haspopup="listbox" aria-expanded="${conversationMenuOpen ? 'true' : 'false'}">
+                            <span class="social-neo-group-conversation-select__label">Conversation</span>
+                            <strong>${escape(conversationName(chat))}</strong>
+                            <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                            ${currentConversationUnread ? `<span class="social-neo-group-conversation-badge" aria-label="${escape(currentConversationUnread)} unread">${escape(currentConversationUnread > 9 ? '9+' : currentConversationUnread)}</span>` : ''}
+                        </button>
+                        ${conversationMenuOpen ? `
+                            <div class="social-neo-group-conversation-menu lux-picker-panel lux-universal-picker-panel lux-droplist-panel lux-picker-panel-scrollport is-open" role="listbox" aria-label="Chats in ${escape(text(group.name || 'this group'))}">
+                                ${groupConversations.map((conversation) => {
+                                    const unreadCount = unreadMessages(conversation);
+                                    const selected = text(conversation.id) === text(chat.id);
+                                    return `<button class="social-neo-group-conversation-option lux-picker-option${selected ? ' is-active' : ''}" type="button" role="option" aria-selected="${selected ? 'true' : 'false'}" data-action="chat-conversation-select" data-group-id="${escape(groupId)}" data-chat-id="${escape(text(conversation.id))}">
+                                        <span class="social-neo-group-conversation-option__copy"><strong>${escape(conversationName(conversation))}</strong><small>${escape(chatPreview(conversation))}</small></span>
+                                        ${unreadCount ? `<span class="social-neo-group-conversation-option__badge" aria-label="${escape(unreadCount)} unread">${escape(unreadCount > 9 ? '9+' : unreadCount)}</span>` : ''}
+                                    </button>`;
+                                }).join('')}
+                                <button class="social-neo-group-conversation-create lux-picker-option" type="button" data-action="chat-conversation-create-open" data-group-id="${escape(groupId)}" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-plus" aria-hidden="true"></i><span>Create new chat</span></button>
+                            </div>
+                        ` : ''}
+                    </div>
+                    ${canRenameConversation ? `<button class="social-neo-group-conversation-add" type="button" data-action="chat-conversation-rename-open" data-group-id="${escape(groupId)}" data-chat-id="${escape(text(chat.id))}" aria-label="Rename current conversation" title="Rename conversation"><i class="fas fa-pen" aria-hidden="true"></i></button>` : ''}
+                    <button class="social-neo-group-conversation-add" type="button" data-action="chat-conversation-create-open" data-group-id="${escape(groupId)}" data-chat-id="${escape(text(chat.id))}" aria-label="Create a chat in this group" title="Create chat"><i class="fas fa-plus" aria-hidden="true"></i></button>
+                </div>`;
+        };
         const messageCardHeadClass = 'social-neo-inline social-neo-inline-between-gap-8-wrap social-neo-msg-card-head';
         const messageCardMetaClass = 'social-neo-inline social-neo-inline-gap-8-wrap social-neo-msg-card-meta';
         const messageComposeFormClass = 'social-neo-thread-compose social-neo-msg-compose-form';
@@ -234,6 +316,20 @@
             return raw.length > max ? `${raw.slice(0, max - 1)}…` : raw;
         };
         const renderMessageCard = (message) => {
+            if (message?.isSystem || text(message?.kind || message?.type || '').toLowerCase() === 'system') {
+                const actorName = text(message.actorName || message.senderName || 'Someone');
+                const summary = text(message.text || 'Group activity updated.');
+                const actionText = summary.toLocaleLowerCase().startsWith(actorName.toLocaleLowerCase())
+                    ? summary.slice(actorName.length).trimStart()
+                    : summary;
+                return `
+                    <div class="lux-social-system-message" role="status" data-system-event-id="${escape(text(message.eventId || message.id))}">
+                        <span class="lux-social-system-message__icon" aria-hidden="true"><i class="fas fa-circle-info"></i></span>
+                        <span class="lux-social-system-message__copy"><span><strong>${escape(actorName)}</strong> ${escape(actionText)}</span></span>
+                        <time datetime="${escape(text(message.sentAt || ''))}">${escape(when(message.sentAt))}</time>
+                    </div>
+                `;
+            }
             const own = text(message.senderId) === currentUserId();
             const sender = accountById(message.senderId) || { id: message.senderId };
             const links = messageLinks(message);
@@ -343,6 +439,7 @@
                             </div>
                         </div>
                     </div>
+                    ${renderGroupConversationSwitcher()}
                     ${renderThreadToolbar()}
                     ${renderThreadSearchBar()}
                 </div>
@@ -389,6 +486,7 @@
         const chats = activeChats();
         const messagesFilter = text(runtime.ui?.messagesFilter || 'all') || 'all';
         const visibleChats = messagesFilter === 'unread' ? chats.filter((entry) => unreadMessages(entry) > 0) : chats;
+        const inboxEntries = buildMessagesInboxEntries(visibleChats);
         const activeChatId = text(runtime.ui?.activeChatId || '');
         const isPhoneMessages = isSocialMessagesPhoneViewport();
         const chat = visibleChats.find((entry) => text(entry.id) === activeChatId)
@@ -399,14 +497,15 @@
         const railOpen = isGroupThread && runtime.ui?.groupThreadRailOpen !== false;
         const threadOpenClass = chat ? 'is-thread-open' : 'is-thread-closed';
         const renderChatAvatar = (entry) => {
-            const entryGroup = groupForChat(entry);
-            if (text(entry?.type || '') === 'group' && entryGroup) return groupAvatar(entryGroup, 'social-neo-avatar-sm');
-            return avatar(accountById((Array.isArray(entry?.members) ? entry.members : []).find((memberId) => text(memberId) !== currentUserId()) || '') || { displayName: chatTitle(entry) }, 'social-neo-avatar-sm');
+            const entryGroup = entry.group || groupForChat(entry.chat || entry);
+            const chatEntry = entry.chat || entry;
+            if (text(chatEntry?.type || '') === 'group' && entryGroup) return groupAvatar(entryGroup, 'social-neo-avatar-sm');
+            return avatar(accountById((Array.isArray(chatEntry?.members) ? chatEntry.members : []).find((memberId) => text(memberId) !== currentUserId()) || '') || { displayName: chatTitle(chatEntry) }, 'social-neo-avatar-sm');
         };
-        const chatCount = chats.length;
+        const chatCount = buildMessagesInboxEntries(chats).length;
         const totalUnreadAll = chats.reduce((total, entry) => total + unreadMessages(entry), 0);
         const inboxSubtitle = messagesFilter === 'unread'
-            ? (totalUnreadAll ? `${totalUnreadAll} unread conversations` : "You're caught up")
+            ? (totalUnreadAll ? `${totalUnreadAll} unread messages` : "You're caught up")
             : `${chatCount} conversations`;
         const inboxEmptyTitle = messagesFilter === 'unread' ? "You're caught up" : 'No conversations yet';
         const inboxEmptyCopy = messagesFilter === 'unread'
@@ -439,19 +538,24 @@
                         </div>
                     </header>
                     <div class="social-neo-chat-items" data-lux-transparency-exempt="1">
-                        ${visibleChats.length ? visibleChats.map((entry) => {
-                            const unreadCount = unreadMessages(entry);
+                        ${inboxEntries.length ? inboxEntries.map((entry) => {
+                            const chatEntry = entry.chat;
+                            const unreadCount = entry.unreadCount;
                             const unreadLabel = unreadCount > 9 ? '9+' : String(unreadCount);
+                            const entryIsActive = entry.channels.some((conversation) => text(conversation.id) === activeChatId);
+                            const entryPreview = entry.group
+                                ? `${conversationName(chatEntry)} · ${chatPreview(chatEntry)}`
+                                : chatPreview(chatEntry);
                             return `
-                            <button class="social-neo-chat-item ${chat && text(chat.id) === text(entry.id) ? 'is-active' : ''} ${unreadCount ? 'is-unread' : ''}" type="button" data-action="chat-open" data-chat-id="${escape(text(entry.id))}">
+                            <button class="social-neo-chat-item ${entryIsActive ? 'is-active' : ''} ${unreadCount ? 'is-unread' : ''}" type="button" data-action="chat-open" data-chat-id="${escape(text(chatEntry.id))}">
                                 <div class="social-neo-person">
                                     ${renderChatAvatar(entry)}
                                     <div>
-                                        <strong>${escape(chatTitle(entry))}</strong>
-                                        <span>${escape(chatPreview(entry))}</span>
-                                        ${text(entry.type || '') === 'group'
+                                        <strong>${escape(entry.group ? text(entry.group.name || chatTitle(chatEntry)) : chatTitle(chatEntry))}</strong>
+                                        <span>${escape(entryPreview)}</span>
+                                        ${entry.group
                                             ? `<small>${escape((() => {
-                                                const ids = groupForChat(entry)?.memberIds || entry.members || [];
+                                                const ids = entry.group?.memberIds || chatEntry.members || [];
                                                 const counts = {};
                                                 (Array.isArray(ids) ? ids : []).forEach((id) => {
                                                     let label = roleLabel(accountById(id)?.role);
@@ -469,14 +573,14 @@
                                                 return parts.join(' · ') || 'Group chat';
                                             })())}</small>`
                                             : `${(() => {
-                                                const peer = accountById((Array.isArray(entry.members) ? entry.members : []).find((memberId) => text(memberId) !== currentUserId()) || '');
+                                                const peer = accountById((Array.isArray(chatEntry.members) ? chatEntry.members : []).find((memberId) => text(memberId) !== currentUserId()) || '');
                                                 return peer ? `<small>${escape(accountPresenceLabel(peer))}</small>` : '';
                                             })()}`
                                         }
                                     </div>
                                 </div>
                                 <div class="social-neo-chat-item__aside">
-                                    <span class="social-neo-chat-item__time">${escape(chatTime(entry))}</span>
+                                    <span class="social-neo-chat-item__time">${escape(chatTime(chatEntry))}</span>
                                     ${unreadCount ? `<span class="social-neo-messages__unread-badge" aria-label="${escape(unreadCount)} unread">${escape(unreadLabel)}</span>` : ''}
                                 </div>
                             </button>
@@ -497,15 +601,67 @@
     }
 
 
-    const MESSAGES_OWNED_DIALOG_KINDS = new Set(['message-delete', 'chat-hide']);
+    const MESSAGES_OWNED_DIALOG_KINDS = new Set(['message-delete', 'chat-hide', 'group-conversation-create', 'group-conversation-rename']);
 
     function renderMessagesOwnedDialog(runtime, dialog) {
         if (!dialog) return '';
         const kind = text(dialog.type);
         if (!MESSAGES_OWNED_DIALOG_KINDS.has(kind)) return '';
-        const dialogChat = ['message-delete', 'chat-hide'].includes(kind)
+        const dialogChat = ['message-delete', 'chat-hide', 'group-conversation-create', 'group-conversation-rename'].includes(kind)
             ? activeChats().find((item) => text(item.id) === text(dialog.chatId))
             : null;
+        if (kind === 'group-conversation-rename') {
+            const group = dialogChat ? groupForChat(dialogChat) : null;
+            if (!group || !dialogChat) return '';
+            const head = typeof socialNeoDialogHead === 'function'
+                ? socialNeoDialogHead('Rename conversation', `Choose a new name inside ${text(group.name || 'this group')}.`, { icon: 'fas fa-pen' })
+                : '';
+            const actions = typeof socialNeoDialogActions === 'function'
+                ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Save name' })
+                : `<div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
+                        <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="submit">Save name</button>
+                    </div>`;
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+                <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--compact lux-glass-dialog-card--social-glass" data-form="dialog-group-conversation-rename" data-action="noop" data-lux-transparency-exempt="1">
+                    ${head}
+                    <div class="lux-glass-dialog-body">
+                        <label class="social-neo-label" for="groupConversationRenameName">Conversation name</label>
+                        <input class="social-neo-input" id="groupConversationRenameName" name="conversationName" type="text" maxlength="80" required autocomplete="off" value="${escape(conversationName(dialogChat))}">
+                        <div class="social-neo-muted social-neo-muted-mt-6">Everyone in the group will see the new name.</div>
+                    </div>
+                    ${actions}
+                    <input type="hidden" name="groupId" value="${escape(text(group.id))}">
+                    <input type="hidden" name="chatId" value="${escape(text(dialogChat.id))}">
+                </form>
+            </div>`;
+        }
+        if (kind === 'group-conversation-create') {
+            const group = dialogChat ? groupForChat(dialogChat) : null;
+            if (!group) return '';
+            const head = typeof socialNeoDialogHead === 'function'
+                ? socialNeoDialogHead('Create group chat', `Add another focused conversation inside ${text(group.name || 'this group')}.`, { icon: 'fas fa-comments' })
+                : '';
+            const actions = typeof socialNeoDialogActions === 'function'
+                ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Create chat' })
+                : `<div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
+                        <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="submit">Create chat</button>
+                    </div>`;
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+                <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--compact lux-glass-dialog-card--social-glass" data-form="dialog-group-conversation-create" data-action="noop" data-lux-transparency-exempt="1">
+                    ${head}
+                    <div class="lux-glass-dialog-body">
+                        <label class="social-neo-label" for="groupConversationName">Chat name</label>
+                        <input class="social-neo-input" id="groupConversationName" name="conversationName" type="text" maxlength="80" required autocomplete="off" placeholder="e.g. Exam planning">
+                        <div class="social-neo-muted social-neo-muted-mt-6">Everyone in the group will see this conversation.</div>
+                    </div>
+                    ${actions}
+                    <input type="hidden" name="groupId" value="${escape(text(group.id))}">
+                    <input type="hidden" name="chatId" value="${escape(text(dialogChat.id))}">
+                </form>
+            </div>`;
+        }
         if (kind === 'message-delete') {
             const dialogMessage = dialogChat
                 ? activeMessages(dialogChat).find((item) => text(item.id) === text(dialog.messageId))
@@ -575,6 +731,7 @@ window.renderMessagesOwnedDialog = renderMessagesOwnedDialog;
         const a = text(action || '');
         if (!a) return false;
         if (a === 'directory-message' || a === 'message-start' || a === 'messages-inbox-back') return true;
+        if (a === 'chat-conversation-menu-toggle' || a === 'chat-conversation-select' || a === 'chat-conversation-create-open' || a === 'chat-conversation-rename-open') return true;
         return a.startsWith('message-') || a.startsWith('chat-') || a.startsWith('call-') || a.startsWith('thread-');
     }
 
@@ -584,6 +741,37 @@ window.renderMessagesOwnedDialog = renderMessagesOwnedDialog;
             setActiveChat('');
             return renderSocialPageNow('messages-inbox-back');
         }
+        if (action === 'chat-conversation-menu-toggle') {
+            const groupId = text(trigger.getAttribute('data-group-id'));
+            state().ui.groupConversationMenuByGroup = state().ui.groupConversationMenuByGroup || {};
+            state().ui.groupConversationMenuByGroup[groupId] = !state().ui.groupConversationMenuByGroup[groupId];
+            return renderSocialPageNow('chat-conversation-menu-toggle');
+        }
+
+        if (action === 'chat-conversation-select') {
+            const groupId = text(trigger.getAttribute('data-group-id'));
+            const chatId = text(trigger.getAttribute('data-chat-id'));
+            state().ui.groupConversationMenuByGroup = state().ui.groupConversationMenuByGroup || {};
+            state().ui.groupConversationMenuByGroup[groupId] = false;
+            setActiveChat(chatId);
+            return setPanel('messages');
+        }
+
+        if (action === 'chat-conversation-rename-open') {
+            return openDialog('group-conversation-rename', {
+                groupId: text(trigger.getAttribute('data-group-id')),
+                chatId: text(trigger.getAttribute('data-chat-id'))
+            });
+        }
+
+        if (action === 'chat-conversation-create-open') {
+            const groupId = text(trigger.getAttribute('data-group-id'));
+            const chatId = text(trigger.getAttribute('data-chat-id'));
+            state().ui.groupConversationMenuByGroup = state().ui.groupConversationMenuByGroup || {};
+            state().ui.groupConversationMenuByGroup[groupId] = false;
+            return openDialog('group-conversation-create', { groupId, chatId });
+        }
+
         if (action === 'message-delete-open') {
             return openDialog('message-delete', {
                 chatId: text(trigger.getAttribute('data-chat-id')),
@@ -705,7 +893,11 @@ window.renderMessagesOwnedDialog = renderMessagesOwnedDialog;
 
     function isSocialMessagesSubmitForm(formType) {
         const f = text(formType || '');
-        return f === 'send-message' || f === 'dialog-message-delete' || f === 'dialog-chat-hide';
+        return f === 'send-message'
+            || f === 'dialog-message-delete'
+            || f === 'dialog-chat-hide'
+            || f === 'dialog-group-conversation-create'
+            || f === 'dialog-group-conversation-rename';
     }
 
     function handleSocialMessagesSubmit(formType, form, runtime, event) {
@@ -721,6 +913,34 @@ window.renderMessagesOwnedDialog = renderMessagesOwnedDialog;
                 runtime.ui.messageDraftByChat[chatId] = '';
                 runtime.ui.messageFileByChat[chatId] = null;
                 renderSocialPageNow('message-sent');
+            });
+        }
+
+        if (formType === 'dialog-group-conversation-rename') {
+            return withBusy(async () => {
+                const chatId = text(form.chatId?.value);
+                const conversationNameValue = text(form.conversationName?.value).slice(0, 80);
+                if (!conversationNameValue) throw new Error('Enter a conversation name first.');
+                const chat = await renamePortalSocialGroupConversation(chatId, conversationNameValue, { skipStateRefresh: true, skipRoute: true });
+                if (!chat?.id) throw new Error('The conversation could not be renamed.');
+                closeDialog();
+                setActiveChat(chat.id);
+                setPanel('messages');
+                renderSocialPageNow('group-conversation-renamed');
+            });
+        }
+
+        if (formType === 'dialog-group-conversation-create') {
+            return withBusy(async () => {
+                const groupId = text(form.groupId?.value);
+                const conversationNameValue = text(form.conversationName?.value).slice(0, 80);
+                if (!conversationNameValue) throw new Error('Enter a chat name first.');
+                const chat = await createPortalSocialGroupConversation(groupId, conversationNameValue, { skipStateRefresh: true, skipRoute: true });
+                if (!chat?.id) throw new Error('The group chat could not be created.');
+                closeDialog();
+                setActiveChat(chat.id);
+                setPanel('messages');
+                renderSocialPageNow('group-conversation-created');
             });
         }
 

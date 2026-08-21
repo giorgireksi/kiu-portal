@@ -46,6 +46,25 @@ describe('social pagination runtime', () => {
         expect(pagination.renderModeControl('feed')).toContain('data-social-pagination-mode="pages"');
         expect(pagination.renderModeControl('feed')).toContain('data-action="social-pagination-page-size"');
         expect(pagination.renderModeControl('feed')).toContain('aria-pressed="true"');
+        expect(pagination.renderModeControl('messages')).toBe('');
+    });
+
+    it('does not paginate the messages inbox, which owns its own scrollports', () => {
+        const { dom, pagination } = loadPagination();
+        const center = dom.window.document.createElement('main');
+        const list = dom.window.document.createElement('section');
+        for (let index = 0; index < 45; index += 1) {
+            const item = dom.window.document.createElement('article');
+            item.className = 'social-neo-chat-item';
+            list.appendChild(item);
+        }
+        center.appendChild(list);
+
+        pagination.setMode('pages');
+        pagination.decorate(center, 'messages');
+
+        expect(center.querySelector('[data-social-pagination-controls]')).toBeNull();
+        expect(list.querySelectorAll('.social-neo-chat-item[hidden]')).toHaveLength(0);
     });
 
     it('renders a twenty-item page and numbered controls without changing collection markup', () => {

@@ -18,7 +18,7 @@
         'post-delete', 'post-comments', 'comment-report', 'comment-delete'
     ];
     const EVENTS_FALLBACK = ['event-create', 'event-delete'];
-    const MESSAGES_FALLBACK = ['message-delete', 'chat-hide'];
+    const MESSAGES_FALLBACK = ['message-delete', 'chat-hide', 'group-conversation-create', 'group-conversation-rename'];
     const PROFILE_FALLBACK = ['profile-cover'];
     const WORKSPACE_FALLBACK = [
         'project-create', 'project-task-create', 'project-task-edit', 'project-task-graph',

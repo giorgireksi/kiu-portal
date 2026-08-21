@@ -230,10 +230,11 @@ async function kiuPortalFetch(path, options = {}) {
     while (true) {
         try {
 // --- READABILITY: Fetch ---
+            const isFormDataBody = typeof FormData !== 'undefined' && options.body instanceof FormData;
             response = await fetch(`${getKiuPortalBackendUrl()}${path}`, {
                 method: requestMethod,
                 headers: {
-                    'Content-Type': 'application/json',
+                    ...(isFormDataBody ? {} : { 'Content-Type': 'application/json' }),
                     ...(portalSessionToken ? { 'X-Portal-Session': portalSessionToken } : {}),
                     ...(options.headers || {})
                 },
@@ -1889,13 +1890,83 @@ function schedulePortalStateRefreshFromRealtime(payload = {}) {
     return runtime.portalRefreshPromise;
 }
 
+let portalThemeBootstrapPromise = null;
+
+async function bootstrapPortalThemeState(force = false) {
+    if (!isStandaloneSocialRoute()) return null;
+    if (!force && portalThemeBootstrapPromise) return portalThemeBootstrapPromise;
+    const token = getPortalSessionToken();
+    if (!token) return null;
+    portalThemeBootstrapPromise = kiuPortalFetch('/api/portal/theme', { timeoutMs: 8000 })
+        // Older running servers do not have the lightweight endpoint yet. Use
+        // the existing bootstrap as a compatibility fallback and extract only
+        // the global visual record without replacing Social state.
+        .catch(() => kiuPortalFetch('/api/portal/bootstrap', { timeoutMs: 12000 }))
+        .then((payload) => {
+            const activeUserId = String(
+                sessionStorage.getItem(ACTIVE_SESSION_KEY)
+                || payload?.account?.id
+                || ''
+            ).trim();
+            const visuals = payload?.visuals && typeof payload.visuals === 'object'
+                ? payload.visuals
+                : (activeUserId && payload?.state?.homeDashboardPreferencesByUser?.[activeUserId]?.visuals);
+            if (!visuals || typeof visuals !== 'object' || typeof KIU_STATE === 'undefined' || !KIU_STATE) return payload;
+            if (!activeUserId) return payload;
+            KIU_STATE.homeDashboardPreferencesByUser = KIU_STATE.homeDashboardPreferencesByUser
+                && typeof KIU_STATE.homeDashboardPreferencesByUser === 'object'
+                ? KIU_STATE.homeDashboardPreferencesByUser
+                : {};
+            const currentEntry = KIU_STATE.homeDashboardPreferencesByUser[activeUserId]
+                && typeof KIU_STATE.homeDashboardPreferencesByUser[activeUserId] === 'object'
+                ? KIU_STATE.homeDashboardPreferencesByUser[activeUserId]
+                : {};
+            KIU_STATE.homeDashboardPreferencesByUser[activeUserId] = {
+                ...currentEntry,
+                visuals: {
+                    ...(currentEntry.visuals || {}),
+                    ...visuals,
+                    paletteFaculty: '*'
+                },
+                globalVisualPreferencesVersion: '20260823-global-visuals-v1'
+            };
+            try {
+                const paletteKey = String(visuals.paletteKey || '').trim();
+                const themeMode = String(visuals.themeMode || '').trim().toLowerCase();
+                if (paletteKey) {
+                    localStorage.setItem('kiuLuxuryPalette', paletteKey);
+                    localStorage.setItem('kiuLuxuryPaletteFaculty', '*');
+                    localStorage.setItem('kiu-palette', paletteKey);
+                }
+                if (themeMode === 'light' || themeMode === 'dark') {
+                    localStorage.setItem('kiuLuxuryThemeMode', themeMode);
+                }
+                if (visuals.customPalette?.accent && visuals.customPalette?.accent2) {
+                    localStorage.setItem('kiuLuxuryCustomPalette', JSON.stringify(visuals.customPalette));
+                    localStorage.removeItem('kiuLuxuryCustomPaletteFaculty');
+                }
+            } catch (_error) {}
+            try {
+                window.dispatchEvent(new CustomEvent('kiu:portal-bootstrap-complete', {
+                    detail: { themeOnly: true }
+                }));
+            } catch (_error) {}
+            return payload;
+        })
+        .finally(() => {
+            portalThemeBootstrapPromise = null;
+        });
+    return portalThemeBootstrapPromise;
+}
+
 function schedulePortalBackendBootstrap(force = false) {
     if (isStandaloneSocialRoute()) {
         if (typeof window !== 'undefined') {
             window.__KIU_PORTAL_BOOTSTRAP_PENDING = false;
         }
         // Standalone Social skips the large portal-state bootstrap, but it still
-        // needs the authenticated messenger SSE bridge for immediate chat updates.
+        // hydrates the small global theme record before starting messenger SSE.
+        setTimeout(() => bootstrapPortalThemeState(force).catch(() => null), 0);
         if (typeof scheduleKiuRealtimeBootstrap === 'function') {
             scheduleKiuRealtimeBootstrap(force);
         }
@@ -1923,6 +1994,11 @@ function schedulePortalBackendBootstrap(force = false) {
         runtime.bootstrapScheduled = false;
         bootstrapPortalBackendState(force).catch(() => null);
     }, 0);
+}
+
+if (typeof window !== 'undefined') {
+    window.flushPortalStateSync = flushPortalStateSync;
+    window.queuePortalStateSync = queuePortalStateSync;
 }
 
 function getPortalOpsActor() {

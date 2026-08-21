@@ -21,6 +21,14 @@ class PostgresRecordStore {
         this.pool = new Pool({
             connectionString: this.connectionString
         });
+        this.lastPoolError = null;
+        // pg emits idle-client errors asynchronously. Without a listener,
+        // a transient database/network fault can become an uncaught process
+        // error and take down the backend instead of being logged/recovered.
+        this.pool.on('error', (error) => {
+            this.lastPoolError = error;
+            console.error('[postgres] idle client error:', error?.message || error);
+        });
     }
 
     async init() {

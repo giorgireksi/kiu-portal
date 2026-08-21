@@ -47,7 +47,11 @@ describe('social-messages-panel-ui-regressions.test (bare-shell era)', () => {
 
     it('bare-lite includes group-thread toolbar and search bar chrome', () => {
         const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const sharedControls = readSource('assets/css/lux-controls.css');
+        expect(sharedControls).toContain('.lux-social-system-message');
         expect(bare).toContain('.social-neo-group-thread-toolbar.is-compact');
+        expect(bare).toContain('.social-neo-group-conversation-switcher');
+        expect(bare).toContain('.social-neo-group-conversation-menu');
         expect(bare).toContain('.social-neo-search-bar-input');
         expect(bare).toContain('.social-neo-thread-head__banner');
         expect(bare).toMatch(/\.social-neo-thread-head\.is-group,\s*\nbody\.lux-route-social[^\n]*\.social-neo-thread-head\.is-direct/);
@@ -58,6 +62,16 @@ describe('social-messages-panel-ui-regressions.test (bare-shell era)', () => {
         expect(messages).toContain('is-direct');
         expect(messages).toContain('thread-head__meta');
         expect(messages).toContain('renderThreadToolbar');
+        expect(messages).toContain('chat-conversation-menu-toggle');
+        expect(messages).toContain('chat-conversation-rename-open');
+        expect(messages).toContain('dialog-group-conversation-rename');
+        expect(messages).toContain('lux-social-system-message');
+        expect(messages).toContain('lux-picker-btn lux-picker-btn--compact');
+        expect(messages).toContain('lux-picker-panel lux-universal-picker-panel lux-droplist-panel lux-picker-panel-scrollport is-open');
+        expect(messages).toContain('lux-picker-option');
+        expect(messages).toContain('chat-conversation-create-open');
+        expect(messages).toContain('group-conversation-option__badge');
+        expect(messages).toContain('buildMessagesInboxEntries');
         expect(messages).toContain('searchGroupMessages(chat, searchQuery)');
         expect(messages).not.toMatch(/isGroupThread \? searchGroupMessages/);
         expect(messages).toContain('social-neo-message__sender');

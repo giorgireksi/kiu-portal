@@ -1,3 +1,5 @@
+const { parseMultipartUpload } = require('../multipart-upload');
+
 function registerBackgroundGalleryRoutes(app, deps = {}) {
     const {
         getSessionActor,
@@ -70,10 +72,25 @@ function registerBackgroundGalleryRoutes(app, deps = {}) {
     app.post('/api/background-gallery/upload', async (request, response) => {
         const sessionAccount = requireSessionAccount(request, response);
         if (!sessionAccount) return;
+        let temporaryFilePath = '';
         try {
             const actor = getSessionActor(sessionAccount);
             const store = getStore();
-            const result = await store.uploadBackgroundGalleryAsset(request.body || {}, actor);
+            let payload = request.body || {};
+            if (String(request.headers['content-type'] || '').toLowerCase().startsWith('multipart/form-data')) {
+                const multipart = await parseMultipartUpload(request, {
+                    maxFileBytes: store.maxBackgroundGalleryUploadBytes,
+                    maxRequestBytes: store.maxBackgroundGalleryUploadBytes + (2 * 1024 * 1024)
+                });
+                temporaryFilePath = multipart.file.path;
+                payload = {
+                    ...multipart.fields,
+                    name: multipart.file.name || multipart.fields.name,
+                    type: multipart.file.type || multipart.fields.type,
+                    filePath: multipart.file.path
+                };
+            }
+            const result = await store.uploadBackgroundGalleryAsset(payload, actor);
             if (result?.error) {
                 sendError(response, result.status || 400, result.error);
                 return;
@@ -81,8 +98,13 @@ function registerBackgroundGalleryRoutes(app, deps = {}) {
             await store.flushPendingWrites();
             response.json({ ok: true, ...result });
         } catch (error) {
-            console.error('[background-gallery/upload] failed:', error);
-            sendError(response, 500, error?.message || 'Upload failed.');
+            console.error('[background-gallery/upload] failed:', error?.message || error);
+            const status = Number(error?.status || error?.statusCode || 500);
+            sendError(response, status >= 400 && status < 500 ? status : 500, error?.message || 'Upload failed.');
+        } finally {
+            if (temporaryFilePath) {
+                try { require('fs').unlinkSync(temporaryFilePath); } catch (_) {}
+            }
         }
     });
 

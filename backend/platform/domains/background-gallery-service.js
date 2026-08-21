@@ -402,6 +402,7 @@ async function uploadBackgroundGalleryAsset(payload = {}, actor = {}) {
         name: payload.name,
         type: payload.type,
         dataUrl: payload.dataUrl,
+        filePath: payload.filePath,
         uploadedAt: payload.uploadedAt || nowIso(),
         uploadedBy: actorUserId,
         ownerUserId: actorUserId,

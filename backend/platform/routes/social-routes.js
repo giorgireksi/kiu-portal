@@ -13,6 +13,18 @@ function registerSocialRoutes(app, deps = {}) {
         broadcastAll({ type: 'social:state-upsert', emittedAt: new Date().toISOString() });
     }
 
+    function emitSocialGroupChats(store, groupId, extraRecipients = []) {
+        const chats = typeof store.listSocialGroupChats === 'function'
+            ? store.listSocialGroupChats(groupId)
+            : [];
+        const recipients = [...new Set([
+            ...extraRecipients,
+            ...chats.flatMap((chat) => Array.isArray(chat?.members) ? chat.members : [])
+        ].map((id) => String(id || '').trim()).filter(Boolean))];
+        chats.forEach((chat) => pushEvent(recipients, { type: 'chat:upsert', chat }));
+        return chats;
+    }
+
     app.get('/api/social/bootstrap', (request, response) => {
         const store = getStore();
         response.json({ ok: true, social: store.getSocialBootstrap(String(request.query.userId || '').trim()) });
@@ -51,6 +63,54 @@ function registerSocialRoutes(app, deps = {}) {
         pushEvent(result.chat.members, { type: 'chat:upsert', chat: result.chat });
         emitSocialUpdated();
         response.json({ ok: true, ...result });
+    });
+
+    app.post('/api/social/group-conversation', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const result = store.createSocialGroupConversation(
+            request.body?.groupId,
+            request.body?.conversationName || request.body?.name,
+            actorUserId
+        );
+        if (!result) {
+            sendError(response, 403, 'You cannot create a conversation in this group.');
+            return;
+        }
+        if (result.duplicate) {
+            sendError(response, 409, 'A conversation with that name already exists.');
+            return;
+        }
+        const chats = emitSocialGroupChats(store, request.body?.groupId, result.chat.members);
+        emitSocialUpdated();
+        response.json({ ok: true, ...result, chats });
+    });
+
+    app.post('/api/social/group-conversation/:chatId/rename', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const chat = store.state.chats?.[request.params.chatId];
+        const result = store.renameSocialGroupConversation(
+            chat?.groupId || request.body?.groupId,
+            request.params.chatId,
+            request.body?.conversationName || request.body?.name,
+            actorUserId
+        );
+        if (!result) {
+            sendError(response, 403, 'You cannot rename this conversation.');
+            return;
+        }
+        if (result.duplicate) {
+            sendError(response, 409, 'A conversation with that name already exists.');
+            return;
+        }
+        const chats = emitSocialGroupChats(store, chat?.groupId || request.body?.groupId, chat?.members || []);
+        emitSocialUpdated();
+        response.json({ ok: true, ...result, chats });
     });
 
     app.get('/api/social/feed', (request, response) => {
@@ -288,13 +348,16 @@ function registerSocialRoutes(app, deps = {}) {
         if (!sessionAccount) return;
         const store = getStore();
         const actorUserId = getActorUserId(sessionAccount);
+        const previousGroup = store.getSocialGroupRecord(request.params.id);
+        const previousMembers = previousGroup ? store.getSocialGroupMemberIds(previousGroup) : [];
         const group = store.updateSocialGroup(request.params.id, request.body || {}, actorUserId);
         if (!group) {
             sendError(response, 400, 'Social group could not be updated.');
             return;
         }
+        const chats = emitSocialGroupChats(store, request.params.id, previousMembers);
         emitSocialUpdated();
-        response.json({ ok: true, group });
+        response.json({ ok: true, group, chats, activity: group.latestActivity || null });
     });
 
     app.delete('/api/social/groups/:id', (request, response) => {
@@ -319,6 +382,8 @@ function registerSocialRoutes(app, deps = {}) {
         if (!sessionAccount) return;
         const store = getStore();
         const actorUserId = getActorUserId(sessionAccount);
+        const previousGroup = store.getSocialGroupRecord(request.params.id);
+        const previousMembers = previousGroup ? store.getSocialGroupMemberIds(previousGroup) : [];
         const group = store.setSocialGroupMembership(
             request.params.id,
             request.body?.userId,
@@ -329,11 +394,9 @@ function registerSocialRoutes(app, deps = {}) {
             sendError(response, 400, 'Group membership could not be updated.');
             return;
         }
-        if (group.chatId && store.state.chats[group.chatId]) {
-            pushEvent(store.state.chats[group.chatId].members, { type: 'chat:upsert', chat: store.state.chats[group.chatId] });
-        }
+        const chats = emitSocialGroupChats(store, request.params.id, previousMembers);
         emitSocialUpdated();
-        response.json({ ok: true, group });
+        response.json({ ok: true, group, chats, activity: group.latestActivity || null });
     });
 
     app.post('/api/social/groups/:id/membership/:memberId', (request, response) => {
@@ -341,6 +404,8 @@ function registerSocialRoutes(app, deps = {}) {
         if (!sessionAccount) return;
         const store = getStore();
         const actorUserId = getActorUserId(sessionAccount);
+        const previousGroup = store.getSocialGroupRecord(request.params.id);
+        const previousMembers = previousGroup ? store.getSocialGroupMemberIds(previousGroup) : [];
         const group = store.respondSocialGroupMembership(
             request.params.id,
             request.params.memberId,
@@ -351,11 +416,9 @@ function registerSocialRoutes(app, deps = {}) {
             sendError(response, 400, 'Group membership request could not be resolved.');
             return;
         }
-        if (group.chatId && store.state.chats[group.chatId]) {
-            pushEvent(store.state.chats[group.chatId].members, { type: 'chat:upsert', chat: store.state.chats[group.chatId] });
-        }
+        const chats = emitSocialGroupChats(store, request.params.id, previousMembers);
         emitSocialUpdated();
-        response.json({ ok: true, group });
+        response.json({ ok: true, group, chats, activity: group.latestActivity || null });
     });
 
     app.delete('/api/social/groups/:id/members/:memberId', (request, response) => {
@@ -363,6 +426,8 @@ function registerSocialRoutes(app, deps = {}) {
         if (!sessionAccount) return;
         const store = getStore();
         const actorUserId = getActorUserId(sessionAccount);
+        const previousGroup = store.getSocialGroupRecord(request.params.id);
+        const previousMembers = previousGroup ? store.getSocialGroupMemberIds(previousGroup) : [];
         const group = store.removeSocialGroupMember(
             request.params.id,
             request.params.memberId,
@@ -372,8 +437,9 @@ function registerSocialRoutes(app, deps = {}) {
             sendError(response, 400, 'Group member could not be removed.');
             return;
         }
+        const chats = emitSocialGroupChats(store, request.params.id, previousMembers);
         emitSocialUpdated();
-        response.json({ ok: true, group });
+        response.json({ ok: true, group, chats, activity: group.latestActivity || null });
     });
 
     app.post('/api/social/groups/:id/invite', (request, response) => {
@@ -391,8 +457,9 @@ function registerSocialRoutes(app, deps = {}) {
             sendError(response, 400, 'Group invitation could not be sent.');
             return;
         }
+        const chats = emitSocialGroupChats(store, request.params.id, result.group?.memberIds || []);
         emitSocialUpdated();
-        response.json({ ok: true, ...result });
+        response.json({ ok: true, ...result, chats, activity: result.latestActivity || null });
     });
 
     app.get('/api/social/portfolio/me', (request, response) => {

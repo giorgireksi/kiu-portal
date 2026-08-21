@@ -1,5 +1,5 @@
 /* Thin route diff: social. Core in shared-lux-core.css */
-/* Included source lines: 23759-44551, 48213-48959. */
+/* Included source lines: 23759-44551, 48213-49740. */
 
 body.lux-route-social {
   --social-gap: 16px;
@@ -55,7 +55,6 @@ body.lux-route-social :is(
   button.social-neo-workspace-rail-reveal,
   button.social-neo-tab,
   button.social-neo-profile-tab,
-  button.social-photo-tab,
   button.social-photo-my-tab,
   button.social-neo-composer-cta,
   button.social-neo-pages-hero-tab,
@@ -82,7 +81,6 @@ body.lux-route-social :is(
   button.social-neo-shell-drawer-nav-btn,
   button.social-neo-tab,
   button.social-neo-profile-tab,
-  button.social-photo-tab,
   button.social-photo-my-tab,
   button.social-neo-pages-hero-tab,
   button.social-project-hero-tab
@@ -104,7 +102,6 @@ body.lux-route-social :is(
 body.lux-route-social :is(
   button.social-neo-tab,
   button.social-neo-profile-tab,
-  button.social-photo-tab,
   button.social-photo-my-tab,
   button.social-neo-pages-hero-tab,
   button.social-project-hero-tab
@@ -112,7 +109,6 @@ body.lux-route-social :is(
 body.lux-route-social :is(
   button.social-neo-tab,
   button.social-neo-profile-tab,
-  button.social-photo-tab,
   button.social-photo-my-tab,
   button.social-project-hero-tab
 ).is-active {
@@ -967,6 +963,20 @@ body.lux-route-social :is(#page-social, #public-social-root, .social-route-stand
   width: 100%;
   max-width: none;
   margin: 0;
+}
+
+
+body.lux-route-social #social-neo-root > :is(
+  #social-neo-flash-region,
+  #social-neo-topbar-region,
+  #social-neo-command-region,
+  #social-neo-workspace-nav-reveal-region,
+  #social-neo-drawer-region,
+  #social-neo-mobile-tab-region,
+  #social-neo-toast-region
+):empty,
+body.lux-route-social:not(.social-neo-workspace-nav-collapsed) #social-neo-root > #social-neo-workspace-nav-reveal-region {
+  display: none;
 }
 
 body.lux-route-social .social-neo {
@@ -5408,6 +5418,37 @@ body.lux-route-social .social-photo-chrome-actions {
   flex-shrink: 0;
 }
 
+
+body.lux-route-social .social-photo-hero .lux-picker-btn--compact {
+  min-height: 40px;
+  padding: 7px 12px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  background-image: none;
+  box-shadow: none;
+  color: var(--lux-text-muted, var(--lux-text-secondary));
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-shadow: none;
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+}
+body.lux-route-social .social-photo-hero .lux-picker-btn--compact::before,
+body.lux-route-social .social-photo-hero .lux-picker-btn--compact::after {
+  display: none;
+}
+body.lux-route-social .social-photo-hero .lux-picker-btn--compact:hover,
+body.lux-route-social .social-photo-hero .lux-picker-btn--compact:focus-visible,
+body.lux-route-social .social-photo-hero .lux-picker-btn--compact[aria-expanded="true"] {
+  transform: none;
+  border-color: color-mix(in srgb, var(--lux-accent) 24%, var(--lux-border));
+  background: color-mix(in srgb, var(--lux-accent) 8%, var(--lux-panel-control));
+  box-shadow: none;
+  color: var(--lux-text);
+}
+
 body.lux-route-social .social-photo-search {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -5423,36 +5464,6 @@ body.lux-route-social .social-photo-search > i {
 body.lux-route-social .social-photo-search .lux-control {
   width: 100%;
   min-height: 36px;
-}
-
-body.lux-route-social .social-photo-tab-segment {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
-
-body.lux-route-social button.social-photo-tab:is(.lux-primary-btn, .lux-secondary-btn) {
-  width: 100%;
-  min-height: 34px;
-  height: auto;
-  padding: 6px 12px;
-  border-width: 1px;
-  text-shadow: none;
-  justify-content: center;
-}
-
-body.lux-route-social button.social-photo-my-profile-btn.lux-secondary-btn {
-  min-width: 40px;
-  min-height: 40px;
-  padding: 4px;
-  border-width: 1px;
-  text-shadow: none;
-}
-
-body.lux-route-social .social-photo-my-profile-btn-avatar,
-body.lux-route-social .social-photo-my-profile-btn .social-neo-avatar {
-  width: 28px;
-  height: 28px;
 }
 
 @media (max-width: 720px) {
@@ -6662,6 +6673,162 @@ body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-threa
     padding: 0 !important;
     display: inline-grid;
     place-items: center;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-switcher {
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+    min-width: 0;
+    position: relative;
+    z-index: 8;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-switcher__main {
+    min-width: 0;
+    flex: 1 1 auto;
+    position: relative;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-select,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-add {
+    min-height: 34px;
+    border: 1px solid var(--social-fade-border-soft);
+    border-radius: 10px;
+    background: var(--social-msg-composer);
+    color: var(--sn-txt1);
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-select {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    text-align: left;
+    cursor: pointer;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-select:hover,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-select:focus-visible,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-add:hover,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-add:focus-visible {
+    border-color: var(--lux-accent);
+    outline: none;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-select__label {
+    color: var(--sn-txt3);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-select strong {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-select > .fa-chevron-down {
+    margin-left: auto;
+    color: var(--sn-txt3);
+    font-size: 10px;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-add {
+    width: 34px;
+    min-width: 34px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-badge,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-option__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 19px;
+    height: 19px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--lux-accent);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-menu {
+    position: absolute;
+    inset: calc(100% + 6px) 0 auto 0;
+    width: auto;
+    max-height: min(300px, 42vh);
+
+    z-index: 20;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-option,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-create {
+    width: 100%;
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 7px 8px;
+    color: var(--sn-txt1);
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-option:hover,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-option:focus-visible,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-option.is-active,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-create:hover,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-create:focus-visible {
+    background: color-mix(in srgb, var(--lux-accent) 12%, transparent);
+    outline: none;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-option__copy {
+    min-width: 0;
+    flex: 1 1 auto;
+    display: grid;
+    gap: 2px;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-option__copy strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-option__copy small {
+    overflow: hidden;
+    color: var(--sn-txt3);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 10px;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-create {
+    margin-top: 4px;
+    border-top: 1px solid var(--social-fade-border-soft);
+    border-radius: 0 0 8px 8px;
+    color: var(--lux-accent);
+    font-weight: 750;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-create i {
+    width: 18px;
+    text-align: center;
 }
 
 body.lux-route-social .social-neo[data-panel="messages"] .social-neo-messages__composer {
@@ -20590,174 +20757,175 @@ body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sp
 @media (max-width: 720px) {
     body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-card--schedule .sph-schedule-details {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-schedule-path {
-        grid-template-columns: 1fr;
-        gap: 4px;
-    }
-    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-schedule-path .sph-chain {
-        flex-wrap: wrap;
-        overflow-x: visible;
-    }
+
+    flex-shrink: 0;
+    border-radius: 12px;
 }
 
-
-@media (min-width: 1025px) {
-    body.lux-route-social .social-project-workspace-chat {
-        height: min(74vh, calc(100dvh - 190px)) !important;
-        min-height: 0 !important;
-        max-height: calc(100dvh - 190px) !important;
-        overflow: hidden !important;
-    }
-    body.lux-route-social .social-project-workspace-chat .social-neo-messages__thread-shell {
-        height: 100% !important;
-        min-height: 0 !important;
-        max-height: 100% !important;
-        overflow: hidden !important;
-    }
-    body.lux-route-social .social-project-workspace-chat .social-neo-messages__thread-scroll {
-        flex: 1 1 0% !important;
-        height: auto !important;
-        min-height: 0 !important;
-        max-height: 100% !important;
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
-        justify-content: flex-start !important;
-        scrollbar-width: none !important;
-        -ms-overflow-style: none;
-    }
-    body.lux-route-social .social-project-workspace-chat .social-neo-messages__composer {
-        margin-top: 0 !important;
-    }
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-save-name-panel-icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 12px;
 }
 
-@media (max-width: 1024px) {
-    body.lux-route-social .social-project-workspace-chat {
-        height: min(72dvh, calc(100dvh - 180px)) !important;
-        min-height: 0 !important;
-        max-height: calc(100dvh - 180px) !important;
-        overflow: hidden !important;
-    }
-    body.lux-route-social .social-project-workspace-chat .social-neo-messages__thread-shell {
-        height: 100% !important;
-        min-height: 0 !important;
-        max-height: 100% !important;
-        overflow: hidden !important;
-    }
-    body.lux-route-social .social-project-workspace-chat .social-neo-messages__thread-scroll {
-        flex: 1 1 0% !important;
-        height: auto !important;
-        min-height: 0 !important;
-        max-height: 100% !important;
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
-        justify-content: flex-start !important;
-        scrollbar-width: none !important;
-        -ms-overflow-style: none;
-    }
-    body.lux-route-social .social-project-workspace-chat .social-neo-messages__composer {
-        margin-top: 0 !important;
-    }
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-section {
+    display: grid;
+    gap: 8px;
 }
 
-
-body.lux-route-social .social-neo-messages__thread-shell {
-    position: relative;
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-section-row,
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-peer-share-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
-body.lux-route-social .lux-picker-field > :is(.lux-picker-panel, .lux-universal-picker-panel, .lux-droplist-panel) {
-    position: absolute !important;
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-peer-share-identity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
 }
 
-
-[data-lux-custom-scrollbar-target],
-[data-lux-custom-scrollbar-target="window"] {
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
-}
-[data-lux-custom-scrollbar-target]::-webkit-scrollbar,
-html[data-lux-custom-scrollbar-target="window"]::-webkit-scrollbar,
-html[data-lux-custom-scrollbar-target="window"]::-webkit-scrollbar-track,
-html[data-lux-custom-scrollbar-target="window"]::-webkit-scrollbar-thumb {
-    width: 0 !important;
-    height: 0 !important;
-    display: none !important;
-}
-html[data-lux-custom-scrollbar-target="window"] {
-    scrollbar-width: none !important;
-    scrollbar-color: transparent transparent !important;
-}
-[data-lux-custom-scrollbar-shell] {
-    position: relative;
-}
-.lux-custom-scrollbar {
-    position: absolute;
-    z-index: 3;
-    top: 0;
-    right: 2px;
-    width: var(--lux-scrollbar-size);
-    min-height: 32px;
-    display: block;
-    opacity: 1;
-    border: 1px solid rgba(var(--lux-accent-rgb), 0.35);
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-peer-avatar {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
     border-radius: 999px;
-    background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.9);
-    touch-action: none;
-    user-select: none;
-    pointer-events: auto;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
 }
-.lux-custom-scrollbar[aria-disabled="true"] {
-    opacity: .35;
-    pointer-events: none;
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-seg {
+    display: inline-flex;
+    gap: 4px;
+    flex-shrink: 0;
 }
-.lux-custom-scrollbar__thumb {
-    position: absolute;
-    inset: 1px 1px auto;
-    min-height: 32px;
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-seg-btn {
+    min-width: 52px;
+    padding: 6px 10px;
     border-radius: 999px;
-    background: var(--lux-scrollbar-thumb);
-    box-shadow: 0 0 8px rgba(var(--lux-accent-rgb), 0.35);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
 }
-.lux-custom-scrollbar__thumb:hover,
-.lux-custom-scrollbar:hover .lux-custom-scrollbar__thumb {
-    background: var(--lux-scrollbar-thumb-hover);
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 12px;
 }
-.lux-custom-scrollbar:focus-visible {
-    outline: 2px solid var(--lux-scrollbar-thumb);
-    outline-offset: 2px;
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-search-input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
 }
-.lux-custom-scrollbar--horizontal {
-    top: auto !important;
-    bottom: 2px;
-    right: 0;
-    left: 0;
-    width: auto !important;
-    height: var(--lux-scrollbar-size) !important;
-    min-height: 0;
-    min-width: 32px;
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-peer-share-list {
+    display: grid;
+    gap: 8px;
+    max-height: 220px;
+    overflow: auto;
 }
-.lux-custom-scrollbar--horizontal .lux-custom-scrollbar__thumb {
-    inset: 1px auto 1px 1px;
-    min-height: 0;
-    min-width: 32px;
-    height: auto !important;
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-empty.lux-empty-state {
+    display: grid;
+    gap: 8px;
+    justify-items: center;
+    padding: 20px 12px;
+    text-align: center;
 }
-.lux-custom-scrollbar--window {
-    position: fixed !important;
-    top: 0 !important;
-    right: 2px !important;
-    bottom: 0 !important;
-    left: auto !important;
-    width: var(--lux-scrollbar-size) !important;
-    height: 100vh !important;
-    height: 100dvh !important;
-    z-index: 999 !important;
-    pointer-events: auto;
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-panel-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
 }
-body[data-lux-portal-modal-scroll-lock] .lux-custom-scrollbar--window:not(.lux-custom-scrollbar--page),
-body.social-neo-scroll-lock .lux-custom-scrollbar--window:not(.lux-custom-scrollbar--page) {
-    opacity: 0 !important;
-    pointer-events: none !important;
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-panel-foot {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-save-name-panel-foot {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-save-name-field {
+    display: grid;
+    gap: 8px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-field {
+    display: grid;
+    gap: 4px;
+}
+
+@media (max-width: 960px) {
+    body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-layout.is-student-layout,
+    body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-layout.is-staff-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.social-module-pin-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.social-module-pin-btn {
+    min-width: 2rem;
+}
+
+.social-pin-section {
+    display: grid;
+    gap: 12px;
+}
+
+.social-pin-section-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.social-pin-section-list {
+    display: grid;
+    gap: 12px;
+}
+
+.social-neo-research-card-pin,
+.social-neo-event-feature-pin,
+.social-neo-survey-card-pin,
+.social-portfolio-card-pin,
+.social-neo-lf-card-pin {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
 }
 
 
@@ -21505,3 +21673,611 @@ body.lux-route-social #social-neo-overlay-portal .social-page-surface[data-lux-t
         overflow: visible !important;
     }
 }
+
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode {
+    --lms-messenger-surface: var(--lux-panel-fill, rgba(18, 25, 43, 0.72));
+    --lms-messenger-border: var(--lux-panel-host-border, var(--lux-border));
+    --lms-messenger-muted: var(--lux-text-muted);
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+    border: 1px solid var(--lms-messenger-border);
+    border-radius: 22px;
+    background: var(--lms-messenger-surface);
+    box-shadow: var(--lux-panel-host-shadow, 0 18px 44px rgba(0, 0, 0, 0.16));
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-messenger__head {
+    min-height: 68px;
+    padding: 14px 18px;
+    border-bottom: 1px solid color-mix(in srgb, var(--lms-messenger-border) 78%, transparent);
+    background: color-mix(in srgb, var(--lms-messenger-surface) 90%, transparent);
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-messenger__body {
+    min-height: 0;
+    overflow: hidden;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct {
+    height: 100%;
+    min-height: 0;
+    grid-template-columns: clamp(280px, 28%, 340px) minmax(0, 1fr);
+    background: transparent;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__rail {
+    min-height: 0;
+    background: color-mix(in srgb, var(--lms-messenger-surface) 82%, transparent);
+    border-right: 1px solid color-mix(in srgb, var(--lms-messenger-border) 78%, transparent);
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__rail-head,
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__thread-head {
+    padding: 14px 16px;
+    border-color: color-mix(in srgb, var(--lms-messenger-border) 78%, transparent);
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__inbox,
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__compose-list {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__thread {
+    min-height: 0;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--lms-messenger-surface) 92%, transparent);
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__log {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 18px 22px;
+    scrollbar-width: thin;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__log,
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__inbox,
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__compose-list {
+    scrollbar-width: auto;
+    scrollbar-color: rgba(var(--lux-accent-rgb), 0.72) rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.34);
+    scrollbar-gutter: stable;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__log::-webkit-scrollbar,
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__inbox::-webkit-scrollbar,
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__compose-list::-webkit-scrollbar {
+    width: 11px;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__log::-webkit-scrollbar-track,
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__inbox::-webkit-scrollbar-track,
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__compose-list::-webkit-scrollbar-track {
+    background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.34);
+    border-radius: 10px;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__log::-webkit-scrollbar-thumb,
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__inbox::-webkit-scrollbar-thumb,
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__compose-list::-webkit-scrollbar-thumb {
+    min-height: 42px;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    background: rgba(var(--lux-accent-rgb), 0.72);
+    background-clip: padding-box;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messages__thread-scroll {
+    scrollbar-width: auto !important;
+    scrollbar-color: rgba(var(--lux-accent-rgb), 0.72) rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.34) !important;
+    scrollbar-gutter: stable;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messages__thread-scroll::-webkit-scrollbar {
+    width: 11px !important;
+    height: 11px !important;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messages__thread-scroll::-webkit-scrollbar-track {
+    background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.34);
+    border-radius: 10px;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messages__thread-scroll::-webkit-scrollbar-thumb {
+    min-height: 42px;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    background: rgba(var(--lux-accent-rgb), 0.72);
+    background-clip: padding-box;
+}
+
+@media (max-width: 960px) {
+    body.lux-route-lms .lms-route-workspace-chrome {
+        gap: 8px;
+        padding: 10px;
+    }
+
+    body.lux-route-lms .lms-route-workspace-chrome .lms-route-card-head {
+        gap: 8px;
+    }
+
+    body.lux-route-lms .lms-route-workspace-chrome .lms-role-context {
+        display: none;
+    }
+
+    body.lux-route-lms .lms-route-workspace-chrome .lms-route-card-head > div:first-child,
+    body.lux-route-lms .lms-route-workspace-chrome .lms-route-card-head-actions {
+        min-width: 0;
+        width: 100%;
+    }
+
+    body.lux-route-lms .lms-route-workspace-chrome .lms-route-card-head-actions {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 2px;
+    }
+
+    body.lux-route-lms .lms-route-workspace-chrome .lms-route-card-head-actions > button {
+        flex: 0 0 auto;
+        min-height: 36px;
+        padding: 6px 10px;
+        white-space: nowrap;
+    }
+
+    body.lux-route-lms .lms-route-workspace-chrome .lms-route-tab-strip {
+        flex-wrap: nowrap;
+        gap: 6px;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scrollbar-width: thin;
+    }
+
+    body.lux-route-lms .lms-route-workspace-chrome .lms-route-tab {
+        flex: 0 0 auto;
+        min-height: 36px;
+        padding: 6px 10px;
+        white-space: nowrap;
+    }
+
+    body.lux-route-lms .lms-interaction-messenger.is-messages-mode {
+        height: 100%;
+        max-height: 100%;
+        border-radius: 18px;
+    }
+
+    body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+
+    body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct.is-rail-view .social-neo-messages__thread-shell,
+    body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct.is-thread-view .social-neo-messages__inbox {
+        display: none !important;
+    }
+}
+
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__thread {
+    position: relative !important;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__log {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior: contain !important;
+    scrollbar-width: auto !important;
+    padding-right: 12px !important;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__log::-webkit-scrollbar {
+    width: 11px !important;
+    height: 11px !important;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messages__thread-shell {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messages__thread-chrome {
+    min-height: 0;
+    display: grid;
+    gap: 0;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messages__thread-scroll {
+    min-height: 0;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    padding: 18px 22px;
+    scrollbar-width: auto;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messages__thread-scroll::-webkit-scrollbar {
+    width: 11px;
+    height: 11px;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messages__composer {
+    position: relative;
+    z-index: 1;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-message {
+    display: grid;
+    gap: 5px;
+    width: fit-content;
+    max-width: min(720px, 88%);
+    padding: 11px 14px;
+    border: 1px solid color-mix(in srgb, var(--lms-messenger-border) 72%, transparent);
+    border-radius: 15px 15px 15px 5px;
+    background: color-mix(in srgb, var(--lms-messenger-surface) 72%, var(--lux-glass-tint, #17233d));
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-message.is-own {
+    justify-self: end;
+    border-color: color-mix(in srgb, var(--lux-accent) 38%, var(--lms-messenger-border));
+    border-radius: 15px 15px 5px 15px;
+    background: color-mix(in srgb, var(--lux-accent) 18%, var(--lms-messenger-surface));
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-message > span,
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-message__sender {
+    color: var(--lms-messenger-muted);
+    font-size: 11px;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-message p {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-group-thread-panel {
+    padding: 8px 12px;
+    color: var(--lms-messenger-muted);
+    font-size: 12px;
+    border-bottom: 1px solid color-mix(in srgb, var(--lms-messenger-border) 78%, transparent);
+}
+
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    padding: 8px 14px !important;
+    border-radius: 10px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    line-height: 1.3 !important;
+    background: transparent !important;
+    border: 1px solid var(--sn-bdr, rgba(255,255,255,.10)) !important;
+    color: var(--sn-txt2, var(--lux-text-muted)) !important;
+    box-shadow: none !important;
+    cursor: pointer;
+    transition: all var(--sn-ease, 160ms ease);
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-btn:hover {
+    background: var(--sn-hover, rgba(var(--lux-accent-rgb), .08)) !important;
+    border-color: var(--sn-bdr-a, rgba(var(--lux-accent-rgb), .24)) !important;
+    color: var(--sn-txt, var(--lux-text)) !important;
+    transform: translateY(-1px);
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-btn-primary {
+    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), .85), rgba(var(--lux-accent-rgb), .95)) !important;
+    border-color: rgba(var(--lux-accent-rgb), .35) !important;
+    color: #fff !important;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-btn-ghost {
+    background: transparent !important;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-btn-sm {
+    padding: 5px 10px !important;
+    font-size: 11px !important;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-link-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 3px 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: var(--lux-text-muted) !important;
+    font-size: 11.5px !important;
+    box-shadow: none !important;
+    cursor: pointer;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-thread-head {
+    display: grid;
+    gap: 0;
+    padding: 0 !important;
+    border: 1px solid rgba(var(--lux-accent-rgb), .12);
+    border-radius: 16px;
+    overflow: hidden;
+    background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), .2);
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-thread-head__main {
+    min-height: 56px;
+    padding: 10px 12px;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-thread-head__meta {
+    min-width: 0;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-thread-head__subtitle {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    line-height: 1.35;
+    color: var(--lux-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-group-thread-toolbar.is-compact {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 4px;
+    margin: 0;
+    padding: 6px !important;
+    overflow-x: auto;
+    background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), .2);
+    border: 1px solid rgba(var(--lux-accent-rgb), .12);
+    border-radius: 14px;
+    scrollbar-width: none;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-group-thread-toolbar.is-compact::-webkit-scrollbar {
+    display: none;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-group-thread-toolbar .social-neo-btn {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    padding: 0 !important;
+    display: inline-grid;
+    place-items: center;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messages__thread-scroll {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px;
+    background: rgba(11, 16, 24, .84) !important;
+    border: 1px solid rgba(var(--lux-accent-rgb), .16);
+    border-radius: 16px;
+    padding: 12px !important;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-thread-messages {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px;
+    min-height: min-content;
+    width: 100%;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-message {
+    border-radius: 16px 16px 16px 4px;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-message.is-own {
+    margin-left: auto;
+    border-radius: 16px 16px 4px 16px;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-msg-compose-row {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    padding-top: 0;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-msg-compose-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 44px;
+    border-radius: 999px !important;
+    background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), .34) !important;
+    border-color: rgba(var(--lux-accent-rgb), .16) !important;
+}
+
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-msg-compose-row {
+    padding: 8px !important;
+    background: color-mix(in srgb, var(--lux-glass-tint, #17233d) 74%, transparent) !important;
+    border: 1px solid rgba(var(--lux-accent-rgb), .16) !important;
+    border-radius: 999px !important;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-msg-compose-row:focus-within {
+    border-color: rgba(var(--lux-accent-rgb), .45) !important;
+    box-shadow: 0 0 0 2px rgba(var(--lux-accent-rgb), .15) !important;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-msg-compose-input,
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-msg-compose-input:focus,
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-msg-compose-input:focus-visible,
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-msg-compose-input:active {
+    background: transparent !important;
+    border: 0 !important;
+    outline: none !important;
+    box-shadow: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-msg-compose-row .social-neo-btn-primary {
+    width: 38px;
+    height: 38px;
+    padding: 0 !important;
+    border-radius: 999px !important;
+    display: inline-grid;
+    place-items: center;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-thread-head {
+    display: block;
+    padding: 12px 16px;
+    border-bottom: 1px solid color-mix(in srgb, var(--lms-messenger-border) 78%, transparent);
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-thread-head__main,
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-person,
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messages__thread-actions {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-thread-head__main {
+    justify-content: space-between;
+    gap: 12px;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-person {
+    gap: 10px;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-group-thread-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 6px;
+    border-bottom: 1px solid color-mix(in srgb, var(--lms-messenger-border) 78%, transparent);
+}
+
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__thread,
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messages__thread-shell {
+    min-height: 0 !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messages__thread-chrome,
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messages__composer {
+    flex: 0 0 auto !important;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messages__thread-scroll {
+    flex: 1 1 0% !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior: contain !important;
+    justify-content: flex-start !important;
+    scrollbar-width: thin;
+    scrollbar-color: var(--lux-scrollbar-thumb) var(--lux-scrollbar-track);
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messages__thread-scroll::-webkit-scrollbar {
+    width: var(--lux-scrollbar-size);
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messages__thread-scroll::-webkit-scrollbar-track {
+    background: var(--lux-scrollbar-track);
+    border-radius: 10px;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messages__thread-scroll::-webkit-scrollbar-thumb {
+    min-height: 42px;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    background: var(--lux-scrollbar-thumb);
+    background-clip: padding-box;
+}
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messages__thread-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--lux-scrollbar-thumb-hover);
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messages__thread-stream {
+    display: flex !important;
+    flex: 0 0 auto !important;
+    flex-direction: column !important;
+    gap: 8px;
+    width: 100%;
+    min-height: min-content;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messages__thread-shell > .social-neo-messages__thread-scroll {
+    grid-row: 2;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+}
+
+body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-thread-messages > .social-neo-message {
+    flex: 0 0 auto !important;
+    min-height: 52px;
+}
+
+
+@media (min-width: 1025px) {
+    body.lux-route-social .social-neo-messages {
+        min-height: 0 !important;
+        height: min(74vh, calc(100dvh - 190px)) !important;
+        max-height: calc(100dvh - 190px) !important;
+        overflow: hidden !important;
+    }
+
+    body.lux-route-social .social-neo-messages__thread-shell {
+        min-height: 0 !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        overflow: hidden !important;
+    }
+
+    body.lux-route-social .social-neo-messages__thread-chrome,
+    body.lux-route-social .social-neo-messages__composer {
+        flex: 0 0 auto !important;
+    }
+
+    body.lux-route-social .social-neo-messages__thread-scroll {
+        flex: 1 1 0% !important;
+        min-height: 0 !important;
+        max-height: 100% !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        overscroll-behavior: contain !important;
+        scrollbar-width: none !important;
+        -ms-overflow-style: none;
+    }
+
+    body.lux-route-social .social-neo-messages__thread-scroll::-webkit-scrollbar {
+        width: 0;

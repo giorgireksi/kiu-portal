@@ -16,15 +16,19 @@ describe('social state store domain split', () => {
         const source = readSource('backend/platform/store.js');
 
         expect(Object.keys(socialStateService).sort()).toEqual([
+            'appendSocialGroupActivity',
             'appendSocialProjectActivity',
+            'createSocialGroupConversation',
             'ensureSocialGroupChat',
             'ensureSocialProjectCollections',
             'getSocialBootstrap',
             'isLostFoundItemExpired',
+            'listSocialGroupChats',
             'listSocialRelationshipsForUser',
             'migrateLostFoundSocialState',
             'normalizeLostFoundItem',
             'normalizeLostFoundItems',
+            'renameSocialGroupConversation',
             'saveSocialMutation',
             'upsertSocialState'
         ]);
@@ -43,6 +47,18 @@ describe('social state store domain split', () => {
             role: 'student',
             facultyCode: 'ECON',
             accountStatus: 'active'
+        };
+        store.state.accounts['friend-1'] = {
+            id: 'friend-1',
+            displayName: 'Friend One',
+            email: 'friend@example.com',
+            role: 'student',
+            facultyCode: 'ECON',
+            accountStatus: 'active'
+        };
+        store.state.portal.state.studentAdminProfiles = {
+            'owner-1': { id: 'owner-1', accountStatus: 'active' },
+            'friend-1': { id: 'friend-1', accountStatus: 'active' }
         };
         store.state.social.groups = [{
             id: 'group-1',
@@ -82,7 +98,31 @@ describe('social state store domain split', () => {
 
         const chat = store.ensureSocialGroupChat('group-1', 'owner-1');
         expect(chat?.chat?.groupId).toBe('group-1');
+        expect(chat?.chat?.conversationName).toBe('General');
         expect(chat?.social?.groups).toHaveLength(1);
+
+        const created = store.createSocialGroupConversation('group-1', 'Exam prep', 'owner-1');
+        expect(created?.chat?.conversationName).toBe('Exam prep');
+        expect(created?.chat?.groupId).toBe('group-1');
+        expect(created?.chats).toHaveLength(2);
+        expect(created?.chats.every((entry) => entry.messages.some((message) => message.isSystem && message.eventId === created.event.id))).toBe(true);
+        expect(store.createSocialGroupConversation('group-1', 'Exam prep', 'owner-1')?.duplicate).toBe(true);
+
+        const renamed = store.renameSocialGroupConversation('group-1', created.chat.id, 'Final review', 'owner-1');
+        expect(renamed?.chat?.conversationName).toBe('Final review');
+        expect(renamed?.chats).toHaveLength(2);
+        expect(renamed?.chats.every((entry) => entry.messages.some((message) => message.isSystem && message.eventId === renamed.event.id))).toBe(true);
+        expect(renamed?.event?.type).toBe('conversation.renamed');
+
+        const invited = store.inviteSocialGroupMember('group-1', 'friend-1', 'owner-1');
+        expect(invited?.latestActivity?.type).toBe('member.invited');
+        expect(invited?.chats.every((entry) => entry.messages.some((message) => message.isSystem && message.eventId === invited.latestActivity.id))).toBe(true);
+        const joined = store.setSocialGroupMembership('group-1', 'friend-1', 'join', 'friend-1');
+        expect(joined?.latestActivity?.type).toBe('member.added');
+        expect(Object.values(store.state.chats).every((entry) => entry.members.includes('friend-1'))).toBe(true);
+        const settings = store.updateSocialGroup('group-1', { visibility: 'private' }, 'owner-1');
+        expect(settings?.latestActivity?.type).toBe('group.settings.changed');
+        expect(Object.values(store.state.chats).every((entry) => entry.messages.at(-1)?.isSystem)).toBe(true);
     });
 
     it('repairs social group chat membership when a viewer can access the group but is not yet a chat member', () => {

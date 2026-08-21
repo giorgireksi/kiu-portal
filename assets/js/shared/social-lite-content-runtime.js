@@ -1177,6 +1177,47 @@ async function openGroupChat(groupId, options = {}) {
     return payload?.chat || null;
 }
 
+async function createGroupConversation(groupId, conversationName, options = {}) {
+    const actorId = currentUserId();
+    const normalizedGroupId = text(groupId);
+    const normalizedName = text(conversationName).slice(0, 80);
+    if (!actorId || !normalizedGroupId || !normalizedName) throw new Error('Conversation name is required.');
+    const payload = await portalRequest('/api/social/group-conversation', {
+        method: 'POST',
+        body: JSON.stringify({
+            groupId: normalizedGroupId,
+            conversationName: normalizedName,
+            actorId
+        })
+    });
+    if (payload?.chat) {
+        upsertChat(payload.chat, true);
+        if (options?.skipStateRefresh) {
+            loadSocialState(true, { skipRender: true }).catch(() => null);
+        } else {
+            await loadSocialState(true, { skipRender: true });
+        }
+        if (!options?.skipRoute) routeToSocial('messages', text(payload.chat.id));
+    }
+    return payload?.chat || null;
+}
+
+async function renameGroupConversation(chatId, conversationName, options = {}) {
+    const actorId = currentUserId();
+    const normalizedChatId = text(chatId);
+    const normalizedName = text(conversationName).slice(0, 80);
+    if (!actorId || !normalizedChatId || !normalizedName) throw new Error('Conversation name is required.');
+    const payload = await portalRequest(`/api/social/group-conversation/${encodeURIComponent(normalizedChatId)}/rename`, {
+        method: 'POST',
+        body: JSON.stringify({ actorId, conversationName: normalizedName })
+    });
+    (Array.isArray(payload?.chats) ? payload.chats : payload?.chat ? [payload.chat] : []).forEach((chat) => upsertChat(chat, false));
+    if (options?.skipStateRefresh) loadSocialState(true, { skipRender: true }).catch(() => null);
+    else await loadSocialState(true, { skipRender: true });
+    if (!options?.skipRoute) routeToSocial('messages', normalizedChatId);
+    return payload?.chat || null;
+}
+
 async function sendMessage(chatId, textValue, file) {
     const senderId = currentUserId();
     const chat = runtime.chats.find((entry) => text(entry.id) === text(chatId));
@@ -1431,6 +1472,8 @@ async function leaveGroupCall(chatId) {
             patchEventRsvp,
             respondEventRsvp,
             openGroupChat,
+            createGroupConversation,
+            renameGroupConversation,
             sendMessage,
             upsertChat,
             upsertCall,

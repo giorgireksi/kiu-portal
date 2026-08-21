@@ -69,13 +69,24 @@ function isStoredFileOwnedByActor(fileRecord = null, actorUserId = '') {
 }
 
 function createFileFromUploadSync(payload = {}) {
-    const parsed = parseDataUrl(payload.dataUrl);
-    if (!parsed) return null;
+    const sourcePath = String(payload.filePath || '').trim();
+    const parsed = sourcePath ? null : parseDataUrl(payload.dataUrl);
+    if (!sourcePath && !parsed) return null;
     const isBackgroundGallery = String(payload.scope || '').trim() === 'background-gallery';
     const maxBytes = isBackgroundGallery
         ? this.maxBackgroundGalleryUploadBytes
         : this.maxFileUploadBytes;
-    if (parsed.buffer.length > maxBytes) return null;
+    let sourceSize = parsed?.buffer?.length || 0;
+    if (sourcePath) {
+        try {
+            const sourceStat = fs.statSync(sourcePath);
+            if (!sourceStat.isFile()) return null;
+            sourceSize = sourceStat.size;
+        } catch (_) {
+            return null;
+        }
+    }
+    if (sourceSize > maxBytes) return null;
     const ext = (() => {
         const name = String(payload.name || 'download.bin').trim();
         const match = name.match(/(\.[a-z0-9]+)$/i);
@@ -94,7 +105,11 @@ function createFileFromUploadSync(payload = {}) {
         if (candidatePath === uploadsDir || !candidatePath.startsWith(`${uploadsDir}${path.sep}`)) continue;
         if (this.state.files?.[candidateId] || fs.existsSync(candidatePath)) continue;
         try {
-            fs.writeFileSync(candidatePath, parsed.buffer, { flag: 'wx' });
+            if (sourcePath) {
+                fs.copyFileSync(sourcePath, candidatePath, fs.constants.COPYFILE_EXCL);
+            } else {
+                fs.writeFileSync(candidatePath, parsed.buffer, { flag: 'wx' });
+            }
             id = candidateId;
             filePath = candidatePath;
             break;
@@ -107,7 +122,7 @@ function createFileFromUploadSync(payload = {}) {
     }
     const ownerUserId = String(payload.ownerUserId || payload.uploadedBy || '').trim();
     const requestedMimeType = sanitizeStoredFileMimeType(payload.type || '');
-    const parsedMimeType = sanitizeStoredFileMimeType(parsed.mimeType || '');
+    const parsedMimeType = sanitizeStoredFileMimeType(parsed?.mimeType || '');
     // Some WebViews omit File.type even when the data URL identifies a valid
     // image. Preserve the actual safe image MIME instead of recording it as
     // application/octet-stream, which would make task proof validation reject
@@ -115,14 +130,14 @@ function createFileFromUploadSync(payload = {}) {
     const mimeType = requestedMimeType === 'application/octet-stream' && parsedMimeType.startsWith('image/')
         ? parsedMimeType
         : requestedMimeType || parsedMimeType || 'application/octet-stream';
-    const previewDataUrl = mimeType.startsWith('image/') && parsed.buffer.length <= 200 * 1024
+    const previewDataUrl = mimeType.startsWith('image/') && sourceSize <= 200 * 1024 && parsed?.buffer
         ? `data:${mimeType};base64,${parsed.buffer.toString('base64')}`
         : '';
     const record = {
         id,
         name: String(payload.name || `${id}${ext || '.bin'}`).trim(),
         type: mimeType,
-        size: parsed.buffer.length,
+        size: sourceSize,
         path: filePath,
         ownerUserId,
         uploadedAt: String(payload.uploadedAt || nowIso()),

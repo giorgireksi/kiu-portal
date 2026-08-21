@@ -173,7 +173,7 @@
                                 <span>Hide</span>
                             </button>
                         </div>
-                        <div class="social-neo-sidebar-nav social-neo-workspace-nav-list">
+                        <div class="social-neo-sidebar-nav social-neo-workspace-nav-list" data-lux-scrollport="1" data-lux-scroll-axis="vertical" data-lux-custom-scrollbar-auto="vertical">
                             ${panels.map((panel) => `
                                 <button class="lux-secondary-btn social-neo-side-link social-neo-workspace-nav-btn ${text(activePanel) === panel.id ? 'is-active' : ''}" type="button" data-action="panel-${escape(panel.id)}">
                                     <span class="social-neo-side-main">
@@ -206,19 +206,36 @@
             const visualHeight = vv.height;
             if (!Number.isFinite(visualHeight) || visualHeight <= 0) {
                 document.documentElement.style.removeProperty('--social-visual-height');
+                document.documentElement.style.removeProperty('--social-message-available-height');
                 return;
             }
             const appContent = document.getElementById('app-content');
             const contentTop = appContent?.getBoundingClientRect?.().top;
+            const socialHost = document.getElementById(ROOT_ID);
+            const socialRoot = socialHost?.querySelector?.('#social-neo-root')
+                || document.getElementById('social-neo-root')
+                || socialHost;
+            const socialTop = socialRoot?.getBoundingClientRect?.().top;
             let available = visualHeight;
-            if (Number.isFinite(contentTop)) {
+            if (Number.isFinite(socialTop) && socialRoot?.dataset?.panel === 'messages') {
+                // Messages is a Messenger-style viewport below the global shell;
+                // size it from its actual top edge so header/view-as offsets stay
+                // correct without hardcoded desktop heights.
+                available = Math.max(0, visualHeight + (vv.offsetTop || 0) - socialTop);
+            } else if (Number.isFinite(contentTop)) {
                 available = Math.max(0, visualHeight + (vv.offsetTop || 0) - contentTop);
             } else if (document.body.classList.contains('lux-view-as-active')) {
                 const viewAsOffset = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--social-view-as-offset')) || 0;
                 available = Math.max(0, visualHeight - viewAsOffset);
             }
 
-            document.documentElement.style.setProperty('--social-visual-height', `${Math.round(available)}px`);
+            const roundedAvailable = Math.round(available);
+            document.documentElement.style.setProperty('--social-visual-height', `${roundedAvailable}px`);
+            if (socialRoot?.dataset?.panel === 'messages') {
+                document.documentElement.style.setProperty('--social-message-available-height', `${roundedAvailable}px`);
+            } else {
+                document.documentElement.style.removeProperty('--social-message-available-height');
+            }
         }
         function bindSocialScrollChromeObserver(host = root()) {
             if (!host || typeof ResizeObserver !== 'function') return;
@@ -348,6 +365,7 @@
                 bindSocialCenterWheelForward();
             } else {
                 document.documentElement.style.removeProperty('--social-visual-height');
+                document.documentElement.style.removeProperty('--social-message-available-height');
                 clearSocialCenterScrollBounds(host);
             }
             if (!host) return;

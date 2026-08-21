@@ -571,7 +571,7 @@
                     <i class="fas fa-camera-retro"></i>
                     <strong class="social-photo-display">${escape(emptyCopy.title)}</strong>
                     <span>${escape(emptyCopy.hint)}</span>
-                    ${emptyCopy.cta ? `<button class="lux-primary-btn" type="button" data-action="photography-upload-open">${escape(emptyCopy.cta)}</button>` : ''}
+                    ${emptyCopy.cta ? `<button class="lux-tab-btn lux-tab-btn--icon is-active" type="button" data-action="photography-upload-open">${escape(emptyCopy.cta)}</button>` : ''}
                 </div>
             </div>
         `;
@@ -596,7 +596,7 @@
                     <i class="fas fa-camera-retro"></i>
                     <strong class="social-photo-display">No photos yet</strong>
                     <span>Share your first campus moment.</span>
-                    <button class="lux-primary-btn" type="button" data-action="photography-upload-open">Share a photo</button>
+                    <button class="lux-tab-btn lux-tab-btn--icon is-active" type="button" data-action="photography-upload-open">Share a photo</button>
                 </div>
             </div>
         `;
@@ -733,14 +733,14 @@
             </label>
         ` : '';
         const uploadBtnMarkup = user ? `
-            <button class="lux-primary-btn social-photo-upload-btn" type="button" data-action="photography-upload-open" aria-label="Share a photo" title="Share a photo">
+            <button class="lux-tab-btn lux-tab-btn--icon is-active" type="button" data-action="photography-upload-open" aria-label="Share a photo" title="Share a photo">
                 <i class="fas fa-camera" aria-hidden="true"></i>
                 <span>Share a photo</span>
             </button>
         ` : '';
         const myProfileBtn = user ? `
-            <button class="lux-secondary-btn lux-secondary-btn-sm social-photo-my-profile-btn" type="button" data-action="photography-my-profile-open" aria-label="My profile" title="My profile">
-                ${avatar(user, 'social-photo-my-profile-btn-avatar')}
+            <button class="lux-tab-btn lux-tab-btn--icon" type="button" data-action="photography-my-profile-open" aria-label="My profile" title="My profile">
+                ${avatar(user, 'social-neo-avatar-xs')}
             </button>
         ` : '';
         const tabTitles = {
@@ -770,11 +770,11 @@
                             ${myProfileBtn}
                         </div>
                     </div>
-                    <nav class="social-photo-tab-segment" role="tablist" aria-label="Photo feed tabs">
-                        <button class="${tab === 'explore' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm social-photo-tab${tab === 'explore' ? ' is-active' : ''}" type="button" role="tab" aria-selected="${tab === 'explore' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="explore">Explore</button>
-                        <button class="${tab === 'grid' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm social-photo-tab${tab === 'grid' ? ' is-active' : ''}" type="button" role="tab" aria-selected="${tab === 'grid' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="grid">Grid</button>
-                        <button class="${tab === 'following' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm social-photo-tab${tab === 'following' ? ' is-active' : ''}" type="button" role="tab" aria-selected="${tab === 'following' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="following">Following</button>
-                        <button class="${tab === 'pinned' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm social-photo-tab${tab === 'pinned' ? ' is-active' : ''}" type="button" role="tab" aria-selected="${tab === 'pinned' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="pinned"><i class="fas fa-thumbtack" aria-hidden="true"></i> Pinned</button>
+                    <nav class="lux-tab-strip lux-tab-strip--segmented" role="tablist" aria-label="Photo feed tabs">
+                        <button class="lux-tab-btn" type="button" role="tab" aria-selected="${tab === 'explore' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="explore">Explore</button>
+                        <button class="lux-tab-btn" type="button" role="tab" aria-selected="${tab === 'grid' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="grid">Grid</button>
+                        <button class="lux-tab-btn" type="button" role="tab" aria-selected="${tab === 'following' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="following">Following</button>
+                        <button class="lux-tab-btn lux-tab-btn--icon" type="button" role="tab" aria-selected="${tab === 'pinned' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="pinned"><i class="fas fa-thumbtack" aria-hidden="true"></i> Pinned</button>
                     </nav>
                 </section>
                 ${tab === 'pinned' ? '' : renderDiscoverStrip(discover)}
@@ -820,12 +820,10 @@
         if (titleEl) titleEl.textContent = tabTitles[tab] || tabTitles.explore;
         if (subtitleEl) subtitleEl.textContent = tabCopy[tab] || tabCopy.explore;
 
-        shell.querySelectorAll('.social-photo-tab[data-photography-tab]').forEach((btn) => {
+        shell.querySelectorAll('[data-photography-tab]').forEach((btn) => {
             const value = text(btn.getAttribute('data-photography-tab') || '');
             const active = value === tab;
             btn.classList.toggle('is-active', active);
-            btn.classList.toggle('lux-primary-btn', active);
-            btn.classList.toggle('lux-secondary-btn', !active);
             btn.setAttribute('aria-selected', active ? 'true' : 'false');
         });
 

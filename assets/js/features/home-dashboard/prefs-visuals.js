@@ -172,23 +172,21 @@
         return nextState;
     }
 
-    function getDashboardVisuals(scopeKey = getHomeScopeKey()) {
+    function getDashboardVisuals(_scopeKey = getHomeScopeKey()) {
         const entry = getDashboardPreferenceEntry();
-        const scopedVisuals = entry.visualsByScope?.[scopeKey];
         return {
             ...buildAdvancedDefaultVisuals(),
-            ...(scopedVisuals || entry.visuals || {})
+            ...(entry.visuals || {})
         };
     }
 
-    function setDashboardVisuals(values, persist = true, scopeKey = getHomeScopeKey()) {
+    function setDashboardVisuals(values, persist = true, _scopeKey = getHomeScopeKey()) {
         updateDashboardPreferenceEntry((entry) => {
-            entry.visualsByScope = entry.visualsByScope || {};
-            entry.visualsByScope[scopeKey] = {
+            entry.visuals = {
                 ...buildAdvancedDefaultVisuals(),
                 ...(entry.visuals || {}),
-                ...(entry.visualsByScope?.[scopeKey] || {}),
-                ...(values || {})
+                ...(values || {}),
+                paletteFaculty: '*'
             };
         }, { persist });
     }
@@ -328,8 +326,10 @@
         };
     }
 
-    function isVisualPaletteScopedToFaculty(visuals, facultyCode = getCurrentFacultyCode()) {
-        return String(visuals?.paletteFaculty || '').toUpperCase() === String(facultyCode || '').toUpperCase();
+    function isVisualPaletteScopedToFaculty(visuals, _facultyCode = getCurrentFacultyCode()) {
+        // Palette selection is a global portal preference. Keep this API for
+        // compatibility with older callers, but never reject it by faculty.
+        return Boolean(visuals && typeof visuals === 'object');
     }
 
     function resolvePaletteKey() {
@@ -341,13 +341,11 @@
     }
 
     function resolveCustomPalette() {
-        const facultyCode = getCurrentFacultyCode();
         const visuals = getDashboardVisuals();
-        if (isVisualPaletteScopedToFaculty(visuals, facultyCode) && visuals.customPalette?.accent && visuals.customPalette?.accent2) {
+        if (isVisualPaletteScopedToFaculty(visuals) && visuals.customPalette?.accent && visuals.customPalette?.accent2) {
             return visuals.customPalette;
         }
         try {
-            if (String(localStorage.getItem('kiuLuxuryCustomPaletteFaculty') || '').toUpperCase() !== facultyCode) return null;
             const raw = localStorage.getItem('kiuLuxuryCustomPalette');
             return raw ? JSON.parse(raw) : null;
         } catch (e) {
@@ -378,7 +376,7 @@
         // Also sync to old utilities.js key for compatibility
         if (persist) {
             localStorage.setItem('kiuLuxuryPalette', key || 'custom');
-            localStorage.setItem('kiuLuxuryPaletteFaculty', getCurrentFacultyCode());
+            localStorage.setItem('kiuLuxuryPaletteFaculty', '*');
             localStorage.setItem('kiu-palette', key); // Sync for utilities.js compatibility
         }
     
@@ -405,7 +403,7 @@
             localStorage.removeItem('kiuLuxuryCustomPaletteFaculty');
             setDashboardVisuals({
                 paletteKey: palette.key,
-                paletteFaculty: getCurrentFacultyCode(),
+                paletteFaculty: '*',
                 customPalette: null,
                 accentColor: palette.accent,
                 accentColor2: palette.accent2,
@@ -415,6 +413,7 @@
                 glowColor: '',
                 hazeColor: ''
             });
+            window.flushPortalStateSync?.({ forceLatest: true });
         }
     }
 
@@ -430,11 +429,10 @@
 
         if (persist) {
             localStorage.setItem('kiuLuxuryCustomPalette', JSON.stringify({ accent, accent2 }));
-            localStorage.setItem('kiuLuxuryCustomPaletteFaculty', getCurrentFacultyCode());
             localStorage.setItem('kiu-palette', 'custom'); // Sync for utilities.js compatibility
             setDashboardVisuals({
                 paletteKey: 'custom',
-                paletteFaculty: getCurrentFacultyCode(),
+                paletteFaculty: '*',
                 customPalette: { accent, accent2 },
                 accentColor: accent,
                 accentColor2: accent2,
@@ -444,6 +442,7 @@
                 glowColor: '',
                 hazeColor: ''
             });
+            window.flushPortalStateSync?.({ forceLatest: true });
         }
     }
 
@@ -530,6 +529,16 @@
         root.style.setProperty('--kiu-shell-gradient', lightMode
             ? `radial-gradient(circle at 16% 10%, rgba(${accentRgb}, 0.12), transparent 30%), radial-gradient(circle at 84% 82%, rgba(${accent2Rgb}, 0.10), transparent 28%), linear-gradient(180deg, rgba(${colorToRgbTriplet(glassTint, '246,239,229')}, 0.96), rgba(${colorToRgbTriplet(glassTint, '246,239,229')}, 0.88))`
             : `radial-gradient(circle at 12% 8%, rgba(${accentRgb}, 0.18), transparent 32%), radial-gradient(circle at 84% 80%, rgba(${accent2Rgb}, 0.12), transparent 30%), radial-gradient(circle at 50% -12%, rgba(${shellGlowRgb}, 0.10), transparent 42%), linear-gradient(180deg, rgba(${shellStartRgb}, 0.42), rgba(${shellEndRgb}, 0.78) 48%, rgba(${shellEndRgb}, 0.98) 100%)`);
+        try {
+            const resolvedPaletteKey = hasCustomColors ? 'custom' : (visuals.paletteKey || palette.key);
+            localStorage.setItem('kiuLuxuryPalette', resolvedPaletteKey);
+            localStorage.setItem('kiuLuxuryPaletteFaculty', '*');
+            localStorage.setItem('kiu-palette', resolvedPaletteKey);
+            if (hasCustomColors && custom?.accent && custom?.accent2) {
+                localStorage.setItem('kiuLuxuryCustomPalette', JSON.stringify({ accent: custom.accent, accent2: custom.accent2 }));
+                localStorage.removeItem('kiuLuxuryCustomPaletteFaculty');
+            }
+        } catch (_error) {}
         document.body.dataset.luxFaculty = facultyPalette.facultyCode;
         if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
             window.queueLuxuryTransparencyRefresh(getDashboardVisuals().surfaceTransparency || localStorage.getItem('kiuLuxurySurfaceTransparency'));

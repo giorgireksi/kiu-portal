@@ -284,6 +284,8 @@ function getWebPushConfig() {
 }
 
 let store = null;
+let activeServer = null;
+let shutdownStarted = false;
 const inMemoryRateLimits = new Map();
 
 const app = express();
@@ -2797,6 +2799,18 @@ app.use((error, request, response, next) => {
         next(error);
         return;
     }
+    const status = Number(error?.status || error?.statusCode || 500);
+    const safeStatus = status >= 400 && status < 500 ? status : 500;
+    if (safeStatus === 413) {
+        console.warn(`[http] request body too large: ${request.method} ${request.originalUrl}`);
+        sendError(response, 413, 'Upload is too large for the server request limit.');
+        return;
+    }
+    if (safeStatus >= 400 && safeStatus < 500) {
+        sendError(response, safeStatus, error?.message || 'Invalid request.');
+        return;
+    }
+    console.error(`[http] unhandled request error: ${request.method} ${request.originalUrl}`, error);
     sendError(response, 500, 'Internal server error.');
 });
 
@@ -2808,6 +2822,42 @@ function ensureUploadStorageReady() {
     } finally {
         try { fs.unlinkSync(probePath); } catch (error) {}
     }
+}
+
+async function shutdownServer(reason = 'shutdown', exitCode = 0) {
+    if (shutdownStarted) return;
+    shutdownStarted = true;
+    console.warn(`[platform] shutting down (${reason})`);
+    try {
+        if (activeServer) {
+            await new Promise((resolve) => activeServer.close(() => resolve()));
+            activeServer = null;
+        }
+    } catch (error) {
+        console.error('[platform] HTTP server shutdown failed:', error?.message || error);
+    }
+    try {
+        const recordStore = store?.recordStore;
+        if (typeof recordStore?.close === 'function') await recordStore.close();
+    } catch (error) {
+        console.error('[platform] record store shutdown failed:', error?.message || error);
+    }
+    if (exitCode !== null && exitCode !== undefined) {
+        process.exitCode = exitCode;
+    }
+}
+
+function installProcessLifecycleHandlers() {
+    if (process.__kiuLifecycleHandlersInstalled) return;
+    process.__kiuLifecycleHandlersInstalled = true;
+    const fatal = (reason, error) => {
+        console.error(`[platform] ${reason}`, error);
+        void shutdownServer(reason, 1).finally(() => process.exit(1));
+    };
+    process.on('uncaughtException', (error) => fatal('uncaught exception', error));
+    process.on('unhandledRejection', (error) => fatal('unhandled rejection', error));
+    process.on('SIGTERM', () => void shutdownServer('SIGTERM', 0));
+    process.on('SIGINT', () => void shutdownServer('SIGINT', 0));
 }
 
 async function startServer() {
@@ -2872,12 +2922,18 @@ async function startServer() {
             store.__webPushHookInstalled = true;
         }
     }
-    return app.listen(PORT, HOST, () => {
+    activeServer = app.listen(PORT, HOST, () => {
         console.log(`KIU platform server listening on http://${HOST}:${PORT}`);
     });
+    activeServer.on('error', (error) => {
+        console.error('[platform] HTTP server error:', error);
+        void shutdownServer('HTTP server error', 1).finally(() => process.exit(1));
+    });
+    return activeServer;
 }
 
 if (require.main === module) {
+    installProcessLifecycleHandlers();
     startServer().catch(error => {
         console.error('Failed to start KIU platform server.', error);
         process.exit(1);

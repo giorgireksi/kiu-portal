@@ -50,7 +50,12 @@ describe('social-messages-scroll-regressions.test (bare-shell era)', () => {
         expect(css).toMatch(/\[data-panel="messages"\][\s\S]*\.social-neo-messages__inbox[\s\S]*\.social-neo-chat-list[\s\S]*overflow:\s*hidden/);
         expect(css).toMatch(/\[data-panel="messages"\][\s\S]*\.social-neo-messages__thread-shell[\s\S]*flex-direction:\s*column/);
         expect(css).toMatch(/\[data-panel="messages"\][\s\S]*\.social-neo-messages__thread-scroll[\s\S]*overflow-y:\s*auto/);
+        expect(css).toMatch(/social-neo-workspace-nav-list[\s\S]*overflow-y:\s*auto/);
+        expect(css).toMatch(/social-neo-workspace-nav-card[\s\S]*grid-template-rows:\s*auto minmax\(0, 1fr\)/);
         expect(css).toMatch(/\.social-neo-messages\.is-group-rail-open[\s\S]*grid-template-columns:\s*minmax\(300px, 340px\) minmax\(0, 1fr\)/);
+        expect(css).toContain('--social-message-available-height');
+        expect(css).toContain('overflow: hidden !important;');
+        expect(shell).toContain('--social-message-available-height');
 
         const scrollbarRuntime = readSource('assets/js/shared/lux-custom-scrollbar.js');
         expect(scrollbarRuntime).toContain('function isSocialCenterScroller(el)');
@@ -58,6 +63,7 @@ describe('social-messages-scroll-regressions.test (bare-shell era)', () => {
         expect(scrollbarRuntime).toContain("document.documentElement.removeAttribute('data-lux-custom-scrollbar-target')");
 
         expect(shell).toContain('.social-neo-chat-items');
+        expect(shell).toContain('data-lux-scrollport="1" data-lux-scroll-axis="vertical" data-lux-custom-scrollbar-auto="vertical"');
         expect(shell).toContain('.social-neo-messages__thread-scroll');
 
         expect(messages).toContain('class="social-neo-chat-items"');

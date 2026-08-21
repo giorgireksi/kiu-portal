@@ -279,6 +279,9 @@ describe('background gallery feature', () => {
         expect(api).toContain('Gallery API not loaded');
         expect(api).toContain('Could not read file for upload');
         expect(api).toContain('timeoutMs: 120000');
+        expect(api).toContain('new FormData()');
+        expect(api).toContain('form.append(\'file\'');
+        expect(readSource('backend/platform/multipart-upload.js')).toContain('Stream one multipart/form-data upload');
     });
 
     it('disables animations when applying gallery selection', () => {
@@ -295,6 +298,19 @@ describe('background gallery feature', () => {
             localStore.indexOf('async writeFileAtomically')
         );
         expect(queueBlock).toContain('throw error');
+    });
+
+    it('keeps production backend lifecycle and upload failures observable', () => {
+        const server = readSource('backend/platform/server.js');
+        const compose = readSource('docker-compose.production.yml');
+        expect(server).toContain('request body too large');
+        expect(server).toContain('installProcessLifecycleHandlers');
+        expect(server).toContain('uncaughtException');
+        expect(server).toContain('unhandledRejection');
+        const postgres = readSource('backend/platform/postgres-record-store.js');
+        expect(postgres).toContain("this.pool.on('error'");
+        expect(compose).toContain('${KIU_PRODUCTION_ENV_FILE:-.env.production}');
+        expect(compose).toContain('http://127.0.0.1/ready');
     });
 
     it('restarts stale backend when API manifest mismatches', () => {
@@ -324,14 +340,39 @@ describe('background gallery feature', () => {
         expect(uploadBlock).toContain('await store.flushPendingWrites()');
     });
 
-    it('propagates save errors from queueRecordStoreWrite', () => {
+    it('recovers the save queue after a transient write error', () => {
         const storeSource = readSource('backend/platform/store.js');
-        expect(storeSource).toContain('throw error');
         const queueBlock = storeSource.slice(
             storeSource.indexOf('queueRecordStoreWrite(writeTask)'),
             storeSource.indexOf('save() {')
         );
-        expect(queueBlock).toContain('throw error');
+        expect(queueBlock).toContain('recovering write queue');
+        expect(queueBlock).toContain('this.lastStoreWriteError = error');
+        expect(queueBlock).toContain('return next');
+        expect(storeSource).toContain('if (this.lastStoreWriteError)');
+    });
+
+    it('streams multipart gallery uploads without buffering the binary body', async () => {
+        const { Readable } = require('stream');
+        const { rmSync, readFileSync } = require('fs');
+        const { parseMultipartUpload } = require('../backend/platform/multipart-upload');
+        const boundary = '----kiu-test-boundary';
+        const body = Buffer.from(
+            `--${boundary}\r\nContent-Disposition: form-data; name="target"\r\n\r\nmine\r\n`
+            + `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="background.png"\r\n`
+            + 'Content-Type: image/png\r\n\r\nstreamed-bytes\r\n'
+            + `--${boundary}--\r\n`
+        );
+        async function* chunks() {
+            for (let index = 0; index < body.length; index += 3) yield body.subarray(index, index + 3);
+        }
+        const request = Readable.from(chunks());
+        request.headers = { 'content-type': `multipart/form-data; boundary=${boundary}` };
+        const parsed = await parseMultipartUpload(request, { maxFileBytes: 1024 });
+        expect(parsed.fields.target).toBe('mine');
+        expect(parsed.file.name).toBe('background.png');
+        expect(readFileSync(parsed.file.path, 'utf8')).toBe('streamed-bytes');
+        rmSync(parsed.file.path, { force: true });
     });
 
     it('atomic upload creates file and gallery item in one operation', async () => {

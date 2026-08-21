@@ -661,7 +661,7 @@
             const typeMeta = surveyQuestionTypeMeta(question.questionType);
             const promptText = text(question.prompt) || 'Untitled question';
             return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-                <form class="lux-glass-dialog-card social-neo-delete-confirm" data-form="dialog-survey-draft-question-delete" data-action="noop">
+                <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--compact lux-glass-dialog-card--social-glass social-neo-delete-confirm" data-form="dialog-survey-draft-question-delete" data-action="noop" data-lux-transparency-exempt="1">
                     <div class="social-neo-delete-confirm-accent" aria-hidden="true"></div>
                     <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
                         <div class="lux-glass-dialog-heading">
@@ -692,7 +692,7 @@
         if (!Number.isFinite(optionIndex) || optionIndex < 0 || !option || options.length <= 2) return '';
         const optionLabel = text(option.label) || 'Empty choice';
         return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-            <form class="lux-glass-dialog-card social-neo-delete-confirm" data-form="dialog-survey-draft-choice-delete" data-action="noop">
+            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--compact lux-glass-dialog-card--social-glass social-neo-delete-confirm" data-form="dialog-survey-draft-choice-delete" data-action="noop" data-lux-transparency-exempt="1">
                 <div class="social-neo-delete-confirm-accent" aria-hidden="true"></div>
                 <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
                     <div class="lux-glass-dialog-heading">

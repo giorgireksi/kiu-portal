@@ -84,6 +84,7 @@
                     ...input
                 })
             });
+            (Array.isArray(payload?.chats) ? payload.chats : []).forEach((chat) => upsertChat(chat, false));
             await loadSocialState(true);
             queueRender('group-updated');
             return payload?.group || null;
@@ -96,6 +97,7 @@
                 method: 'DELETE',
                 body: JSON.stringify({ actorId })
             });
+            (Array.isArray(payload?.chats) ? payload.chats : []).forEach((chat) => upsertChat(chat, false));
             await loadSocialState(true);
             queueRender('group-member-removed');
             return payload?.group || null;
@@ -149,6 +151,7 @@
                     note: text(note || '')
                 })
             });
+            (Array.isArray(payload?.chats) ? payload.chats : []).forEach((chat) => upsertChat(chat, false));
             await loadSocialState(true);
             queueRender('group-invite-sent');
             return payload || null;

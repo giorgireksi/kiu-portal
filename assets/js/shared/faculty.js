@@ -1315,7 +1315,13 @@ function markPortalMessengerChatSeen(chatId, userId) {
     if (changed) saveState();
 }
 function getPortalMessengerUnreadCount(chat, userId) {
-    return (chat?.messages || []).filter(message => String(message.senderId) !== String(userId) && !normalizePortalMessengerMessageRecord(message).seenBy.includes(String(userId))).length;
+    return (chat?.messages || []).filter(message => (
+        !message?.isSystem
+        && String(message?.kind || '').toLowerCase() !== 'system'
+        && String(message?.type || '').toLowerCase() !== 'system'
+        && String(message.senderId) !== String(userId)
+        && !normalizePortalMessengerMessageRecord(message).seenBy.includes(String(userId))
+    )).length;
 }
 function isPortalMessengerRequestPendingForUser(chat, userId) {
     return String(chat?.requestStateByUser?.[String(userId)] || '') === 'pending';
@@ -1354,6 +1360,27 @@ function removePortalMessengerChat(chatId) {
     clearPortalMessengerDraftFile(normalizedChatId);
     saveState();
     renderPortalMessengerWorkspace();
+}
+function discardPortalMessengerConversationForRealtime(chatId) {
+    const normalizedChatId = String(chatId || '');
+    if (!normalizedChatId || !KIU_STATE.portalMessengerChats?.[normalizedChatId]) return;
+    delete KIU_STATE.portalMessengerChats[normalizedChatId];
+    Object.keys(KIU_STATE.portalMessengerFavorites || {}).forEach(userId => {
+        KIU_STATE.portalMessengerFavorites[userId] = (KIU_STATE.portalMessengerFavorites[userId] || []).filter(id => String(id) !== normalizedChatId);
+    });
+    Object.keys(KIU_STATE.portalMessengerHiddenChats || {}).forEach(userId => {
+        KIU_STATE.portalMessengerHiddenChats[userId] = (KIU_STATE.portalMessengerHiddenChats[userId] || []).filter(id => String(id) !== normalizedChatId);
+    });
+    if (KIU_STATE.portalMessengerCalls?.[normalizedChatId]) delete KIU_STATE.portalMessengerCalls[normalizedChatId];
+    const uiState = ensurePortalMessengerUiState();
+    if (String(uiState.activeChatId || '') === normalizedChatId) uiState.activeChatId = null;
+    if (String(uiState.activeCallChatId || '') === normalizedChatId) {
+        uiState.callOpen = false;
+        uiState.activeCallChatId = null;
+    }
+    clearPortalMessengerDraftFile(normalizedChatId);
+    saveState();
+    if (typeof renderPortalMessengerWorkspace === 'function') renderPortalMessengerWorkspace();
 }
 function deletePortalMessengerConversation(chatId) {
     const currentUser = getCurrentUser();

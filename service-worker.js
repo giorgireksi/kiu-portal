@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiu-portal-shell-v20260822-customscroll32';
+const CACHE_NAME = 'kiu-portal-shell-v20260823-groupactivity4';
 const CACHE_PREFIX = 'kiu-portal-shell-';
 const ROUTE_PREFETCH_CACHE_NAME = 'kiu-portal-route-prefetch-v1';
 const ROUTE_PREFETCH_HEADER = 'X-KIU-Route-Prefetch';
@@ -23,12 +23,12 @@ const SHELL_ASSETS = [
   '/exams.html',
   '/login.html',
   '/assets/js/shared/input-autocomplete-guard.js?v=20260627-autocomplete-guard1',
-  '/assets/js/pages/login-runtime.js?v=20260819-fastboot3-swcache1',
+  '/assets/js/pages/login-runtime.js?v=20260823-groupactivity4',
   '/assets/css/lux-tokens.css?v=20260725-frosted1',
   '/assets/css/lux-fouc-ht.css?v=20260820-globalpaint2',
   '/assets/css/lux-controls.css?v=20260726-luxtab2',
   '/assets/css/mobile-shell-core.css?v=20260819-sidebarperf2',
-  '/assets/css/shared-lux-core.css?v=96922958&customscroll32',
+  '/assets/css/shared-lux-core.css?v=20260823-groupactivity2&customscroll32',
   '/assets/css/lux-modals.css?v=20260821-toolbarfooter2',
   '/assets/css/mobile-shell.css?v=20260724-chromeshare1',
   '/assets/css/lux-shell.css?v=20260818-isolatedglass1',
@@ -36,11 +36,11 @@ const SHELL_ASSETS = [
   '/assets/css/index-home-layout.css?v=20260806-studentboard11',
   '/assets/css/index-home-widgets.css?v=20260819-fastboot1',
   '/assets/css/index-home-role.css?v=20260725-homefoucdedup1',
-  '/assets/js/theme-primer.js?v=20260819-fastboot2',
+  '/assets/js/theme-primer.js?v=20260823-globaltheme1',
   '/assets/js/app/portal-runtime-globals.js?v=20260818-runtimeglobals1',
-  '/assets/js/app/api-lms-portal-runtime.js?v=20260822-customscroll32',
-  '/assets/js/app/api.js?v=20260822-customscroll32',
-  '/assets/js/app/social-standalone-bootstrap.js?v=20260822-customscroll32',
+  '/assets/js/app/api-lms-portal-runtime.js?v=20260823-multipartgallery1',
+  '/assets/js/app/api.js?v=20260823-globaltheme1',
+  '/assets/js/app/social-standalone-bootstrap.js?v=20260823-groupactivity4',
   '/assets/js/shared/lux-custom-scrollbar.js?v=20260822-customscroll32',
   '/assets/js/features/navigation.js?v=20260819-fastboot1',
   '/assets/js/shared/news-home.js?v=20260809-homeassembly2',
@@ -50,19 +50,19 @@ const SHELL_ASSETS = [
   '/assets/js/features/luxury-shell-motion-runtime.js?v=20260820-shellinput1',
   '/assets/js/features/luxury-shell-chrome.js?v=20260819-sidebarperf3',
   '/assets/css/lux-hover-guard.css?v=20260819-hover1',
-  '/assets/js/features/index-luxury.js?v=20260819-sidebarclick3',
+  '/assets/js/features/index-luxury.js?v=20260823-themeopacity1',
   '/assets/js/features/luxury-home-model.js?v=20260809-homeassembly3',
   '/assets/js/features/home-dashboard-widget-layout-runtime.js?v=20260809-homeassembly3',
   '/assets/js/features/home-dashboard-widget-data-runtime.js?v=20260806-studentboard11',
-  '/assets/js/features/index-home-dashboard.js?v=20260809-homeassembly2',
-  '/assets/js/features/index-home-dashboard.plain.js?v=20260809-homeassembly2',
+  '/assets/js/features/index-home-dashboard.js?v=20260823-globaltheme1',
+  '/assets/js/features/index-home-dashboard.plain.js?v=20260823-globaltheme1',
   '/assets/js/pages/index-mobile-shell.js?v=20260809-homeassembly1',
   '/assets/js/pages/social-page-shell-runtime.js?v=20260822-customscroll32',
-  '/assets/js/pages/social-page-interactions-runtime.js?v=20260822-customscroll32&perf=20260816-singleowner9',
+  '/assets/js/pages/social-page-interactions-runtime.js?v=20260823-groupchats1&perf=20260816-singleowner9',
   '/assets/js/pages/social-page-boot-runtime.js?v=20260822-customscroll32',
-  '/assets/js/pages/social-page-events.js?v=20260822-customscroll32',
-  '/assets/js/pages/social-fingerprint-model.js?v=20260816-socialrecovery1',
-  '/assets/js/pages/social-page.js?v=20260822-customscroll32',
+  '/assets/js/pages/social-page-events.js?v=20260823-groupactivity2',
+  '/assets/js/pages/social-fingerprint-model.js?v=20260823-groupchats1',
+  '/assets/js/pages/social-page.js?v=20260823-groupactivity4',
 ];
 
 function isVersionedAssetUrl(url) {

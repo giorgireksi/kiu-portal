@@ -161,20 +161,18 @@
                 hazeRgb: blendRgbTriplets(accentRgb, accent2Rgb, 0.28)
             };
         }
-        function isVisualPaletteScopedToFaculty(visuals, facultyCode = getCurrentFacultyCode()) {
-            const scopedFaculty = String(visuals?.paletteFaculty || '').trim().toUpperCase();
-            if (!scopedFaculty && (visuals?.paletteKey || visuals?.customPalette?.accent)) return true;
-            if (scopedFaculty === GLOBAL_LUXURY_PALETTE_SCOPE || scopedFaculty === 'GLOBAL') return true;
-            return scopedFaculty === String(facultyCode || '').trim().toUpperCase();
+        function isVisualPaletteScopedToFaculty(visuals, _facultyCode = getCurrentFacultyCode()) {
+            // Palette selection is a global portal preference. Keep this API for
+            // compatibility with older callers, but never let faculty context
+            // reject an otherwise valid global palette record.
+            return Boolean(visuals && typeof visuals === 'object');
         }
         function resolveCustomPalette() {
-            const facultyCode = getCurrentFacultyCode();
             const visuals = getDashboardVisuals();
-            if (isVisualPaletteScopedToFaculty(visuals, facultyCode) && visuals.customPalette?.accent && visuals.customPalette?.accent2) {
+            if (isVisualPaletteScopedToFaculty(visuals) && visuals.customPalette?.accent && visuals.customPalette?.accent2) {
                 return visuals.customPalette;
             }
             try {
-                if (String(localStorage.getItem('kiuLuxuryCustomPaletteFaculty') || '').toUpperCase() !== facultyCode) return null;
                 const raw = localStorage.getItem('kiuLuxuryCustomPalette');
                 return raw ? JSON.parse(raw) : null;
             } catch (e) {
@@ -196,7 +194,7 @@
             }
             if (persist) {
                 localStorage.setItem('kiuLuxuryPalette', key || 'custom');
-                localStorage.setItem('kiuLuxuryPaletteFaculty', getCurrentFacultyCode());
+                localStorage.setItem('kiuLuxuryPaletteFaculty', GLOBAL_LUXURY_PALETTE_SCOPE);
                 localStorage.setItem('kiu-palette', key);
             }
             if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
@@ -230,7 +228,7 @@
                 localStorage.removeItem('kiuLuxuryCustomPaletteFaculty');
                 setDashboardVisuals({
                     paletteKey: palette.key,
-                    paletteFaculty: getCurrentFacultyCode(),
+                    paletteFaculty: GLOBAL_LUXURY_PALETTE_SCOPE,
                     customPalette: null,
                     accentColor: palette.accent,
                     accentColor2: palette.accent2,
@@ -240,17 +238,17 @@
                     glowColor: '',
                     hazeColor: ''
                 });
+                window.flushPortalStateSync?.({ forceLatest: true });
             }
             applyPaletteValues(liveAccent, liveAccent2, persist, palette.key);
         }
         function applyCustomPalette(accent, accent2, persist) {
             if (persist) {
                 localStorage.setItem('kiuLuxuryCustomPalette', JSON.stringify({ accent, accent2 }));
-                localStorage.setItem('kiuLuxuryCustomPaletteFaculty', getCurrentFacultyCode());
                 localStorage.setItem('kiu-palette', 'custom');
                 setDashboardVisuals({
                     paletteKey: 'custom',
-                    paletteFaculty: getCurrentFacultyCode(),
+                    paletteFaculty: GLOBAL_LUXURY_PALETTE_SCOPE,
                     customPalette: { accent, accent2 },
                     accentColor: accent,
                     accentColor2: accent2,
@@ -260,6 +258,7 @@
                     glowColor: '',
                     hazeColor: ''
                 });
+                window.flushPortalStateSync?.({ forceLatest: true });
             }
             applyPaletteValues(accent, accent2, persist, 'custom');
         }
@@ -367,6 +366,21 @@
             const resolvedPaletteKey = hasCustomColors
                 ? 'custom'
                 : (visualsAreScoped ? (visuals.paletteKey || palette.key) : palette.key);
+            // Keep the synchronous primer cache aligned with the authoritative
+            // global state returned by backend bootstrap. Standalone routes
+            // (especially Social) use this cache before their full runtime.
+            try {
+                localStorage.setItem('kiuLuxuryPalette', resolvedPaletteKey);
+                localStorage.setItem('kiuLuxuryPaletteFaculty', GLOBAL_LUXURY_PALETTE_SCOPE);
+                localStorage.setItem('kiu-palette', resolvedPaletteKey);
+                if (hasCustomColors && custom?.accent && custom?.accent2) {
+                    localStorage.setItem('kiuLuxuryCustomPalette', JSON.stringify({ accent: custom.accent, accent2: custom.accent2 }));
+                    localStorage.removeItem('kiuLuxuryCustomPaletteFaculty');
+                } else {
+                    localStorage.removeItem('kiuLuxuryCustomPalette');
+                    localStorage.removeItem('kiuLuxuryCustomPaletteFaculty');
+                }
+            } catch (_error) {}
             if (document.body) {
                 LUXURY_PALETTES.forEach((entry) => {
                     document.body.classList.remove(`palette-${entry.key}`);

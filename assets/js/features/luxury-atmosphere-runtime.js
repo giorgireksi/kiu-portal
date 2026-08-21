@@ -62,9 +62,14 @@
             root.classList.toggle('lux-light-mode', nextMode === 'light');
             root.dataset.luxThemeMode = nextMode;
             applySharedLightModeRootTokens(nextMode);
+            // Keep the first-paint cache aligned with the global account
+            // preference even when this call is replayed after bootstrap.
+            try { localStorage.setItem('kiuLuxuryThemeMode', nextMode); } catch (_error) {}
             if (persist) {
-                localStorage.setItem('kiuLuxuryThemeMode', nextMode);
                 setDashboardVisuals({ themeMode: nextMode });
+                // Theme changes must win over an in-flight bootstrap/save
+                // snapshot; flush the latest global visual state immediately.
+                window.flushPortalStateSync?.({ forceLatest: true });
             }
             applyResolvedPalette();
             if (typeof window.__kiuApplyLmsParticleTheme === 'function') {
@@ -91,24 +96,12 @@
             return BACKGROUND_MODES.some((item) => item.key === normalized) ? normalized : 'peak';
         }
         function areBackgroundAnimationsEnabled() {
-            const scopeKey = getHomeScopeKey();
-            const entry = getDashboardPreferenceEntry();
+            const visuals = getDashboardVisuals();
+            if (typeof visuals?.backgroundAnimationsEnabled === 'boolean') {
+                return visuals.backgroundAnimationsEnabled;
+            }
             const stored = String(localStorage.getItem('kiuLuxuryBackgroundAnimationsEnabled') || '').trim().toLowerCase();
-            if (stored) {
-                return !(stored === '0' || stored === 'false' || stored === 'off');
-            }
-            const scopedVisuals = entry.visualsByScope?.[scopeKey];
-            if (scopedVisuals && typeof scopedVisuals.backgroundAnimationsEnabled === 'boolean') {
-                return scopedVisuals.backgroundAnimationsEnabled;
-            }
-            if (
-                entry.visuals
-                && typeof entry.visuals === 'object'
-                && Object.prototype.hasOwnProperty.call(entry.visuals, 'backgroundAnimationsEnabled')
-                && typeof entry.visuals.backgroundAnimationsEnabled === 'boolean'
-            ) {
-                return entry.visuals.backgroundAnimationsEnabled;
-            }
+            if (stored) return !(stored === '0' || stored === 'false' || stored === 'off');
             return true;
         }
         function getBackgroundMode() {
@@ -121,20 +114,12 @@
                 : (DEFAULT_HOME_VISUALS.staticBackgroundFill || 'colored');
         }
         function getStaticBackgroundFill() {
-            const scopeKey = getHomeScopeKey();
-            const entry = getDashboardPreferenceEntry();
-            const stored = String(localStorage.getItem('kiuLuxuryStaticBackgroundFill') || '').trim().toLowerCase();
-            if (stored) {
-                return sanitizeStaticBackgroundFill(stored);
-            }
-            const scopedVisuals = entry.visualsByScope?.[scopeKey];
-            if (scopedVisuals?.staticBackgroundFill) {
-                return sanitizeStaticBackgroundFill(scopedVisuals.staticBackgroundFill);
-            }
             const visuals = getDashboardVisuals();
             if (visuals?.staticBackgroundFill) {
                 return sanitizeStaticBackgroundFill(visuals.staticBackgroundFill);
             }
+            const stored = String(localStorage.getItem('kiuLuxuryStaticBackgroundFill') || '').trim().toLowerCase();
+            if (stored) return sanitizeStaticBackgroundFill(stored);
             return sanitizeStaticBackgroundFill(DEFAULT_HOME_VISUALS.staticBackgroundFill);
         }
         function applyStaticBackgroundFillDom() {
@@ -153,12 +138,6 @@
             return { source, id, mediaType };
         }
         function getBackgroundGallerySelection() {
-            const scopeKey = getHomeScopeKey();
-            const entry = getDashboardPreferenceEntry();
-            const scopedVisuals = entry.visualsByScope?.[scopeKey];
-            if (scopedVisuals?.backgroundGallerySelection) {
-                return sanitizeBackgroundGallerySelection(scopedVisuals.backgroundGallerySelection);
-            }
             return sanitizeBackgroundGallerySelection(getDashboardVisuals().backgroundGallerySelection);
         }
         function refreshBackgroundGalleryRenderer() {

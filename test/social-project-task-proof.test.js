@@ -123,10 +123,10 @@ it('renders proof controls through the task detail surface', async () => {
     expect(socialHtml).toMatch(/social-shell-nav\.js\?v=20260822-/);
     expect(socialHtml).toMatch(/api-lms-portal-runtime\.js\?v=20260822-/);
     expect(socialHtml).toMatch(/api\.js\?v=20260822-/);
-    expect(socialHtml).toMatch(/social-standalone-bootstrap\.js\?v=20260822-/);
+    expect(socialHtml).toMatch(/social-standalone-bootstrap\.js\?v=20260823-groupactivity4/);
     const serviceWorker = readFileSync('service-worker.js', 'utf8');
     expect(serviceWorker).toMatch(/\/assets\/js\/pages\/social-page-events\.js\?v=20260822-/);
     expect(serviceWorker).toMatch(/\/assets\/js\/app\/api-lms-portal-runtime\.js\?v=20260822-/);
     expect(serviceWorker).toMatch(/\/assets\/js\/app\/api\.js\?v=20260822-/);
-    expect(serviceWorker).toMatch(/\/assets\/js\/app\/social-standalone-bootstrap\.js\?v=20260822-/);
+    expect(serviceWorker).toMatch(/\/assets\/js\/app\/social-standalone-bootstrap\.js\?v=20260823-groupactivity4/);
 });

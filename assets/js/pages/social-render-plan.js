@@ -882,6 +882,9 @@
             'group-thread-invite-search',
             'group-thread-notify',
             'group-panel-file-filter',
+            'chat-conversation-menu-toggle',
+            'chat-conversation-select',
+            'chat-conversation-created',
             'thread-jump-latest'
         ]);
         if (centerAndRailReasons.has(reason) && (activePanel === 'messages' || (activePanel === 'workspace' && text(runtime?.ui?.projectTab || '') === 'chat'))) {

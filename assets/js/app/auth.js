@@ -1179,7 +1179,7 @@ function handleKiuRealtimeEventPayload(payload) {
         case 'chat:upsert':
             if (payload.chat) {
                 const latestMessage = Array.isArray(payload.chat.messages) ? payload.chat.messages[payload.chat.messages.length - 1] : null;
-                if (latestMessage && String(latestMessage.senderId || '') !== String(currentUserId || '')) {
+                if (latestMessage && !latestMessage.isSystem && String(latestMessage.kind || '').toLowerCase() !== 'system' && String(latestMessage.type || '').toLowerCase() !== 'system' && String(latestMessage.senderId || '') !== String(currentUserId || '')) {
                     const senderLabel = latestMessage.senderName || 'New message';
                     showBrowserNotification(`Message from ${senderLabel}`, {
                         body: String(latestMessage.text || (latestMessage.file ? `Shared ${latestMessage.file.name || 'an attachment'}` : 'Open the conversation to continue.')).trim(),
@@ -1187,6 +1187,11 @@ function handleKiuRealtimeEventPayload(payload) {
                         tag: `chat-${payload.chat.id || 'thread'}`,
                         url: 'social.html'
                     });
+                }
+                if (payload.chat.type === 'group' && Array.isArray(payload.chat.members) && !payload.chat.members.map(String).includes(String(currentUserId || ''))) {
+                    if (typeof discardPortalMessengerConversationForRealtime === 'function') discardPortalMessengerConversationForRealtime(payload.chat.id);
+                    emitWorkspaceEvent('kiu:messenger-chat-removed', { chat: payload.chat });
+                    break;
                 }
                 upsertPortalMessengerChatFromRealtime(payload.chat, true);
                 emitWorkspaceEvent('kiu:messenger-chat-updated', { chat: payload.chat });

@@ -79,6 +79,21 @@ function registerPortalSupportRoutes(app, deps = {}) {
         }
     });
 
+    app.get('/api/portal/theme', async (request, response) => {
+        try {
+            const sessionAccount = requireSessionAccount(request, response);
+            if (!sessionAccount) return;
+            const store = getStore();
+            if (!store) {
+                sendError(response, 503, 'Platform store is not ready.');
+                return;
+            }
+            response.json({ ok: true, ...store.createPortalThemeBootstrap(getSessionToken(request)) });
+        } catch (error) {
+            sendError(response, 500, 'Failed to load portal theme.');
+        }
+    });
+
     app.post('/api/portal/state', async (request, response) => {
         try {
             const sessionAccount = requireSessionAccount(request, response);

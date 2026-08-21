@@ -563,20 +563,36 @@ async function uploadBackgroundGalleryAsset(file, options = {}) {
         throw new Error('Could not read file for upload.');
     }
     const mediaType = String(file.type || sourceBlob?.type || '').startsWith('video/') ? 'video' : 'image';
+    const name = file.name || 'download.bin';
+    const type = file.type || sourceBlob?.type || 'application/octet-stream';
+    const label = String(options.label || name || 'Background').replace(/\.[^.]+$/, '') || 'Background';
+    const metadata = {
+        target,
+        name,
+        type,
+        mediaType,
+        label,
+        recommendedPaletteKey: options.recommendedPaletteKey || 'ocean-teal'
+    };
+    // Stream gallery binaries as multipart instead of embedding them in a
+    // base64 JSON body. This keeps large uploads out of the Node JSON parser
+    // and avoids duplicating the full asset in memory on the backend.
+    const uploadBlob = sourceBlob || (file instanceof Blob ? file : null);
+    if (uploadBlob && typeof FormData !== 'undefined') {
+        const form = new FormData();
+        Object.entries(metadata).forEach(([key, value]) => form.append(key, String(value)));
+        form.append('file', uploadBlob, name);
+        return kiuPortalFetch('/api/background-gallery/upload', {
+            method: 'POST',
+            timeoutMs: 120000,
+            body: form
+        });
+    }
+    // Keep the data-URL path for non-browser callers and older integrations.
     return kiuPortalFetch('/api/background-gallery/upload', {
         method: 'POST',
-        // A 100 MB source expands when represented as a data URL and can take
-        // longer than the normal API timeout to reach disk.
         timeoutMs: 120000,
-        body: JSON.stringify({
-            target,
-            name: file.name || 'download.bin',
-            type: file.type || sourceBlob?.type || 'application/octet-stream',
-            mediaType,
-            label: String(options.label || file.name || 'Background').replace(/\.[^.]+$/, '') || 'Background',
-            recommendedPaletteKey: options.recommendedPaletteKey || 'ocean-teal',
-            dataUrl
-        })
+        body: JSON.stringify({ ...metadata, dataUrl })
     });
 }
 

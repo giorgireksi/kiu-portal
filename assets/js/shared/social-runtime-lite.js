@@ -988,6 +988,7 @@ Publishes only the host/runtime contract consumed by its loader.
 
     function chatUnread(chat, viewerId = currentUserId()) {
         return (Array.isArray(chat?.messages) ? chat.messages : []).reduce((count, message) => {
+            if (message?.isSystem || text(message?.kind || message?.type || '').toLowerCase() === 'system') return count;
             if (text(message?.senderId) === text(viewerId)) return count;
             const seenBy = Array.isArray(message?.seenBy) ? message.seenBy.map((item) => text(item)) : [];
             return seenBy.includes(text(viewerId)) ? count : count + 1;
@@ -1746,6 +1747,8 @@ Publishes only the host/runtime contract consumed by its loader.
         patchEventRsvp,
         respondEventRsvp,
         openGroupChat,
+        createGroupConversation,
+        renameGroupConversation,
         sendMessage,
         upsertChat,
         upsertCall,
@@ -1998,6 +2001,8 @@ Publishes only the host/runtime contract consumed by its loader.
     deletePortalSocialSurvey: deleteSurvey,
     respondPortalSocialEventRsvp: respondEventRsvp,
     openPortalSocialGroupChat: openGroupChat,
+    createPortalSocialGroupConversation: createGroupConversation,
+    renamePortalSocialGroupConversation: renameGroupConversation,
     updatePortalSocialPage: updateSocialPage,
     updatePortalSocialGroup: updateSocialGroup,
     removePortalSocialGroupMember: removeSocialGroupMember,

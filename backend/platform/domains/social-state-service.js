@@ -170,6 +170,150 @@ function saveSocialMutation(actorId, eventType, entityType, entityId, beforeStat
     this.save();
 }
 
+function socialActivitySummary(type, details = {}) {
+    const actorName = socialText(details.actorName || 'Someone');
+    const targetName = socialText(details.targetName || details.memberName || 'a member');
+    const conversationName = socialText(details.conversationName || 'conversation');
+    const previousName = socialText(details.previousName || 'the conversation');
+    switch (socialText(type)) {
+        case 'conversation.created':
+            return `${actorName} created the “${conversationName}” conversation.`;
+        case 'conversation.renamed':
+            return `${actorName} renamed “${previousName}” to “${conversationName}”.`;
+        case 'member.invited':
+            return `${actorName} invited ${targetName} to the group.`;
+        case 'member.added':
+            return `${actorName} added ${targetName} to the group.`;
+        case 'member.removed':
+            return `${actorName} removed ${targetName} from the group.`;
+        case 'member.left':
+            return `${targetName} left the group.`;
+        case 'group.settings.changed':
+            return `${actorName} changed group settings${details.summary ? `: ${socialText(details.summary)}` : '.'}`;
+        default:
+            return `${actorName} updated the group.`;
+    }
+}
+
+function listSocialGroupChats(groupId) {
+    const normalizedGroupId = socialText(groupId);
+    if (!normalizedGroupId) return [];
+    return Object.values(this.state.chats || {}).filter((chat) => (
+        chat
+        && socialText(chat.type || '') === 'group'
+        && socialText(chat.groupId || '') === normalizedGroupId
+    ));
+}
+
+function buildSocialActivityMessage(event = {}) {
+    const details = event.details && typeof event.details === 'object' ? event.details : {};
+    return {
+        id: `social-system::${event.id}`,
+        kind: 'system',
+        type: 'system',
+        isSystem: true,
+        systemEventType: socialText(event.type || 'group.updated'),
+        eventId: socialText(event.id),
+        senderId: socialText(event.actorId || event.actorUserId),
+        senderName: socialText(event.actorName || details.actorName || 'Someone'),
+        senderRole: 'system',
+        actorId: socialText(event.actorId || event.actorUserId),
+        actorName: socialText(event.actorName || details.actorName || 'Someone'),
+        text: socialText(event.summary || ''),
+        metadata: clone(details),
+        sentAt: socialText(event.createdAt) || nowIso(),
+        countsAsUnread: false,
+        seenBy: uniqueStrings([socialText(event.actorId || event.actorUserId)]),
+        seenAtByUser: socialText(event.actorId || event.actorUserId)
+            ? { [socialText(event.actorId || event.actorUserId)]: socialText(event.createdAt) || nowIso() }
+            : {}
+    };
+}
+
+function appendSocialGroupActivity(groupId, type, actorId = '', details = {}) {
+    const group = typeof this.getSocialGroupRecord === 'function'
+        ? this.getSocialGroupRecord(groupId)
+        : null;
+    const normalizedType = socialText(type || 'group.updated');
+    const normalizedActorId = socialText(actorId);
+    if (!group || !normalizedType) return null;
+    const now = nowIso();
+    const input = details && typeof details === 'object' ? clone(details) : {};
+    const actorName = socialText(input.actorName)
+        || (typeof this.getSocialActorDisplayName === 'function' ? this.getSocialActorDisplayName(normalizedActorId) : normalizedActorId)
+        || 'Someone';
+    const event = {
+        id: socialText(input.eventId) || makeId('gactivity'),
+        groupId: socialText(group.id),
+        type: normalizedType,
+        actorId: normalizedActorId,
+        actorUserId: normalizedActorId,
+        actorName,
+        createdAt: socialText(input.createdAt) || now,
+        details: {
+            ...input,
+            actorName
+        }
+    };
+    event.summary = socialText(input.summary) || socialActivitySummary(normalizedType, event.details);
+    group.activityEvents = asArray(group.activityEvents).filter((entry) => entry && socialText(entry.id));
+    if (!group.activityEvents.some((entry) => socialText(entry.id) === event.id)) {
+        group.activityEvents.push(event);
+        if (group.activityEvents.length > 500) group.activityEvents = group.activityEvents.slice(-500);
+    }
+    const message = buildSocialActivityMessage(event);
+    const chats = listSocialGroupChats.call(this, group.id);
+    chats.forEach((chat) => {
+        chat.messages = asArray(chat.messages);
+        group.activityEvents.forEach((activityEvent) => {
+            if (!activityEvent || chat.messages.some((entry) => socialText(entry?.eventId) === socialText(activityEvent.id))) return;
+            chat.messages.push(buildSocialActivityMessage(activityEvent));
+        });
+        chat.updatedAt = event.createdAt;
+    });
+    return {
+        event: clone(event),
+        message: clone(message),
+        chats: chats.map((chat) => clone(chat))
+    };
+}
+
+function renameSocialGroupConversation(groupId, chatId, conversationName = '', actorId = '') {
+    const group = typeof this.getSocialGroupRecord === 'function' ? this.getSocialGroupRecord(groupId) : null;
+    const normalizedChatId = socialText(chatId);
+    const normalizedActorId = socialText(actorId);
+    const name = socialText(conversationName).slice(0, 80);
+    if (!group || !normalizedChatId || !name || !normalizedActorId) return null;
+    const chat = this.state.chats?.[normalizedChatId];
+    if (!chat || socialText(chat.type || '') !== 'group' || socialText(chat.groupId || '') !== socialText(group.id)) return null;
+    const canManage = typeof this.canManageSocialGroup === 'function' && this.canManageSocialGroup(group, normalizedActorId);
+    const isConversationCreator = socialText(chat.createdBy) === normalizedActorId;
+    if (!canManage && !isConversationCreator) return null;
+    if (!asArray(chat.members).includes(normalizedActorId)) return null;
+    const duplicate = listSocialGroupChats.call(this, group.id).find((entry) => (
+        socialText(entry.id) !== normalizedChatId
+        && socialText(entry.archivedAt) === ''
+        && socialText(entry.conversationName || entry.name).toLocaleLowerCase() === name.toLocaleLowerCase()
+    ));
+    if (duplicate) return { duplicate: true, chat: clone(duplicate) };
+    const previousName = socialText(chat.conversationName || chat.name || 'General');
+    if (previousName === name) return { chat: clone(chat), chats: listSocialGroupChats.call(this, group.id).map((entry) => clone(entry)) };
+    const beforeState = clone(chat);
+    chat.conversationName = name;
+    chat.updatedAt = nowIso();
+    const activity = appendSocialGroupActivity.call(this, group.id, 'conversation.renamed', normalizedActorId, {
+        conversationId: normalizedChatId,
+        conversationName: name,
+        previousName
+    });
+    this.saveSocialMutation(normalizedActorId, 'group-conversation-renamed', 'social-group-conversation', normalizedChatId, beforeState, chat);
+    return {
+        chat: clone(chat),
+        chats: listSocialGroupChats.call(this, group.id).map((entry) => clone(entry)),
+        event: activity?.event || null
+    };
+}
+
 function ensureSocialProjectCollections() {
     if (!this.state.social || typeof this.state.social !== 'object') this.state.social = createEmptySocialState();
     if (!Array.isArray(this.state.social.projects)) this.state.social.projects = [];
@@ -297,6 +441,8 @@ function ensureSocialGroupChat(groupId, actorId = '') {
         members,
         name: socialText(group.name || 'Social group'),
         groupId: socialText(group.id),
+        conversationId: 'general',
+        conversationName: 'General',
         avatarImage: socialText(group.avatarImage || ''),
         bannerImage: socialText(group.bannerImage || ''),
         createdBy: socialText(group.ownerUserId || actorId || members[0] || ''),
@@ -313,14 +459,62 @@ function ensureSocialGroupChat(groupId, actorId = '') {
     };
 }
 
+function createSocialGroupConversation(groupId, conversationName = '', actorId = '') {
+    const group = this.getSocialGroupRecord(groupId);
+    const normalizedActorId = socialText(actorId);
+    const name = socialText(conversationName).slice(0, 80);
+    if (!group || !name || !normalizedActorId || !this.canViewSocialGroup(group, normalizedActorId)) return null;
+    const ensured = ensureSocialGroupChat.call(this, group.id, normalizedActorId);
+    if (!ensured) return null;
+    const members = uniqueStrings(this.getSocialGroupMemberIds(group));
+    if (!members.includes(normalizedActorId)) return null;
+    const existing = Object.values(this.state.chats || {}).find((chat) => (
+        chat
+        && chat.type === 'group'
+        && socialText(chat.groupId) === socialText(group.id)
+        && !socialText(chat.archivedAt)
+        && socialText(chat.conversationName || chat.name).toLocaleLowerCase() === name.toLocaleLowerCase()
+    ));
+    if (existing) return { duplicate: true, chat: clone(existing) };
+    const now = nowIso();
+    const chat = this.ensureChatBase({
+        id: `portal-group::social::${socialText(group.id)}::conversation::${makeId('gchat')}`,
+        type: 'group',
+        members,
+        name: socialText(group.name || 'Social group'),
+        conversationId: makeId('conversation'),
+        conversationName: name,
+        groupId: socialText(group.id),
+        avatarImage: socialText(group.avatarImage || ''),
+        bannerImage: socialText(group.bannerImage || ''),
+        createdBy: normalizedActorId,
+        createdAt: now
+    });
+    const activity = appendSocialGroupActivity.call(this, group.id, 'conversation.created', normalizedActorId, {
+        conversationId: socialText(chat.conversationId),
+        conversationName: name
+    });
+    this.saveSocialMutation(normalizedActorId, 'group-conversation-created', 'social-group-conversation', chat.id, null, chat);
+    return {
+        chat: clone(chat),
+        chats: activity?.chats || listSocialGroupChats.call(this, group.id).map((entry) => clone(entry)),
+        event: activity?.event || null,
+        social: getSocialBootstrap.call(this, normalizedActorId)
+    };
+}
+
 module.exports = {
+    appendSocialGroupActivity,
     appendSocialProjectActivity,
+    createSocialGroupConversation,
     ensureSocialGroupChat,
     ensureSocialProjectCollections,
     getSocialBootstrap,
+    listSocialGroupChats,
     listSocialRelationshipsForUser,
     migrateLostFoundSocialState,
     isLostFoundItemExpired,
+    renameSocialGroupConversation,
     normalizeLostFoundItem,
     normalizeLostFoundItems,
     saveSocialMutation,

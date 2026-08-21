@@ -16,7 +16,7 @@ services:
       portal-backend:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/health"]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/ready"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -37,8 +37,10 @@ services:
     init: true
     working_dir: /app
     command: ["sh", "-c", "node tools/check-production-readiness.js && node tools/migrate-postgres.js && exec node backend/platform/server.js"]
+    # Match the env file selected by start-selfhosted-production.sh. A fixed
+    # .env.production here silently ignored KIU_PRODUCTION_ENV_FILE.
     env_file:
-      - .env.production
+      - ${KIU_PRODUCTION_ENV_FILE:-.env.production}
     expose:
       - "47833"
     volumes:

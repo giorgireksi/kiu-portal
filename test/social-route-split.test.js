@@ -16,6 +16,7 @@ describe('social route split', () => {
         expect(routeModule).toContain("app.get('/api/social/bootstrap'");
         expect(routeModule).toContain("app.post('/api/social/state'");
         expect(routeModule).toContain("app.post('/api/social/group-chat'");
+        expect(routeModule).toContain("app.post('/api/social/group-conversation'");
         expect(routeModule).toContain("app.get('/api/social/feed'");
         expect(routeModule).toContain("app.post('/api/social/posts/resolve'");
         expect(routeModule).toContain("app.get('/api/social/events'");

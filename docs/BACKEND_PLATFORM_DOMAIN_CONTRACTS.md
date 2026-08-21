@@ -151,6 +151,9 @@ Public API:
 - `listAccounts(filters = {})`
 - `getAccountById(userId)`
 - `getAccountByEmail(email)`
+- `isSocialEligibleAccount(accountOrId = '')`
+- `listSocialAccounts(filters = {})`
+- `syncAccountToPortalState(account = {})`
 - `upsertAccount(payload = {})`
 
 Owned state:
@@ -279,8 +282,11 @@ Module:
 - `backend/platform/domains/social-state-service.js`
 
 Public API:
+- `appendSocialGroupActivity(groupId, type, actorId = '', details = {})`
+- `listSocialGroupChats(groupId)`
+- `renameSocialGroupConversation(groupId, chatId, conversationName = '', actorId = '')`
 - `listSocialRelationshipsForUser(userId)`
-- `saveSocialMutation(actorId, eventType, entityType, entityId, beforeState = null, afterState = null)`
+- `saveSocialMutation(actorId, eventType, entityType, entityId, beforeState = null, afterState = null)
 - `ensureSocialProjectCollections()`
 - `appendSocialProjectActivity(projectId, actorId, type, summary, extra = {})`
 - `getSocialBootstrap(viewerUserId = '')`
@@ -290,6 +296,7 @@ Public API:
 Owned state:
 - `state.social` bootstrap/read projection for pages, groups, projects, events, relationships, reports, and lost/found
 - social project activity collections and social-state audit/save flow
+- canonical group activity events and materialized system messages across group conversations
 
 Allowed callers:
 - `PlatformStore` wrapper methods in `backend/platform/store.js`

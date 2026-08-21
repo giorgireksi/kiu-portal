@@ -1086,6 +1086,47 @@ html[data-lux-transparency="0"] .lux-primary-btn, html[data-lux-transparency="0"
 }
 .lux-icon-badge.is-zero { opacity: 0; transform: scale(0.8); pointer-events: none; }
 
+.lux-social-system-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 34px;
+  padding: 7px 12px;
+  color: var(--lux-text-muted, rgba(255, 255, 255, 0.62));
+  font-size: 11px;
+  line-height: 1.35;
+  text-align: center;
+}
+.lux-social-system-message__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  border: 1px solid color-mix(in srgb, var(--lux-accent) 32%, transparent);
+  border-radius: 999px;
+  color: var(--lux-accent);
+  font-size: 9px;
+}
+.lux-social-system-message__copy {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.lux-social-system-message__copy strong { color: var(--lux-text, #fff); font-weight: 750; }
+.lux-social-system-message__copy span { overflow-wrap: anywhere; }
+.lux-social-system-message time { flex: 0 0 auto; color: var(--lux-text-soft, rgba(255, 255, 255, 0.46)); font-size: 10px; }
+body.lux-light-mode .lux-social-system-message { color: var(--lux-text-muted, rgba(44, 33, 24, 0.62)); }
+body.lux-light-mode .lux-social-system-message__copy strong { color: var(--lux-text, #30251d); }
+@media (prefers-reduced-motion: reduce) {
+  .lux-social-system-message { transition: none; }
+}
+
 .lux-picker-btn:not(.lux-picker-btn--compact):hover,
 .lux-picker-btn:not(.lux-picker-btn--compact).is-active {
   transform: translateY(-1px);

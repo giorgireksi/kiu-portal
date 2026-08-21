@@ -23811,7 +23811,6 @@ body.lux-route-social :is(
   button.social-neo-workspace-rail-reveal,
   button.social-neo-tab,
   button.social-neo-profile-tab,
-  button.social-photo-tab,
   button.social-photo-my-tab,
   button.social-neo-composer-cta,
   button.social-neo-pages-hero-tab,
@@ -23838,7 +23837,6 @@ body.lux-route-social :is(
   button.social-neo-shell-drawer-nav-btn,
   button.social-neo-tab,
   button.social-neo-profile-tab,
-  button.social-photo-tab,
   button.social-photo-my-tab,
   button.social-neo-pages-hero-tab,
   button.social-project-hero-tab
@@ -23860,7 +23858,6 @@ body.lux-route-social :is(
 body.lux-route-social :is(
   button.social-neo-tab,
   button.social-neo-profile-tab,
-  button.social-photo-tab,
   button.social-photo-my-tab,
   button.social-neo-pages-hero-tab,
   button.social-project-hero-tab
@@ -23868,7 +23865,6 @@ body.lux-route-social :is(
 body.lux-route-social :is(
   button.social-neo-tab,
   button.social-neo-profile-tab,
-  button.social-photo-tab,
   button.social-photo-my-tab,
   button.social-project-hero-tab
 ).is-active {
@@ -24723,6 +24719,20 @@ body.lux-route-social :is(#page-social, #public-social-root, .social-route-stand
   width: 100%;
   max-width: none;
   margin: 0;
+}
+
+/* Empty runtime slots should not create phantom vertical gaps above the active panel. */
+body.lux-route-social #social-neo-root > :is(
+  #social-neo-flash-region,
+  #social-neo-topbar-region,
+  #social-neo-command-region,
+  #social-neo-workspace-nav-reveal-region,
+  #social-neo-drawer-region,
+  #social-neo-mobile-tab-region,
+  #social-neo-toast-region
+):empty,
+body.lux-route-social:not(.social-neo-workspace-nav-collapsed) #social-neo-root > #social-neo-workspace-nav-reveal-region {
+  display: none;
 }
 
 body.lux-route-social .social-neo {
@@ -29164,6 +29174,37 @@ body.lux-route-social .social-photo-chrome-actions {
   flex-shrink: 0;
 }
 
+/* Photography chrome uses the shared segmented-control surface for every compact action. */
+body.lux-route-social .social-photo-hero .lux-picker-btn--compact {
+  min-height: 40px;
+  padding: 7px 12px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  background-image: none;
+  box-shadow: none;
+  color: var(--lux-text-muted, var(--lux-text-secondary));
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-shadow: none;
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+}
+body.lux-route-social .social-photo-hero .lux-picker-btn--compact::before,
+body.lux-route-social .social-photo-hero .lux-picker-btn--compact::after {
+  display: none;
+}
+body.lux-route-social .social-photo-hero .lux-picker-btn--compact:hover,
+body.lux-route-social .social-photo-hero .lux-picker-btn--compact:focus-visible,
+body.lux-route-social .social-photo-hero .lux-picker-btn--compact[aria-expanded="true"] {
+  transform: none;
+  border-color: color-mix(in srgb, var(--lux-accent) 24%, var(--lux-border));
+  background: color-mix(in srgb, var(--lux-accent) 8%, var(--lux-panel-control));
+  box-shadow: none;
+  color: var(--lux-text);
+}
+
 body.lux-route-social .social-photo-search {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -29179,36 +29220,6 @@ body.lux-route-social .social-photo-search > i {
 body.lux-route-social .social-photo-search .lux-control {
   width: 100%;
   min-height: 36px;
-}
-
-body.lux-route-social .social-photo-tab-segment {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
-
-body.lux-route-social button.social-photo-tab:is(.lux-primary-btn, .lux-secondary-btn) {
-  width: 100%;
-  min-height: 34px;
-  height: auto;
-  padding: 6px 12px;
-  border-width: 1px;
-  text-shadow: none;
-  justify-content: center;
-}
-
-body.lux-route-social button.social-photo-my-profile-btn.lux-secondary-btn {
-  min-width: 40px;
-  min-height: 40px;
-  padding: 4px;
-  border-width: 1px;
-  text-shadow: none;
-}
-
-body.lux-route-social .social-photo-my-profile-btn-avatar,
-body.lux-route-social .social-photo-my-profile-btn .social-neo-avatar {
-  width: 28px;
-  height: 28px;
 }
 
 @media (max-width: 720px) {
@@ -30421,6 +30432,165 @@ body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-threa
     padding: 0 !important;
     display: inline-grid;
     place-items: center;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-switcher {
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+    min-width: 0;
+    position: relative;
+    z-index: 8;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-switcher__main {
+    min-width: 0;
+    flex: 1 1 auto;
+    position: relative;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-select,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-add {
+    min-height: 34px;
+    border: 1px solid var(--social-fade-border-soft);
+    border-radius: 10px;
+    background: var(--social-msg-composer);
+    color: var(--sn-txt1);
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-select {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    text-align: left;
+    cursor: pointer;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-select:hover,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-select:focus-visible,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-add:hover,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-add:focus-visible {
+    border-color: var(--lux-accent);
+    outline: none;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-select__label {
+    color: var(--sn-txt3);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-select strong {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-select > .fa-chevron-down {
+    margin-left: auto;
+    color: var(--sn-txt3);
+    font-size: 10px;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-add {
+    width: 34px;
+    min-width: 34px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-badge,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-option__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 19px;
+    height: 19px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--lux-accent);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-menu {
+    position: absolute;
+    inset: calc(100% + 6px) 0 auto 0;
+    width: auto;
+    max-height: min(300px, 42vh);
+    /*
+     * Shared picker classes provide panel surface, frame, motion, and scrolling.
+     * Keep this route rule only to anchor the panel to its conversation switcher.
+     */
+    z-index: 20;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-option,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-create {
+    width: 100%;
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 7px 8px;
+    color: var(--sn-txt1);
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-option:hover,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-option:focus-visible,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-option.is-active,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-create:hover,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-create:focus-visible {
+    background: color-mix(in srgb, var(--lux-accent) 12%, transparent);
+    outline: none;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-option__copy {
+    min-width: 0;
+    flex: 1 1 auto;
+    display: grid;
+    gap: 2px;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-option__copy strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-option__copy small {
+    overflow: hidden;
+    color: var(--sn-txt3);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 10px;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-create {
+    margin-top: 4px;
+    border-top: 1px solid var(--social-fade-border-soft);
+    border-radius: 0 0 8px 8px;
+    color: var(--lux-accent);
+    font-weight: 750;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-group-conversation-create i {
+    width: 18px;
+    text-align: center;
 }
 
 body.lux-route-social .social-neo[data-panel="messages"] .social-neo-messages__composer {
@@ -49669,6 +49839,60 @@ html:has(body.lux-route-social)::-webkit-scrollbar-thumb:hover {
         flex: 0 0 auto !important;
         min-height: max-content !important;
         margin-top: 0 !important;
+    }
+
+    /* Messenger-style fullscreen: fill the available viewport below the
+       global shell, without making the document itself taller than the view. */
+    body.lux-route-social.social-neo-scroll-lock:has(#social-neo-root[data-panel="messages"]) {
+        overflow: hidden !important;
+    }
+
+    body.lux-route-social.social-neo-scroll-lock #page-social:has(#social-neo-root[data-panel="messages"]) {
+        padding-bottom: 0 !important;
+    }
+
+    body.lux-route-social.social-neo-scroll-lock #public-social-root:has(#social-neo-root[data-panel="messages"]),
+    body.lux-route-social.social-neo-scroll-lock #social-neo-root[data-panel="messages"],
+    body.lux-route-social.social-neo-scroll-lock #social-neo-root[data-panel="messages"] .social-neo-shell,
+    body.lux-route-social.social-neo-scroll-lock #social-neo-root[data-panel="messages"] #social-neo-center-region {
+        height: var(--social-message-available-height, calc(100dvh - 138px)) !important;
+        max-height: var(--social-message-available-height, calc(100dvh - 138px)) !important;
+    }
+
+    body.lux-route-social.social-neo-scroll-lock #social-neo-root[data-panel="messages"] .social-neo-messages {
+        height: 100% !important;
+        max-height: 100% !important;
+    }
+
+    /* The workspace rail is part of the fullscreen Messages frame. Keep its
+       heading visible while allowing the long product list to scroll. */
+    body.lux-route-social.social-neo-scroll-lock #social-neo-root[data-panel="messages"] #social-neo-workspace-nav-region,
+    body.lux-route-social.social-neo-scroll-lock #social-neo-root[data-panel="messages"] .social-neo-workspace-nav,
+    body.lux-route-social.social-neo-scroll-lock #social-neo-root[data-panel="messages"] .social-neo-workspace-nav-card {
+        min-height: 0 !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        overflow: hidden !important;
+    }
+
+    body.lux-route-social.social-neo-scroll-lock #social-neo-root[data-panel="messages"] .social-neo-workspace-nav-card {
+        display: grid !important;
+        grid-template-rows: auto minmax(0, 1fr) !important;
+    }
+
+    body.lux-route-social.social-neo-scroll-lock #social-neo-root[data-panel="messages"] .social-neo-workspace-nav-list {
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        overscroll-behavior: contain;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    body.lux-route-social.social-neo-scroll-lock #social-neo-root[data-panel="messages"] .social-neo-workspace-nav-list::-webkit-scrollbar {
+        width: 0;
+        height: 0;
     }
 }
 

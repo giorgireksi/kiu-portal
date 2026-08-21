@@ -132,10 +132,10 @@ describe('social bare shell era', () => {
         expect(bare).toContain('.social-neo-post-head-actions');
         expect(bare).toContain('button.social-neo-post-author.social-neo-clickable');
         expect(bare).toContain('.social-neo-post-author-name');
-        expect(bare).toContain('.social-photo-tab-segment');
+        expect(bare).toContain('.lux-tab-strip--segmented');
         expect(bare).toContain('.social-photo-hero');
         expect(bare).toContain('.social-neo-rail-title');
-        expect(bare).toContain('button.social-photo-tab');
+        expect(bare).not.toContain('button.social-photo-tab');
         expect(bare).toContain('button.social-neo-side-link');
         expect(bare).toContain('button.social-neo-workspace-nav-btn');
         expect(bare).toContain('.social-photo-content-stage');
@@ -199,10 +199,11 @@ describe('social bare shell era', () => {
         expect(bare).toMatch(/social-neo-feed-hero-tab[\s\S]*\.lux-secondary-btn/);
     });
 
-    it('photography tabs use shared lux button classes', () => {
+    it('photography tabs use shared lux tab classes', () => {
         const photo = readSource('assets/js/pages/social-photography.js');
-        expect(photo).toMatch(/lux-secondary-btn-sm social-photo-tab/);
-        expect(photo).toMatch(/lux-primary-btn.*social-photo-tab|social-photo-tab.*lux-primary-btn/);
+        expect(photo).toContain('lux-tab-strip lux-tab-strip--segmented');
+        expect(photo).toContain('lux-tab-btn lux-tab-btn--icon');
+        expect(photo).not.toContain('social-photo-tab');
         expect(photo).toContain('social-photo-hero');
         expect(photo).toContain('social-photo-chrome-subtitle');
         expect(photo).toMatch(/social-neo-input lux-control[\s\S]*photography-search-input/);

@@ -113,7 +113,10 @@ describe('social-photography-regressions (bare-shell era)', () => {
 
         expect(renderPanelChunk).toMatch(/const uploadBtnMarkup = user \?/);
         expect(renderPanelChunk).not.toMatch(/const uploadBtnMarkup = hasCatalog \?/);
-        expect(renderPanelChunk).toContain('social-photo-upload-btn');
+        expect(renderPanelChunk).toContain('class="lux-tab-btn lux-tab-btn--icon is-active"');
+        expect(renderPanelChunk).not.toContain('social-photo-upload-btn');
+        expect(renderPanelChunk).not.toContain("classList.toggle('lux-primary-btn'");
+        expect(renderPanelChunk).not.toContain("classList.toggle('lux-secondary-btn'");
         expect(renderPanelChunk).not.toContain('social-photo-upload-fab');
         expect(renderPanelChunk).toMatch(/social-photo-chrome-actions[\s\S]*uploadBtnMarkup[\s\S]*searchMarkup/);
         expect(photo).toContain('function resolvePhotographyUploadFacultyCode(runtime, form = null)');

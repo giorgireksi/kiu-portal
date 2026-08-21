@@ -104,6 +104,10 @@
             }
             const action = text(trigger.getAttribute('data-action'));
             if (!action) return;
+            // The shared shell closes open picker panels from the document click
+            // phase. The conversation toggle re-renders its panel during this
+            // click, so keep that newly-opened shared picker alive.
+            if (action === 'chat-conversation-menu-toggle') event.stopPropagation();
             if (action === 'noop') return;
             if (action === 'social-pagination-mode' || action === 'social-pagination-page') {
                 event.__kiuSocialHandled = true;
@@ -273,7 +277,7 @@
                 },
                 {
                     is: 'isSocialMessagesSubmitForm',
-                    fallback: (t) => t === 'send-message' || t === 'dialog-message-delete' || t === 'dialog-chat-hide',
+                    fallback: (t) => t === 'send-message' || t === 'dialog-message-delete' || t === 'dialog-chat-hide' || t === 'dialog-group-conversation-create' || t === 'dialog-group-conversation-rename',
                     has: hasSocialMessagesModule,
                     ensure: ensureSocialMessagesModule,
                     handle: 'handleSocialMessagesSubmit'

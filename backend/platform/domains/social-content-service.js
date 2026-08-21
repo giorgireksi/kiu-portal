@@ -155,7 +155,14 @@ function getSocialGroupRecord(groupId) {
 }
 
 function getSocialGroupByChatId(chatId) {
-    return asArray(this.state.social.groups).find(item => socialText(item?.chatId) === socialText(chatId)) || null;
+    const normalizedChatId = socialText(chatId);
+    const direct = asArray(this.state.social.groups).find(item => socialText(item?.chatId) === normalizedChatId);
+    if (direct) return direct;
+    const chat = this.state.chats?.[normalizedChatId];
+    const groupId = socialText(chat?.groupId);
+    return groupId
+        ? asArray(this.state.social.groups).find(item => socialText(item?.id) === groupId) || null
+        : null;
 }
 
 function getSocialPostRecord(postId) {
@@ -1114,8 +1121,27 @@ function updateSocialGroup(groupId, payload = {}, actorId = '') {
             bannerImage: group.bannerImage
         });
     }
+    const broadcastFields = ['name', 'description', 'visibility', 'avatarImage', 'bannerImage', 'adminIds'];
+    const changedFields = broadcastFields.filter((field) => JSON.stringify(beforeState?.[field] ?? null) !== JSON.stringify(group?.[field] ?? null));
+    let activity = null;
+    if (changedFields.length && typeof this.appendSocialGroupActivity === 'function') {
+        const changes = {};
+        changedFields.forEach((field) => {
+            changes[field] = { before: clone(beforeState?.[field] ?? null), after: clone(group?.[field] ?? null) };
+        });
+        const changedName = changedFields.includes('name');
+        activity = this.appendSocialGroupActivity(group.id, 'group.settings.changed', normalizedActorId, {
+            changedFields,
+            changes,
+            summary: changedName
+                ? `group name changed from “${socialText(beforeState?.name || group.name)}” to “${socialText(group.name)}”`
+                : `${changedFields.join(', ')} updated`
+        });
+    }
     this.saveSocialMutation(normalizedActorId, 'group-updated', 'social-group', socialText(group.id), beforeState, group);
-    return decorateSocialGroup.call(this, group, normalizedActorId);
+    const decorated = decorateSocialGroup.call(this, group, normalizedActorId);
+    if (activity?.event) decorated.latestActivity = activity.event;
+    return decorated;
 }
 
 function setSocialGroupMembership(groupId, userId, action = 'join', actorId = '') {
@@ -1126,6 +1152,7 @@ function setSocialGroupMembership(groupId, userId, action = 'join', actorId = ''
         || getSocialGroupPendingIds.call(this, group).includes(normalizedUserId);
     if (action !== 'leave' && !existingMember && typeof this.isSocialEligibleAccount === 'function' && !this.isSocialEligibleAccount(normalizedUserId)) return null;
     const beforeState = clone(group);
+    const beforeMemberIds = getSocialGroupMemberIds.call(this, group);
     normalizeSocialGroupState.call(this, group);
     if (action === 'leave') {
         const ownerUserId = socialText(group.ownerUserId || '');
@@ -1228,8 +1255,26 @@ function setSocialGroupMembership(groupId, userId, action = 'join', actorId = ''
             });
         }
     }
-    this.saveSocialMutation(actorId || normalizedUserId, `group-${action}`, 'social-group', socialText(group.id), beforeState, group);
-    return decorateSocialGroup.call(this, group, actorId || normalizedUserId);
+    const afterMemberIds = getSocialGroupMemberIds.call(this, group);
+    const actorForActivity = socialText(actorId || normalizedUserId);
+    const membershipAdded = !beforeMemberIds.includes(normalizedUserId) && afterMemberIds.includes(normalizedUserId);
+    const membershipRemoved = beforeMemberIds.includes(normalizedUserId) && !afterMemberIds.includes(normalizedUserId);
+    let activity = null;
+    if (membershipAdded && typeof this.appendSocialGroupActivity === 'function') {
+        activity = this.appendSocialGroupActivity(group.id, 'member.added', actorForActivity, {
+            memberId: normalizedUserId,
+            memberName: this.getSocialActorDisplayName(normalizedUserId)
+        });
+    } else if (membershipRemoved && typeof this.appendSocialGroupActivity === 'function') {
+        activity = this.appendSocialGroupActivity(group.id, actorForActivity === normalizedUserId ? 'member.left' : 'member.removed', actorForActivity, {
+            memberId: normalizedUserId,
+            memberName: this.getSocialActorDisplayName(normalizedUserId)
+        });
+    }
+    this.saveSocialMutation(actorForActivity, `group-${action}`, 'social-group', socialText(group.id), beforeState, group);
+    const decorated = decorateSocialGroup.call(this, group, actorForActivity);
+    if (activity?.event) decorated.latestActivity = activity.event;
+    return decorated;
 }
 
 function respondSocialGroupMembership(groupId, memberId, accept = true, actorId = '') {
@@ -1239,6 +1284,7 @@ function respondSocialGroupMembership(groupId, memberId, accept = true, actorId 
     if (!group || !normalizedMemberId || !canManageSocialGroup.call(this, group, normalizedActorId)) return null;
     if (typeof this.isSocialEligibleAccount === 'function' && !this.isSocialEligibleAccount(normalizedMemberId)) return null;
     const beforeState = clone(group);
+    const beforeMemberIds = getSocialGroupMemberIds.call(this, group);
     normalizeSocialGroupState.call(this, group);
     group.pendingMemberIds = getSocialGroupPendingIds.call(this, group).filter(item => item !== normalizedMemberId);
     if (accept && !group.memberIds.includes(normalizedMemberId)) {
@@ -1270,8 +1316,18 @@ function respondSocialGroupMembership(groupId, memberId, accept = true, actorId 
             : `${group.name} declined your membership request.`,
         routePage: 'social'
     });
+    const afterMemberIds = getSocialGroupMemberIds.call(this, group);
+    let activity = null;
+    if (accept && !beforeMemberIds.includes(normalizedMemberId) && afterMemberIds.includes(normalizedMemberId) && typeof this.appendSocialGroupActivity === 'function') {
+        activity = this.appendSocialGroupActivity(group.id, 'member.added', normalizedActorId, {
+            memberId: normalizedMemberId,
+            memberName: this.getSocialActorDisplayName(normalizedMemberId)
+        });
+    }
     this.saveSocialMutation(normalizedActorId, accept ? 'group-request-approved' : 'group-request-denied', 'social-group', socialText(group.id), beforeState, group);
-    return decorateSocialGroup.call(this, group, normalizedActorId);
+    const decorated = decorateSocialGroup.call(this, group, normalizedActorId);
+    if (activity?.event) decorated.latestActivity = activity.event;
+    return decorated;
 }
 
 function removeSocialGroupMember(groupId, memberId, actorId = '') {
@@ -1282,6 +1338,7 @@ function removeSocialGroupMember(groupId, memberId, actorId = '') {
     const ownerUserId = socialText(group.ownerUserId || '');
     if (!group || normalizedMemberId === ownerUserId) return null;
     const beforeState = clone(group);
+    const beforeMemberIds = getSocialGroupMemberIds.call(this, group);
     normalizeSocialGroupState.call(this, group);
     group.memberIds = socialIdArray(group.memberIds).filter(item => item !== normalizedMemberId);
     group.adminIds = socialIdArray(group.adminIds).filter(item => item !== normalizedMemberId);
@@ -1300,8 +1357,16 @@ function removeSocialGroupMember(groupId, memberId, actorId = '') {
         body: `You were removed from ${group.name}.`,
         routePage: 'social'
     });
+    const activity = typeof this.appendSocialGroupActivity === 'function' && beforeMemberIds.includes(normalizedMemberId)
+        ? this.appendSocialGroupActivity(group.id, 'member.removed', normalizedActorId, {
+            memberId: normalizedMemberId,
+            memberName: this.getSocialActorDisplayName(normalizedMemberId)
+        })
+        : null;
     this.saveSocialMutation(normalizedActorId, 'group-member-removed', 'social-group', socialText(group.id), beforeState, group);
-    return decorateSocialGroup.call(this, group, normalizedActorId);
+    const decorated = decorateSocialGroup.call(this, group, normalizedActorId);
+    if (activity?.event) decorated.latestActivity = activity.event;
+    return decorated;
 }
 
 function deleteSocialGroup(groupId, actorId = '') {
@@ -1318,9 +1383,12 @@ function deleteSocialGroup(groupId, actorId = '') {
             socialText(entry?.scopeType || '').toLowerCase() === 'group'
             && socialText(entry?.scopeId || '') === normalizedGroupId
         ));
-    if (chatId && this.state.chats && this.state.chats[chatId]) {
-        delete this.state.chats[chatId];
-    }
+    Object.keys(this.state.chats || {}).forEach((candidateChatId) => {
+        const candidate = this.state.chats[candidateChatId];
+        if (candidateChatId === chatId || socialText(candidate?.groupId) === normalizedGroupId) {
+            delete this.state.chats[candidateChatId];
+        }
+    });
     this.saveSocialMutation(normalizedActorId, 'group-deleted', 'social-group', normalizedGroupId, beforeState, null);
     return { groupId: normalizedGroupId };
 }
@@ -1339,6 +1407,12 @@ function inviteSocialGroupMember(groupId, memberId, actorId = '', note = '') {
     if (getSocialGroupPendingIds.call(this, group).includes(normalizedMemberId)) return null;
     const actorName = getSocialActorDisplayName.call(this, normalizedActorId);
     const groupName = socialText(group.name || 'Group');
+    const activity = typeof this.appendSocialGroupActivity === 'function'
+        ? this.appendSocialGroupActivity(group.id, 'member.invited', normalizedActorId, {
+            memberId: normalizedMemberId,
+            memberName: this.getSocialActorDisplayName(normalizedMemberId)
+        })
+        : null;
     this.createNotification({
         recipientUserId: normalizedMemberId,
         sourceDomain: 'social',
@@ -1356,7 +1430,9 @@ function inviteSocialGroupMember(groupId, memberId, actorId = '', note = '') {
     });
     return {
         group: decorateSocialGroup.call(this, group, normalizedActorId),
-        invitedUserId: normalizedMemberId
+        invitedUserId: normalizedMemberId,
+        latestActivity: activity?.event || null,
+        chats: typeof this.listSocialGroupChats === 'function' ? this.listSocialGroupChats(group.id) : []
     };
 }
 

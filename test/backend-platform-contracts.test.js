@@ -50,7 +50,10 @@ describe('backend platform domain contracts', () => {
             'ensurePersonFromAccount',
             'getAccountByEmail',
             'getAccountById',
+            'isSocialEligibleAccount',
             'listAccounts',
+            'listSocialAccounts',
+            'syncAccountToPortalState',
             'upsertAccount'
         ]);
         expect(Object.keys(authSessionService).sort()).toEqual([
@@ -262,15 +265,19 @@ describe('backend platform domain contracts', () => {
             'toggleSocialFollow'
         ]);
         expect(Object.keys(socialStateService).sort()).toEqual([
+            'appendSocialGroupActivity',
             'appendSocialProjectActivity',
+            'createSocialGroupConversation',
             'ensureSocialGroupChat',
             'ensureSocialProjectCollections',
             'getSocialBootstrap',
             'isLostFoundItemExpired',
+            'listSocialGroupChats',
             'listSocialRelationshipsForUser',
             'migrateLostFoundSocialState',
             'normalizeLostFoundItem',
             'normalizeLostFoundItems',
+            'renameSocialGroupConversation',
             'saveSocialMutation',
             'upsertSocialState'
         ]);

@@ -1,5 +1,175 @@
 /* Thin route diff: exams. Core in shared-lux-core.css */
 /* Included source lines: 43354-46092. */
+    letter-spacing: 0.05em;
+    color: var(--lux-text-muted);
+    background: rgba(148, 163, 184, 0.06);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+body.lux-route-social .social-project-task-list-title strong {
+    font-weight: 700;
+    font-size: 14px;
+}
+body.lux-route-social .social-project-task-list-row {
+    cursor: pointer;
+}
+body.lux-route-social .social-project-task-list-row:hover {
+    background: var(--lux-panel-control, rgba(148, 163, 184, 0.08));
+}
+body.lux-route-social .social-project-task-list-row.is-overdue td.is-overdue,
+body.lux-route-social .social-project-task-list-row td.is-overdue {
+    color: var(--lux-danger, #f43f5e);
+    font-weight: 700;
+}
+body.lux-route-social .social-project-task-list-empty {
+    padding: 40px 20px;
+    text-align: center;
+}
+body.lux-route-social .social-project-task-deps-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    border: 1px solid var(--lux-border);
+    background: transparent;
+}
+body.lux-route-social .social-project-task-deps-chip:hover {
+    border-color: var(--lux-accent);
+    color: var(--lux-accent);
+}
+body.lux-route-social .social-project-task-shell-graph--main,
+body.lux-route-social .social-project-task-shell-graph--roomy {
+    padding: 8px 4px 12px;
+}
+body.lux-route-social .social-project-task-graph-preview-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 16px;
+    margin-bottom: 14px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid var(--lux-border, rgba(148, 163, 184, 0.16));
+    background: rgba(148, 163, 184, 0.06);
+}
+body.lux-route-social .social-project-task-graph-preview-toolbar strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+}
+body.lux-route-social .social-project-task-graph-preview-toolbar span {
+    display: block;
+    margin-top: 3px;
+    font-size: 12px;
+    color: var(--lux-text-muted);
+}
+body.lux-route-social .social-project-hub-my-work--roomy {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+body.lux-route-social .social-project-hub-my-work--roomy .social-project-hub-my-work-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    text-align: left;
+}
+body.lux-route-social .social-project-hub-my-work-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--lux-text-muted);
+}
+body.lux-route-social .social-project-hub-my-work-meta em {
+    font-style: normal;
+    font-weight: 600;
+}
+body.lux-route-social .social-project-hub-my-work-flag,
+body.lux-route-social .social-project-hub-my-work-meta .is-overdue {
+    color: var(--lux-danger, #f43f5e);
+    font-weight: 700;
+}
+body.lux-route-social .social-project-my-task-item.is-clickable {
+    cursor: pointer;
+}
+@media (max-width: 1100px) {
+    body.lux-route-social .social-project-task-board--roomy {
+        grid-template-columns: repeat(2, minmax(240px, 1fr));
+    }
+}
+@media (max-width: 760px) {
+    body.lux-route-social .social-project-task-board--roomy {
+        grid-template-columns: 1fr;
+    }
+    body.lux-route-social .social-project-task-shell-header--roomy,
+    body.lux-route-social .social-project-task-shell-filters--roomy,
+    body.lux-route-social .social-project-task-shell-body {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+}
+
+@media (max-width: 1100px) {
+    body.lux-route-social .social-project-hub-layout {
+        grid-template-columns: 1fr;
+    }
+    body.lux-route-social .social-project-hub-rail {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+    }
+}
+@media (max-width: 760px) {
+    body.lux-route-social .social-project-hub-layout {
+        grid-template-columns: 1fr;
+    }
+    body.lux-route-social .social-project-hub-rail {
+        grid-column: auto;
+        display: flex;
+    }
+    body.lux-route-social .social-project-hub-contribution {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+
+body.lux-route-social .sptg-context-menu,
+.sptg-context-menu {
+    position: fixed;
+    z-index: 13050;
+    min-width: 220px;
+    max-width: min(280px, calc(100vw - 20px));
+    padding: 8px;
+    border-radius: 14px;
+}
+body.lux-route-social .sptg-context-menu-label,
+.sptg-context-menu-label {
+    padding: 6px 10px 4px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--lux-text-muted);
+}
+body.lux-route-social .sptg-context-menu-item,
+.sptg-context-menu-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
     color: var(--lux-text);
     text-align: left;
     cursor: pointer;
@@ -2568,173 +2738,3 @@ body.lux-route-exams #admin-exams-root .ex2-builder-empty {
 
 body.lux-route-exams #admin-exams-root .ex2-builder-empty-copy {
     color: var(--lux-text-muted);
-}
-
-body.lux-route-exams #admin-exams-root .ex2-builder-warning {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-
-body.lux-route-exams #admin-exams-root .ex2-builder-warning-copy {
-    color: inherit;
-}
-
-
-body.lux-route-exams #admin-exams-root .ex2-modal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background: rgba(3, 8, 20, 0.52);
-    backdrop-filter: blur(var(--lux-transparency-blur, 18px));
-    -webkit-backdrop-filter: blur(var(--lux-transparency-blur, 18px));
-}
-
-body.lux-route-exams #admin-exams-root .ex2-modal {
-    width: min(520px, 100%);
-    max-height: min(88vh, 720px);
-    display: flex;
-    flex-direction: column;
-    border-radius: var(--lux-panel-radius, 22px);
-    overflow: hidden;
-    border: 1px solid var(--lux-panel-host-border);
-    background-color: var(--lux-panel-fill);
-    background-image: var(--lux-panel-surface);
-    box-shadow: var(--lux-panel-host-shadow);
-    backdrop-filter: var(--lux-panel-blur-filter);
-    -webkit-backdrop-filter: var(--lux-panel-blur-filter);
-    background-clip: padding-box;
-}
-
-body.lux-route-exams #admin-exams-root .ex2-modal-head h3 {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-}
-
-body.lux-route-exams #admin-exams-root .ex2-modal-search.lux-control {
-    width: 100%;
-    min-width: 0;
-    min-height: 44px;
-}
-
-body.lux-route-exams #admin-exams-root .ex2-modal-head.is-accent .ex2-modal-close.lux-ghost-btn,
-body.lux-route-exams #admin-exams-root .ex2-modal-head.is-warm .ex2-modal-close.lux-ghost-btn {
-    color: rgba(255, 255, 255, 0.88);
-}
-
-body.lux-route-exams #admin-exams-root .ex2-modal-head.is-accent .ex2-modal-close.lux-ghost-btn:hover,
-body.lux-route-exams #admin-exams-root .ex2-modal-head.is-accent .ex2-modal-close.lux-ghost-btn:focus-visible,
-body.lux-route-exams #admin-exams-root .ex2-modal-head.is-warm .ex2-modal-close.lux-ghost-btn:hover,
-body.lux-route-exams #admin-exams-root .ex2-modal-head.is-warm .ex2-modal-close.lux-ghost-btn:focus-visible {
-    color: #fff;
-}
-
-body.lux-route-exams #admin-exams-root .ex2-modal-list.ex2-list {
-    gap: 10px;
-}
-
-body.lux-route-exams #admin-exams-root .ex2-modal-list .ex2-list-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 12px 14px;
-    border-radius: 14px;
-    min-width: 0;
-}
-
-body.lux-route-exams #admin-exams-root .ex2-modal-list .ex2-list-item > div:first-child,
-body.lux-route-exams #admin-exams-root .ex2-modal-list-primary {
-    min-width: 0;
-    display: grid;
-    gap: 2px;
-}
-
-body.lux-route-exams #admin-exams-root .ex2-modal-list .ex2-list-item strong,
-body.lux-route-exams #admin-exams-root .ex2-modal-list-name {
-    font-size: 14px;
-    font-weight: 800;
-    line-height: 1.25;
-}
-
-body.lux-route-exams #admin-exams-root .ex2-modal-list .ex2-empty,
-body.lux-route-exams #admin-exams-root .ex2-modal-empty {
-    padding: 24px 16px;
-    border-radius: 14px;
-    text-align: center;
-}
-
-body.lux-route-exams #admin-exams-root .ex2-modal-empty .lms-route-copy {
-    color: var(--lux-text-muted);
-}
-
-body[data-lux-performance='efficient'].lux-route-exams #admin-exams-root .ex2-modal-overlay {
-    background: var(--ex2-modal-overlay-bg, rgba(3, 8, 20, 0.44));
-    backdrop-filter: blur(var(--ex2-modal-overlay-blur, 2px));
-    -webkit-backdrop-filter: blur(var(--ex2-modal-overlay-blur, 2px));
-}
-
-body[data-lux-performance='efficient'].lux-route-exams #admin-exams-root .ex2-modal {
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.26);
-}
-
-
-body.lux-route-exams #admin-exams-root .ex2-split-box {
-    margin-top: 12px;
-    padding: 18px;
-    border-radius: 16px;
-    border: 1px dashed rgba(var(--lux-accent-rgb),.35);
-    background: rgba(var(--lux-accent-rgb),.03);
-}
-
-
-body.lux-route-exams #admin-exams-root .ex2-timeline {
-    display: flex;
-    gap: 12px;
-    overflow-x: auto;
-    padding: 8px 0;
-}
-
-body.lux-route-exams #admin-exams-root .ex2-timeline-card {
-    min-width: 180px;
-    padding: 16px;
-    border-radius: 16px;
-    border: 1px solid var(--lux-border);
-    background: var(--lux-surface);
-    flex-shrink: 0;
-    transition: transform .2s;
-}
-
-body.lux-route-exams #admin-exams-root .ex2-timeline-card:hover {
-    transform: translateY(-2px);
-}
-
-
-body.lux-route-exams #admin-exams-root .ex2-mini-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    gap: 10px;
-    margin-top: 12px;
-}
-
-body.lux-route-exams #admin-exams-root .ex2-mini-grid--flush {
-    margin-top: 0;
-}
-
-body.lux-route-exams #admin-exams-root .ex2-mini-grid > div {
-    text-align: center;
-}
-
-body.lux-route-exams #admin-exams-root .ex2-review-summary-card,
-body.lux-route-exams #admin-exams-root .ex2-session-stat-card {
-    text-align: center;
-}
-
-body.lux-route-exams #admin-exams-root .ex2-review-summary-value,
-body.lux-route-exams #admin-exams-root .ex2-session-stat-value {

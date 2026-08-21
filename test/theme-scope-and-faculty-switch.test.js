@@ -32,22 +32,53 @@ describe('faculty switch and scoped visual settings', () => {
     expect(utilities).not.toContain("const reloadTarget = `${window.location.pathname");
   });
 
-  it('uses role-and-faculty scoped visual settings instead of global theme fallbacks', () => {
+  it('uses one global visual preference instead of role-and-faculty theme scopes', () => {
     const homeLuxury = readRegisteredHomeChunk();
+    const homeVisualPreferenceRuntime = readSource('assets/js/features/index-luxury.js');
     const luxury = readSource('assets/js/features/luxury-index-runtime.js')
-      + readSource('assets/js/features/luxury-atmosphere-runtime.js');
+      + readSource('assets/js/features/luxury-atmosphere-runtime.js')
+      + readSource('assets/js/features/luxury-palette-runtime.js');
     const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+    const primer = readSource('assets/js/theme-primer.js');
+    const api = readSource('assets/js/app/api.js');
+    const supportRoutes = readSource('backend/platform/routes/portal-support-routes.js');
+    const store = readSource('backend/platform/store.js');
 
     expect(luxury).toContain('function ensureLuxuryHomeDashboardBundle(options = {}) {');
     expect(homeLuxury).toContain('function getHomeScopeKey(role = getEffectiveRole(), facultyCode = getCurrentFacultyCode())');
-    expect(homeLuxury).toContain('const scopedVisuals = entry.visualsByScope?.[scopeKey];');
-    expect(homeLuxury).toContain('...(scopedVisuals || entry.visuals || {})');
+    expect(homeLuxury).toContain('...(entry.visuals || {})');
+    expect(homeLuxury).not.toContain('const scopedVisuals = entry.visualsByScope?.[scopeKey];');
+    expect(homeLuxury).toContain("paletteFaculty: '*'");
     expect(luxury).toContain("const stored = String(getDashboardVisuals().themeMode || DEFAULT_HOME_VISUALS.themeMode)");
     expect(luxury).toContain('return sanitizeBackgroundMode(getDashboardVisuals().backgroundMode || DEFAULT_HOME_VISUALS.backgroundMode);');
+    expect(luxury).toContain('reject an otherwise valid global palette record');
+    expect(luxury).toContain('window.flushPortalStateSync?.({ forceLatest: true });');
     expect(homeLuxury).toContain("const stored = visuals?.paletteKey || localStorage.getItem('kiuLuxuryPalette') || localStorage.getItem('kiu-palette');");
     expect(homeLuxury).toContain("if (stored === 'custom' || isBuiltInLuxuryPaletteKey(stored)) return stored;");
     expect(homeLuxury).toContain("return visuals?.paletteKey || 'ocean-teal';");
+    const visualGetter = homeVisualPreferenceRuntime.slice(
+      homeVisualPreferenceRuntime.indexOf('function getDashboardVisuals('),
+      homeVisualPreferenceRuntime.indexOf('function setDashboardVisuals(')
+    );
+    expect(visualGetter).toContain("user's independently selected opacity");
+    expect(visualGetter).not.toContain('visuals.surfaceTransparency = String(ADVANCED_DEFAULT_VISUALS.surfaceTransparency)');
+    expect(primer).toContain('Theme preferences are global to the account.');
+    expect(primer).toContain('(visualsByUser && visualsByUser.visuals) || {}');
+    expect(api).toContain('window.flushPortalStateSync = flushPortalStateSync;');
+    expect(api).toContain("async function bootstrapPortalThemeState(force = false)");
+    expect(api).toContain("kiuPortalFetch('/api/portal/theme'");
+    expect(api).toContain("kiuPortalFetch('/api/portal/bootstrap', { timeoutMs: 12000 })");
+    expect(supportRoutes).toContain("app.get('/api/portal/theme'");
+    expect(store).toContain('createPortalThemeBootstrap(token = \'\')');
     expect(shellChrome).toContain('setDashboardVisuals({ surfaceTransparency: String(value) });');
+  });
+
+  it('primes login and legacy redirect pages from the global theme cache', () => {
+    for (const route of ['login.html', 'protected-launch.html', 'profile.html', 'calendar.html', 'gradebook.html', 'faculty-schedule.html']) {
+      const source = readSource(route);
+      expect(source).toContain('assets/js/theme-primer.js?v=20260823-globaltheme1');
+      expect(source).not.toMatch(/<body[^>]*palette-/);
+    }
   });
 
   it('persists glass blur quality through atmosphere and studio chrome', () => {
@@ -137,8 +168,8 @@ describe('faculty switch and scoped visual settings', () => {
     expect(utilities).not.toContain("document.documentElement.style.setProperty('--lux-transparency-alpha', surfaceFillAmount.toFixed(3));");
     expect(utilities).toContain("root.style.setProperty('--kiu-shell-gradient', shellGradient);");
     expect(utilities).toContain("root.style.setProperty('--kiu-gradient-blue', `linear-gradient(135deg, ${primary} 0%, ${nav} 100%)`);");
-    expect(index).toContain('assets/js/features/index-luxury.js?v=20260818-globaldrawer1');
-    expect(index).toContain('assets/js/features/index-home-dashboard.js?v=20260809-homeassembly2');
-    expect(index).toContain('assets/js/shared/utilities.js?v=20260725-portalmodal1');
+    expect(index).toContain('assets/js/features/index-luxury.js?v=20260823-themeopacity1');
+    expect(index).toContain('assets/js/features/index-home-dashboard.js?v=20260823-globaltheme1');
+    expect(index).toContain('assets/js/shared/utilities.js?v=20260822-customscroll32');
   });
 });

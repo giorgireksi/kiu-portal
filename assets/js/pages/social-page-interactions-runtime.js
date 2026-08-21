@@ -158,7 +158,7 @@
         const CHAT_KEY = d.CHAT_KEY ?? window.CHAT_KEY ?? 'KIU_SOCIAL_ACTIVE_CHAT';
         let renderDebounceTimer = 0;
         const SOCIAL_TAB_SCROLL_RESET_RE = /^(panel|community-tab|pages-tab|groups-tab|events-tab|surveys-tab|research-tab|feed-tab)$/;
-        const SOCIAL_SKIP_TRANSPARENCY_REFRESH_RE = /^(feed-tab|community-tab|pages-tab|groups-tab|events-tab|surveys-tab|research-tab|research-input|feed-scope|directory-search|directory-role|post-react|post-save|photography-tab|photography-search-input|photography-follow|photography-view-profile|photography-profile-back|photography-my-profile|photography-my-profile-tab|notification-read|notification-removed|notifications-refresh|chat-read|chat-upsert|message-sent|message-delete|chat-hide|alerts-filter|messages-filter|mobile-nav|workspace-nav-open|workspace-nav-close|workspace-nav-collapse|workspace-nav-expand|connection-|comment-react|comment-reply|comment-post|project-task-)/;
+        const SOCIAL_SKIP_TRANSPARENCY_REFRESH_RE = /^(feed-tab|community-tab|pages-tab|groups-tab|events-tab|surveys-tab|research-tab|research-input|feed-scope|directory-search|directory-role|post-react|post-save|photography-tab|photography-search-input|photography-follow|photography-view-profile|photography-profile-back|photography-my-profile|photography-my-profile-tab|notification-read|notification-removed|notifications-refresh|chat-read|chat-upsert|message-sent|message-delete|chat-hide|chat-conversation-|alerts-filter|messages-filter|mobile-nav|workspace-nav-open|workspace-nav-close|workspace-nav-collapse|workspace-nav-expand|connection-|comment-react|comment-reply|comment-post|project-task-)/;
         void d;
 
         window.__kiuSocialRevealShellNow = revealShell;
@@ -1144,7 +1144,7 @@ function renderSocialPageNow(reason = 'manual') {
         if (/^project-(settings-saved|task-created|task-updated|budget-|created|left)/.test(reason)) {
             clearProjectTabPaneCache(text(runtime.ui?.activeProjectId || ''));
         }
-        if (text(runtime.ui?.projectTab || '') === 'chat' && /^(message-|chat-upsert|chat-read|group-thread-|thread-jump-latest|message-file|group-panel-file-filter|project-chat-ready|project-open-chat)/.test(reason)) {
+        if (text(runtime.ui?.projectTab || '') === 'chat' && /^(message-|chat-upsert|chat-read|group-thread-|chat-conversation-|thread-jump-latest|message-file|group-panel-file-filter|project-chat-ready|project-open-chat)/.test(reason)) {
             const projectId = text(runtime.ui?.activeProjectId || '');
             const cache = runtime.ui?.__projectTabPaneCache;
             if (projectId && cache && typeof cache === 'object') {
@@ -1422,7 +1422,7 @@ function renderSocialPageNow(reason = 'manual') {
     };
     // Docs actions render synchronously so a subsequent center:false render
     // (toast/flash/dialog-close) can't clear the pending timer and swallow
-    const fastPath = reason === 'boot' || /^(comment-|post-react|post-save|post-pin|post-updated|post-deleted|post-shared|connection-|page-follow|page-report|flash|dialog-|survey-closed|survey-deleted|survey-response-submitted|survey-created|survey-take-|survey-results-|research-tab|research-create-open|research-input|research-reader-|research-saved|research-deleted|research-created|social-bootstrap|event-rsvp|event-created|event-deleted|event-rsvp-optimistic|event-rsvp-rollback|group-membership|group-request|group-member-removed|group-updated|group-left|notification-read|notification-removed|notifications-refresh|chat-read|chat-upsert|message-sent|message-delete|chat-hide|panel-|feed-tab|feed-scope|community-tab|pages-tab|groups-tab|events-tab|directory-search|directory-role|report-resolve|mobile-nav|alerts-filter|messages-filter|profile-view|project-|projects-back)/.test(reason);
+    const fastPath = reason === 'boot' || /^(comment-|post-react|post-save|post-pin|post-updated|post-deleted|post-shared|connection-|page-follow|page-report|flash|dialog-|survey-closed|survey-deleted|survey-response-submitted|survey-created|survey-take-|survey-results-|research-tab|research-create-open|research-input|research-reader-|research-saved|research-deleted|research-created|social-bootstrap|event-rsvp|event-created|event-deleted|event-rsvp-optimistic|event-rsvp-rollback|group-membership|group-request|group-member-removed|group-updated|group-left|notification-read|notification-removed|notifications-refresh|chat-read|chat-upsert|message-sent|message-delete|chat-hide|chat-conversation-|panel-|feed-tab|feed-scope|community-tab|pages-tab|groups-tab|events-tab|directory-search|directory-role|report-resolve|mobile-nav|alerts-filter|messages-filter|profile-view|project-|projects-back)/.test(reason);
     // Module hydration must commit synchronously. A background feed refresh
     // can otherwise clear this timer before the newly loaded panel replaces
     // its loading shell, forcing a second click to mount it.

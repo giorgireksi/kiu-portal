@@ -180,12 +180,16 @@ const {
     unpublishPortfolio
 } = require('./domains/portfolio-service');
 const {
+    appendSocialGroupActivity,
     appendSocialProjectActivity,
+    createSocialGroupConversation,
     ensureSocialGroupChat,
     ensureSocialProjectCollections,
     getSocialBootstrap,
+    listSocialGroupChats,
     listSocialRelationshipsForUser,
     migrateLostFoundSocialState,
+    renameSocialGroupConversation,
     saveSocialMutation,
     upsertSocialState
 } = require('./domains/social-state-service');
@@ -1043,6 +1047,7 @@ class PlatformStore {
         this.recordStore = null;
         this.state = createEmptyPlatformState(this.storageDriver);
         this.pendingSave = Promise.resolve();
+        this.lastStoreWriteError = null;
     }
 
     static async create(options = {}) {
@@ -1218,13 +1223,29 @@ class PlatformStore {
     queueRecordStoreWrite(writeTask) {
         this.state.meta.updatedAt = nowIso();
         if (!this.recordStore) return Promise.resolve();
-        this.pendingSave = this.pendingSave
-            .catch((error) => {
-                console.error('Platform store write failed:', error?.message || error);
+        // A failed write must not poison the queue forever. The old chain
+        // re-threw the previous error before every next task, so one transient
+        // Postgres/filesystem failure made every later API write fail too.
+        const previous = this.pendingSave.catch((error) => {
+            console.error('Platform store write failed; recovering write queue:', error?.message || error);
+        });
+        const next = previous.then(async () => {
+            try {
+                const result = await writeTask();
+                this.lastStoreWriteError = null;
+                return result;
+            } catch (error) {
+                this.lastStoreWriteError = error;
                 throw error;
-            })
-            .then(writeTask);
-        return this.pendingSave;
+            }
+        });
+        // Attach a handler so fire-and-forget save() calls do not become
+        // unhandled rejections, while returning `next` still lets awaited
+        // callers receive the original write failure.
+        this.pendingSave = next.catch((error) => {
+            console.error('Platform store write failed:', error?.message || error);
+        });
+        return next;
     }
 
     save() {
@@ -1256,6 +1277,11 @@ class PlatformStore {
 
     async flushPendingWrites() {
         await this.pendingSave;
+        if (this.lastStoreWriteError) {
+            const error = this.lastStoreWriteError;
+            this.lastStoreWriteError = null;
+            throw error;
+        }
     }
 
     ensureBootstrapAdmin() {
@@ -4365,6 +4391,25 @@ class PlatformStore {
         return payload;
     }
 
+    createPortalThemeBootstrap(token = '') {
+        const session = token ? this.getSession(token) : null;
+        const account = session ? this.getAccountById(session.userId) : null;
+        const userId = String(account?.id || '').trim();
+        const preferences = this.state.portal?.state?.homeDashboardPreferencesByUser;
+        const entry = userId && preferences && typeof preferences === 'object'
+            ? preferences[userId]
+            : null;
+        return {
+            visuals: entry?.visuals && typeof entry.visuals === 'object' ? clone(entry.visuals) : {},
+            account: account ? this.sanitizeAccountForClient(account) : null,
+            effectiveRole: session
+                ? (String(session.actualRole || '').trim().toLowerCase() === 'admin' && session.impersonatedRole
+                    ? String(session.impersonatedRole || '').trim().toLowerCase()
+                    : String(session.actualRole || '').trim().toLowerCase())
+                : ''
+        };
+    }
+
     createApplicationBootstrap(token = '') {
         const session = token ? this.getSession(token) : null;
         const account = session ? this.getAccountById(session.userId) : null;
@@ -4613,6 +4658,17 @@ class PlatformStore {
             type: String(payload.type || existing?.type || 'direct').trim().toLowerCase(),
             members: uniqueStrings(asArray(payload.members || existing?.members).map(member => String(member || '').trim())),
             name: String(payload.name || existing?.name || '').trim(),
+            conversationId: String(
+                payload.conversationId
+                || existing?.conversationId
+                || (String(payload.type || existing?.type || 'direct').trim().toLowerCase() === 'group' ? 'general' : '')
+            ).trim(),
+            conversationName: String(
+                payload.conversationName
+                || existing?.conversationName
+                || (String(payload.type || existing?.type || 'direct').trim().toLowerCase() === 'group' ? 'General' : '')
+            ).trim(),
+            archivedAt: String(payload.archivedAt ?? existing?.archivedAt ?? '').trim(),
             createdBy: String(payload.createdBy || existing?.createdBy || '').trim(),
             createdAt: String(payload.createdAt || existing?.createdAt || nowIso()),
             updatedAt: nowIso(),
@@ -4624,6 +4680,17 @@ class PlatformStore {
             messages: Array.isArray(existing?.messages) ? existing.messages : []
         };
         this.state.chats[chatId] = next;
+        // Group membership changes already flow through ensureChatBase for the
+        // canonical group chat. Keep every child conversation in that group
+        // synchronized without duplicating membership-update logic.
+        if (next.type === 'group' && next.groupId) {
+            Object.values(this.state.chats).forEach((candidate) => {
+                if (!candidate || candidate === next || candidate.type !== 'group' || String(candidate.groupId || '').trim() !== next.groupId) return;
+                candidate.members = [...next.members];
+                candidate.avatarImage = next.avatarImage;
+                candidate.bannerImage = next.bannerImage;
+            });
+        }
         return next;
     }
 
@@ -5091,6 +5158,9 @@ class PlatformStore {
     getSocialPageRecord(pageId) { return getSocialPageRecord.call(this, pageId); }
     getSocialGroupRecord(groupId) { return getSocialGroupRecord.call(this, groupId); }
     getSocialGroupByChatId(chatId) { return getSocialGroupByChatId.call(this, chatId); }
+    appendSocialGroupActivity(groupId, type, actorId = '', details = {}) { return appendSocialGroupActivity.call(this, groupId, type, actorId, details); }
+    listSocialGroupChats(groupId = '') { return listSocialGroupChats.call(this, groupId).map((chat) => clone(chat)); }
+    renameSocialGroupConversation(groupId, chatId, conversationName = '', actorId = '') { return renameSocialGroupConversation.call(this, groupId, chatId, conversationName, actorId); }
 
     getSocialProjectRecord(projectId) {
         return getSocialProjectRecord.call(this, projectId);
@@ -5205,6 +5275,10 @@ class PlatformStore {
 
     ensureSocialGroupChat(groupId, actorId = '') {
         return ensureSocialGroupChat.call(this, groupId, actorId);
+    }
+
+    createSocialGroupConversation(groupId, conversationName = '', actorId = '') {
+        return createSocialGroupConversation.call(this, groupId, conversationName, actorId);
     }
 
     createSocialProject(payload = {}, actorId = '') {

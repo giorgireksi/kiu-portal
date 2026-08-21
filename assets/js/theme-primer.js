@@ -348,10 +348,10 @@
         var visualsByUser = userId && persistentState && persistentState.homeDashboardPreferencesByUser
             ? persistentState.homeDashboardPreferencesByUser[userId]
             : null;
-        var scopeKey = role + '::' + faculty;
-        return (visualsByUser && visualsByUser.visualsByScope && visualsByUser.visualsByScope[scopeKey])
-            || (visualsByUser && visualsByUser.visuals)
-            || {};
+        // Theme preferences are global to the account. Role/faculty remain
+        // useful for dashboard layout, but must never select a different
+        // palette or interface mode on another route.
+        return (visualsByUser && visualsByUser.visuals) || {};
     }
 
     function resolveScopedThemeMode() {
@@ -896,11 +896,51 @@
     // background. The deferred runtime repeats this calculation authoritatively.
     applyEarlyPaletteTokens(savedPalette, savedMode);
 
+    function isThemeOnlyRoute(body) {
+        var path = '';
+        try { path = String(window.location.pathname || '').toLowerCase(); } catch (e) {}
+        return Boolean(body && (
+            body.classList.contains('login-page')
+            || body.classList.contains('protected-launch-page')
+            || body.classList.contains('redirect-route')
+            || /\/(?:login|protected-launch|profile|calendar|gradebook|faculty-schedule)\.html$/.test(path)
+        ));
+    }
+
+    function applyThemeOnlyBodyState(b) {
+        b.classList.remove('lux-unified-shell', 'kiu-shell-loading', 'kiu-shell-ready');
+        b.classList.remove('lux-light-mode');
+        b.removeAttribute('aria-busy');
+        if (savedMode === 'light') {
+            b.classList.add('lux-light-mode');
+            b.dataset.luxThemeMode = 'light';
+        } else {
+            b.dataset.luxThemeMode = 'dark';
+        }
+        var validPalettes = ['obsidian-amber', 'slate-sapphire', 'pine-jade', 'burgundy-rose', 'sand-pearl', 'ink-orchid', 'ocean-teal', 'platinum-silver'];
+        validPalettes.forEach(function (palette) { b.classList.remove('palette-' + palette); });
+        if (savedPalette && savedPalette !== 'custom' && validPalettes.indexOf(savedPalette) !== -1) {
+            b.classList.add('palette-' + savedPalette);
+        }
+        mirrorEarlyPaletteTokens(b);
+        if (savedPalette === 'custom') {
+            var customBackground = root.style.getPropertyValue('--lux-shell-background').trim();
+            if (customBackground) b.style.setProperty('background', customBackground);
+        }
+        root.classList.remove('kiu-shell-loading');
+        root.classList.add('kiu-shell-ready');
+        markBootPhase('theme-only-body-state-applied');
+    }
+
     // Apply to body as soon as it exists
     function applyBodyState() {
         var b = document.body;
         if (!b) return;
         markBootPhase('body-state-start');
+        if (isThemeOnlyRoute(b)) {
+            applyThemeOnlyBodyState(b);
+            return;
+        }
         var requestedRole = getRequestedShellRole();
 
         // Mark as luxury shell immediately — hides old header/nav/footer via CSS
