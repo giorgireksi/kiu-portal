@@ -4,6 +4,7 @@ function registerLmsWhiteboardRoutes(app, deps = {}) {
         getSessionRole,
         resolveSessionActorAccount,
         getStore,
+        requireSessionAccount,
         mergeStaffWhiteboardWorkspace,
         mergeStudentWhiteboardWorkspace,
         mergeStudentWhiteboardOps,
@@ -23,8 +24,13 @@ function registerLmsWhiteboardRoutes(app, deps = {}) {
     function resolveWhiteboardAccess(request, response, resourceKey, action = 'read') {
         const key = String(resourceKey || '').trim();
         const { scopeKey, isPersonal } = stripLmsPersonalBoardScopeKey(key);
-        const sessionAccount = requireLmsLiveQuizWorkspaceAccess(request, response, scopeKey, action);
-        if (!sessionAccount || !isPersonal) return sessionAccount;
+        if (!isPersonal) return requireLmsLiveQuizWorkspaceAccess(request, response, scopeKey, action);
+
+        // A student's personal board is self-service and must remain writable even
+        // when the student has no currently active class-session enrollment. Shared
+        // viewers still go through the normal course-scope guard below.
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return null;
         const account = typeof resolveSessionActorAccount === 'function'
             ? resolveSessionActorAccount(sessionAccount)
             : (sessionAccount.account || sessionAccount);
@@ -34,11 +40,18 @@ function registerLmsWhiteboardRoutes(app, deps = {}) {
         const access = action === 'write'
             ? assertLmsPersonalBoardWriteAccess(key, account, role, existingWorkspace)
             : assertLmsPersonalBoardReadAccess(key, account, role, existingWorkspace);
-        if (!access.ok) {
-            sendError(response, access.status, access.error);
+        if (access.ok && access.isOwner) return { ...sessionAccount, personalAccess: access };
+
+        const scopedSession = requireLmsLiveQuizWorkspaceAccess(request, response, scopeKey, action);
+        if (!scopedSession) return null;
+        const scopedAccess = action === 'write'
+            ? assertLmsPersonalBoardWriteAccess(key, account, role, existingWorkspace)
+            : assertLmsPersonalBoardReadAccess(key, account, role, existingWorkspace);
+        if (!scopedAccess.ok) {
+            sendError(response, scopedAccess.status, scopedAccess.error);
             return null;
         }
-        return { ...sessionAccount, personalAccess: access };
+        return { ...scopedSession, personalAccess: scopedAccess };
     }
 
     function emitWhiteboardUpdate(request, resourceKey) {

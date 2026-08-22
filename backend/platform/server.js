@@ -2593,6 +2593,7 @@ registerLmsWhiteboardRoutes(app, {
     mergeStudentWhiteboardOps,
     mergePersonalDashboardWorkspace,
     requireLmsLiveQuizWorkspaceAccess,
+    requireSessionAccount,
     sendError,
     staffRoles: STAFF_ROLES,
     stripLmsPersonalBoardScopeKey,
